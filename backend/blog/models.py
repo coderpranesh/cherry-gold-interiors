@@ -3,24 +3,15 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 from django.utils import timezone
 from django.conf import settings
-from modeltranslation.translator import register, TranslationOptions
 from parler.models import TranslatableModel, TranslatedFields
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
 from ckeditor.fields import RichTextField
 
-
 def validate_featured_image_size(value):
-    """Validate that featured image is under 2MB"""
     limit = 2 * 1024 * 1024
     if value.size > limit:
         raise ValidationError(_('Featured image too large (max 2MB)'))
-
-
-@register(models.BlogPost)
-class BlogPostTranslationOptions(TranslationOptions):
-    fields = ('title', 'excerpt', 'content', 'meta_title', 'meta_description')
-
 
 class BlogCategory(models.Model):
     name = models.CharField(_("Name"), max_length=100)
@@ -51,7 +42,6 @@ class BlogCategory(models.Model):
     def get_absolute_url(self):
         return reverse('blog:category-posts', kwargs={'slug': self.slug})
 
-
 class BlogTag(models.Model):
     name = models.CharField(_("Name"), max_length=50)
     slug = models.SlugField(_("Slug"), max_length=50, unique=True)
@@ -73,7 +63,6 @@ class BlogTag(models.Model):
     def get_absolute_url(self):
         return reverse('blog:tag-posts', kwargs={'slug': self.slug})
 
-
 class BlogPost(TranslatableModel):
     STATUS_CHOICES = [
         ('DRAFT', _("Draft")),
@@ -85,18 +74,8 @@ class BlogPost(TranslatableModel):
         title=models.CharField(_("Title"), max_length=200),
         excerpt=models.TextField(_("Excerpt"), blank=True),
         content=RichTextField(_("Content")),
-        meta_title=models.CharField(
-            _("Meta Title"),
-            max_length=100,
-            blank=True,
-            help_text=_("SEO title for meta tags")
-        ),
-        meta_description=models.CharField(
-            _("Meta Description"),
-            max_length=200,
-            blank=True,
-            help_text=_("SEO description for meta tags")
-        ),
+        meta_title=models.CharField(_("Meta Title"), max_length=100, blank=True, help_text=_("SEO title")),
+        meta_description=models.CharField(_("Meta Description"), max_length=200, blank=True, help_text=_("SEO description")),
     )
 
     author = models.ForeignKey(
@@ -125,17 +104,8 @@ class BlogPost(TranslatableModel):
         upload_to='blog/featured_images/%Y/%m/',
         validators=[validate_featured_image_size]
     )
-    status = models.CharField(
-        _("Status"),
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default='DRAFT'
-    )
-    published_date = models.DateTimeField(
-        _("Published Date"),
-        null=True,
-        blank=True
-    )
+    status = models.CharField(_("Status"), max_length=10, choices=STATUS_CHOICES, default='DRAFT')
+    published_date = models.DateTimeField(_("Published Date"), null=True, blank=True)
     created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
     view_count = models.PositiveIntegerField(_("View Count"), default=0)
@@ -146,10 +116,6 @@ class BlogPost(TranslatableModel):
         verbose_name = _("Blog Post")
         verbose_name_plural = _("Blog Posts")
         ordering = ['-published_date']
-        indexes = [
-            models.Index(fields=['-published_date']),
-            models.Index(fields=['status']),
-        ]
 
     def __str__(self):
         return self.title
@@ -157,10 +123,8 @@ class BlogPost(TranslatableModel):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
-        
         if self.status == 'PUBLISHED' and not self.published_date:
             self.published_date = timezone.now()
-        
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -169,7 +133,6 @@ class BlogPost(TranslatableModel):
     def increment_view_count(self):
         self.view_count += 1
         self.save(update_fields=['view_count'])
-
 
 class BlogComment(models.Model):
     post = models.ForeignKey(
@@ -200,23 +163,10 @@ class BlogComment(models.Model):
     def __str__(self):
         return f"Comment by {self.name} on {self.post.title}"
 
-
 class BlogSEO(models.Model):
-    meta_title = models.CharField(
-        _("Default Meta Title"),
-        max_length=100,
-        default="Cherry Gold Interiors Blog"
-    )
-    meta_description = models.CharField(
-        _("Default Meta Description"),
-        max_length=200,
-        default="Latest interior design trends and tips from Cherry Gold Interiors"
-    )
-    og_image = models.ImageField(
-        _("Default Open Graph Image"),
-        upload_to='blog/seo/',
-        blank=True
-    )
+    meta_title = models.CharField(_("Default Meta Title"), max_length=100, default="Cherry Gold Interiors Blog")
+    meta_description = models.CharField(_("Default Meta Description"), max_length=200, default="Latest interior design trends and tips from Cherry Gold Interiors")
+    og_image = models.ImageField(_("Default Open Graph Image"), upload_to='blog/seo/', blank=True)
 
     class Meta:
         verbose_name = _("Blog SEO Settings")

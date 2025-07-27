@@ -2,21 +2,24 @@ from rest_framework import serializers
 from .models import BlogPost, BlogCategory, BlogTag
 from accounts.serializers import UserSerializer
 
+# Serializer for blog tags
 class BlogTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogTag
         fields = ['id', 'name', 'slug']
 
+# Serializer for blog categories
 class BlogCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogCategory
         fields = ['id', 'name', 'slug', 'description', 'image']
 
+# Lightweight serializer for blog post list view
 class BlogPostListSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     category = BlogCategorySerializer(read_only=True)
     tags = BlogTagSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = BlogPost
         fields = [
@@ -24,11 +27,12 @@ class BlogPostListSerializer(serializers.ModelSerializer):
             'excerpt', 'featured_image', 'published_date'
         ]
 
+# Detailed serializer for a single blog post
 class BlogPostDetailSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     category = BlogCategorySerializer(read_only=True)
     tags = BlogTagSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = BlogPost
         fields = [
@@ -38,6 +42,7 @@ class BlogPostDetailSerializer(serializers.ModelSerializer):
             'meta_title', 'meta_description'
         ]
 
+# Serializer for search/filtering posts
 class BlogSearchSerializer(serializers.Serializer):
     query = serializers.CharField(max_length=100)
     category = serializers.CharField(required=False)
