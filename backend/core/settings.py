@@ -17,8 +17,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 1. CORE CONFIGURATION
 # ========================
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-fallback-key')
-DEBUG = 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+DEBUG = 'False'
+ALLOWED_HOSTS = os.getenv('cherrygoldinteriors.com', 'localhost,127.0.0.1').split(',')
 ROOT_URLCONF = 'core.urls'
 WSGI_APPLICATION = 'core.wsgi.application'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

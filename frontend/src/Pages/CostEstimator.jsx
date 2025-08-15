@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calculator, Home, DollarSign, Info } from 'lucide-react';
 import ConsultationModal from '../Components/ConsultationModal';
+import { jsPDF } from 'jspdf';
 
 const CostEstimator = () => {
   const [formData, setFormData] = useState({
@@ -14,7 +15,7 @@ const CostEstimator = () => {
     width: '',
     height: '',
     additionalFeatures: [],
-    includeGST: false // GST toggle
+    includeGST: true // GST toggle
   });
 
   const [estimate, setEstimate] = useState(null);
@@ -174,6 +175,76 @@ const CostEstimator = () => {
       finalCost,
       projectType: projectType.name,
     });
+  };
+
+  const generatePDF = () => {
+    if (!estimate) return;
+
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(20);
+    doc.setTextColor(40);
+    doc.text('Project Cost Estimate', 105, 20, { align: 'center' });
+
+    // Project Details
+    doc.setFontSize(12);
+    doc.text('Project Details', 14, 35);
+    doc.line(14, 37, 60, 37);
+    
+    doc.text(`Type: ${estimate.projectType}`, 14, 45);
+    doc.text(`Package: ${estimate.selectedPackage}`, 14, 55);
+    doc.text(`Area: ${estimate.area} sq ft`, 14, 65);
+    doc.text(`Description: ${estimate.packageDescription}`, 14, 75);
+
+    // Cost Breakdown
+    doc.text('Cost Breakdown', 105, 35);
+    doc.line(105, 37, 150, 37);
+    
+    let yPosition = 45;
+    doc.text(`Base Cost: ₹${estimate.basePrice.toLocaleString()}`, 105, yPosition);
+    yPosition += 10;
+    
+    if (estimate.featuresTotal > 0) {
+      doc.text(`Additional Features: ₹${estimate.featuresTotal.toLocaleString()}`, 105, yPosition);
+      yPosition += 10;
+    }
+    
+    doc.text(`Subtotal: ₹${estimate.subtotal.toLocaleString()}`, 105, yPosition);
+    yPosition += 10;
+    doc.text(`GST (18%): ₹${estimate.gst.toLocaleString()}`, 105, yPosition);
+    yPosition += 15;
+    
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Total Cost: ₹${estimate.finalCost.toLocaleString()}`, 105, yPosition);
+    doc.setFont(undefined, 'normal');
+
+    // Features List
+    if (estimate.packageFeatures && estimate.packageFeatures.length > 0) {
+      yPosition += 20;
+      doc.setFontSize(12);
+      doc.text('Package Features:', 14, yPosition);
+      yPosition += 10;
+      
+      estimate.packageFeatures.forEach((feature, index) => {
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        doc.text(`• ${feature}`, 20, yPosition);
+        yPosition += 7;
+      });
+    }
+
+    // Footer
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text('Note: This is an approximate estimate. Final cost may vary based on site conditions.', 105, 280, { align: 'center' });
+    doc.text('Thank you for using our cost estimator!', 105, 285, { align: 'center' });
+
+    // Save the PDF
+    doc.save(`Project_Estimate_${new Date().toISOString().slice(0,10)}.pdf`);
   };
 
   return (
@@ -589,8 +660,11 @@ const CostEstimator = () => {
                 </div>
 
                 <div className="flex space-x-4">
-                  <button className="flex-1 bg-red-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-600 transition-colors">
-                     Add To  Quote
+                  <button 
+                    onClick={generatePDF}
+                    className="flex-1 bg-red-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-600 transition-colors"
+                  >
+                    Download PDF Quote
                   </button>
                   <button
                     onClick={() => setIsModalOpen(true)}
