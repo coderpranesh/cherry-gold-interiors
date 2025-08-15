@@ -1,19 +1,33 @@
+
+#backend/accounts/urls.py
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
-    RegisterView,
-    CustomTokenObtainPairView,
+    UserRegistrationView,
+    VerifyOTPView,
+    UserLoginView,
     UserProfileView,
-    PasswordResetRequestView,
-    PasswordResetConfirmView,
+    ReferAndEarnView,
+    WithdrawalRequestView,
+    AdminUserListView,
+    AdminReferralListView,
+    AdminWithdrawalListView,
+    AdminProcessWithdrawalView
 )
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
-    path('login/', CustomTokenObtainPairView.as_view(), name='login'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # Authentication
+    path('register/', UserRegistrationView.as_view(), name='register'),
+    path('verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
+    path('login/', UserLoginView.as_view(), name='login'),
+    
+    # User endpoints
     path('profile/', UserProfileView.as_view(), name='profile'),
-    path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
-    path('password-reset-confirm/<uidb64>/<token>/', 
-         PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('referrals/', ReferAndEarnView.as_view(), name='referrals'),
+    path('withdraw/', WithdrawalRequestView.as_view(), name='withdraw'),
+    
+    # Admin endpoints
+    path('admin/users/', AdminUserListView.as_view(), name='admin-users'),
+    path('admin/referrals/', AdminReferralListView.as_view(), name='admin-referrals'),
+    path('admin/withdrawals/', AdminWithdrawalListView.as_view(), name='admin-withdrawals'),
+    path('admin/withdrawals/<int:pk>/process/', AdminProcessWithdrawalView.as_view(), name='admin-process-withdrawal'),
 ]

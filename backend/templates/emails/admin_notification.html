@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Service Request</title>
+</head>
+<body>
+    <h2>New {{ service_request.get_service_type_display }} Request</h2>
+    <p><strong>Service Number:</strong> {{ service_request.service_number }}</p>
+    <p><strong>Customer:</strong> {{ service_request.full_name }}</p>
+    <p><strong>Phone:</strong> {{ service_request.phone_number }}</p>
+    {% if service_request.email %}<p><strong>Email:</strong> {{ service_request.email }}</p>{% endif %}
+    <!-- Include other relevant fields -->
+    <p>Submitted on: {{ service_request.created_at|date:"DATETIME_FORMAT" }}</p>
+    <p>Please review this request in the admin panel.</p>
+</body>
+</html>

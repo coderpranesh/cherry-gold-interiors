@@ -1,0 +1,126 @@
+.dashboard-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-card {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: none;
+}
+
+.dashboard-header {
+  margin-bottom: 20px;
+}
+
+.gold-text {
+  color: #d4af37;
+}
+
+.referral-card {
+  margin-bottom: 24px;
+  border-left: 4px solid #d4af37;
+}
+
+.referral-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.referral-code-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.referral-code {
+  font-size: 18px;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  background: #f8f8f8;
+  border-radius: 4px;
+}
+
+.referral-share-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.share-button {
+  background: #f0f0f0;
+  border: none;
+}
+
+.share-button:hover {
+  background: #e0e0e0;
+}
+
+.how-it-works {
+  margin: 24px 0;
+}
+
+.balance-card {
+  margin: 24px 0;
+  border-left: 4px solid #d4af37;
+}
+
+.balance-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.balance-amount {
+  font-size: 18px;
+  font-weight: bold;
+  color: #d4af37;
+}
+
+.balance-actions {
+  margin-top: 20px;
+}
+
+.action-buttons {
+  margin: 20px 0;
+}
+
+.processing-time {
+  text-align: center;
+  font-style: italic;
+  color: #888;
+}
+
+.gold-button {
+  background-color: #d4af37;
+  border-color: #d4af37;
+}
+
+.gold-button:hover {
+  background-color: #b99d30;
+  border-color: #b99d30;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .referral-share-buttons {
+    flex-direction: column;
+  }
+  
+  .referral-code-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

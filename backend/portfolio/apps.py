@@ -1,3 +1,4 @@
+#backend/portfolio/apps.py
 from django.apps import AppConfig
 
 class PortfolioConfig(AppConfig):

@@ -12,7 +12,7 @@ class BlogTagSerializer(serializers.ModelSerializer):
 class BlogCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogCategory
-        fields = ['id', 'name', 'slug', 'description', 'image']
+        fields = ['id', 'name', 'slug', 'description']
 
 # Lightweight serializer for blog post list view
 class BlogPostListSerializer(serializers.ModelSerializer):
@@ -23,8 +23,8 @@ class BlogPostListSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPost
         fields = [
-            'id', 'title', 'slug', 'author', 'category', 'tags',
-            'excerpt', 'featured_image', 'published_date'
+            'id', 'title', 'author', 'category', 'tags',
+            'excerpt', 'cover_image', 'published_date'
         ]
 
 # Detailed serializer for a single blog post
@@ -36,8 +36,8 @@ class BlogPostDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPost
         fields = [
-            'id', 'title', 'slug', 'author', 'category', 'tags',
-            'excerpt', 'content', 'featured_image', 'status',
+            'id', 'title', 'author', 'category', 'tags',
+            'excerpt', 'content', 'cover_image', 'status',
             'published_date', 'created_at', 'updated_at',
             'meta_title', 'meta_description'
         ]

@@ -1,3 +1,4 @@
+#backend/catalogue/admin.py
 from django.contrib import admin
 from .models import CatalogueItem, CatalogueCategory, ColorOption, RoomType
 

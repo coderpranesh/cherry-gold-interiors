@@ -1,21 +1,20 @@
 from django.urls import path
-from rest_framework.routers import DefaultRouter
 from .views import (
-    ServiceRequestViewSet,
-    ConsultationBookingViewSet,
-    RepairRequestViewSet,
-    OnSiteServiceViewSet,
-    ServiceCalendarView,
-    AvailableTimeSlotsView,
+    ServiceRequestListCreateView,
+    ServiceRequestRetrieveUpdateView,
+    RepairRequestListView,
+    ConsultationListView,
+    OnsiteServiceListView,
+    ServiceSequenceView
 )
 
-router = DefaultRouter()
-router.register(r'requests', ServiceRequestViewSet, basename='servicerequest')
-router.register(r'consultations', ConsultationBookingViewSet, basename='consultation')
-router.register(r'repairs', RepairRequestViewSet, basename='repairrequest')
-router.register(r'onsite', OnSiteServiceViewSet, basename='onsiteservice')
+app_name = "services"
 
 urlpatterns = [
-    path('calendar/', ServiceCalendarView.as_view(), name='service-calendar'),
-    path('timeslots/', AvailableTimeSlotsView.as_view(), name='available-timeslots'),
-] + router.urls
+    path('requests/', ServiceRequestListCreateView.as_view(), name='service-request-list'),
+    path('requests/<str:service_number>/', ServiceRequestRetrieveUpdateView.as_view(), name='request-detail'),
+    path('repairs/', RepairRequestListView.as_view(), name='repair-request-list'),
+    path('consultations/', ConsultationListView.as_view(), name='consultation-list'),
+    path('onsite/', OnsiteServiceListView.as_view(), name='onsite-service-list'),
+    path('sequences/<str:year_month>/', ServiceSequenceView.as_view(), name='service-sequence'),
+]

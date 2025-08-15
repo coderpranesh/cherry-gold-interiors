@@ -1,3 +1,4 @@
+#backend/chatbot/models.py
 from django.db import models
 from accounts.models import User
 from django.utils.translation import gettext_lazy as _

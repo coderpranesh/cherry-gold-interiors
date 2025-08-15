@@ -1,7 +1,7 @@
 """
 Django settings for core project.
 """
-
+# backend/core/settings.py
 import os
 from pathlib import Path
 from datetime import timedelta
@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 1. CORE CONFIGURATION
 # ========================
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-fallback-key')
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 ROOT_URLCONF = 'core.urls'
 WSGI_APPLICATION = 'core.wsgi.application'
@@ -38,10 +38,15 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'corsheaders',
-    'drf_yasg',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     'modeltranslation',
     'parler',
+    'drf_spectacular',
+    'django_filters',
+    'admin_interface',
+    'colorfield',
+
     
     
     # Local Apps
@@ -59,6 +64,7 @@ INSTALLED_APPS = [
 # 3. MIDDLEWARE
 # ========================
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # For serving static files in production
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # For translations
@@ -68,7 +74,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ========================
 # 4. TEMPLATES & STATIC FILES
@@ -174,14 +183,32 @@ PARLER_LANGUAGES = {
 # 8. REST FRAMEWORK
 # ========================
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 20
+}
+
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Cherry Gold Interiors API',
+    'DESCRIPTION': 'API documentation for Cherry Gold Interiors',
+    'VERSION': '1.0.0',
+    'CONTACT': {'email': 'contact@cherrygoldinteriors.com'},
+    'LICENSE': {'name': 'BSD License'},
 }
 
 # JWT Settings
@@ -191,12 +218,16 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
 }
 
+# MSG91 Configuration
+MSG91_AUTH_KEY = 'your_msg91_auth_key'
+MSG91_TEMPLATE_ID = 'your_msg91_template_id'
+
 # ========================
 # 9. CORS & SECURITY
 # ========================
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
 ]
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
@@ -205,12 +236,22 @@ CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
 # 10. THIRD-PARTY INTEGRATIONS
 # ========================
 # Email (SMTP)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your-email@gmail.com')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your-email-password')
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_HOST = 'smtp.your-email-provider.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@example.com'
+EMAIL_HOST_PASSWORD = 'your-email-password'
+DEFAULT_FROM_EMAIL = 'your-email@example.com'
+
+# Service specific settings
+ADMIN_EMAIL = 'admin@example.com'
+CONTACT_PHONE = '+91 9876543210'
+CONTACT_EMAIL = 'contact@example.com'
+COMPANY_NAME = 'Your Interior Design Company'
+SITE_NAME = 'Cherry Gold Interiors'
 
 # Twilio (WhatsApp)
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
@@ -228,7 +269,7 @@ DIALOGFLOW_LANGUAGE_CODE = os.getenv('DIALOGFLOW_LANGUAGE_CODE', 'en')
 # ========================
 # 11. FRONTEND INTEGRATION
 # ========================
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
 # ========================
 # 12. CUSTOM SETTINGS

@@ -1,3 +1,4 @@
+#backend/catalogue/apps.py
 from django.apps import AppConfig
 
 class CatalogueConfig(AppConfig):

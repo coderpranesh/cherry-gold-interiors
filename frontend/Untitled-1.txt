@@ -1,0 +1,7 @@
+cjerry-gold-interiors-backend/
+├── controllers/
+├── models/
+├── routes/
+├── app.js
+├── .env
+├── package.json
