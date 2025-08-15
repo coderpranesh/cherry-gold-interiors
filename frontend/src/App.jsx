@@ -13,11 +13,13 @@ import BlogDetailPage from './Pages/BlogDetailPage';
 import ProjectTracking from './Pages/ProjectTracking';
 import CostEstimator from './Pages/CostEstimator';
 import FAQ from './Pages/FAQ';
+import Offers from './Pages/Offers.jsx';
 import KitchenDesigner from './Pages/KitchenDesigner';
-import Login from './Pages/Auth/Login';
-import Register from './Pages/Auth/Register';
+import Login from './Pages/Login';
+import Register from './Pages/Register';
 import ReferAndEarn from './Pages/Dashboard/ReferAndEarn';
 import PrivateRoute from './Components/PrivateRoute';
+
 import Footer from './Components/Footer';
 import Chatbot from './Components/Chatbot.jsx';
 import About from './Components/AboutSection.jsx';
@@ -35,6 +37,7 @@ function App() {
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/services" element={<Services />} />
         <Route path="/catalogue" element={<Catalogue />} />
+        <Route path="/offers" element={<Offers />} />
         <Route
           path="/dashboard"
           element={

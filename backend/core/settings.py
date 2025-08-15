@@ -222,6 +222,11 @@ SIMPLE_JWT = {
 MSG91_AUTH_KEY = 'your_msg91_auth_key'
 MSG91_TEMPLATE_ID = 'your_msg91_template_id'
 
+
+# Fast2SMS configuration
+FAST2SMS_API_KEY = 'E0YOB3sySeUKWDTf1428xhqr7CnNw9dQgMRijI5butPGXJLmzlV2kqnLKSsOPlEYI3FDt6hp07XQmUMj'
+FRONTEND_URL = 'http://localhost:5173'  # Update with your frontend URL
+
 # ========================
 # 9. CORS & SECURITY
 # ========================

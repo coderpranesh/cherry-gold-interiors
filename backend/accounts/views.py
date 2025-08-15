@@ -1,230 +1,219 @@
-
-#backend/accounts/views.py
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login
-from django.core.mail import send_mail
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.conf import settings
-from .models import User, Referral, WithdrawalRequest
+from .models import User, Referral, WithdrawalRequest, OTPVerification
 from .serializers import (
-    UserRegistrationSerializer,
-    UserLoginSerializer,
-    VerifyOTPSerializer,
-    UserProfileSerializer,
-    ReferralSerializer,
-    WithdrawalRequestSerializer,
-    ReferralDataSerializer
+    UserSerializer, RegisterSerializer, LoginSerializer,
+    ReferralDashboardSerializer, WithdrawalRequestSerializer,
+    OTPVerificationSerializer
 )
-from accounts.utils import send_otp_sms
-from rest_framework.exceptions import ValidationError
-from rest_framework.authentication import TokenAuthentication
+import random
+import requests
+from datetime import datetime, timedelta
+from decimal import Decimal
 
-class UserRegistrationView(generics.CreateAPIView):
-    serializer_class = UserRegistrationSerializer
-    permission_classes = [permissions.AllowAny]
-
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        try:
-            serializer.is_valid(raise_exception=True)
-            user = serializer.save()
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        # Skip verification for admin-created users
+        if not (request.user.is_staff or user.created_by_admin):
+            # Generate and send OTP
+            otp = str(random.randint(100000, 999999))
+            OTPVerification.objects.create(phone=user.phone, otp=otp)
+            send_otp(user.phone, otp)
             
-            # Send verification email
-            send_mail(
-                'Verify Your Email - OTP',
-                f'Your verification OTP is: {user.otp}\n\nThis OTP is valid for 5 minutes.',
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
-            )
-            
-            # Send SMS via MSG91
-            if hasattr(settings, 'MSG91_AUTH_KEY') and settings.MSG91_AUTH_KEY:
-                send_otp_sms(user.phone, user.otp)
-            
-            return Response({
-                'message': 'Registration successful. Please check your email and phone for OTP.',
-                'email': user.email,
-                'phone': user.phone
-            }, status=status.HTTP_201_CREATED)
-            
-        except ValidationError as e:
-            return Response({'errors': e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Send email verification
+            send_verification_email(user.email, user.id)
+        
+        return Response({
+            "message": "User registered successfully.",
+            "user": UserSerializer(user).data,
+            "verification_required": not (request.user.is_staff or user.created_by_admin)
+        }, status=status.HTTP_201_CREATED)
 
-class VerifyOTPView(APIView):
-    permission_classes = [permissions.AllowAny]
-
+class LoginView(APIView):
     def post(self, request):
-        serializer = VerifyOTPSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                'token': token.key,
-                'user': UserProfileSerializer(user).data,
-                'message': 'Account verified successfully!'
-            }, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserLoginView(APIView):
-    permission_classes = [permissions.AllowAny]
-    authentication_classes = []  # Disable authentication for login view
-
-    def post(self, request):
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']  # Get the user from validated data
-            token, created = Token.objects.get_or_create(user=user)
             
-            return Response({
-                'token': token.key,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'phone': user.phone,
-                    'is_verified': user.is_verified
-                },
-                'message': 'Login successful!'
-            }, status=status.HTTP_200_OK)
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UserProfileView(generics.RetrieveAPIView):
-    serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
-
-    def get_object(self):
-        return self.request.user
-
-class ReferAndEarnView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
-
-    def get(self, request):
-        user = request.user
-        data = {
-            'name': user.username,
-            'referral_code': user.referral_code,
-            'balance': user.balance,
-            'pending_balance': user.pending_balance,
-            'min_withdrawal': 1000,  # Rs. 1000 minimum withdrawal
-            'referral_amount': 500,   # Rs. 500 per referral
-            'total_referrals': Referral.objects.filter(referrer=user).count(),
-            'completed_referrals': Referral.objects.filter(referrer=user, is_completed=True).count()
-        }
-        serializer = ReferralDataSerializer(data)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = ReferralSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            referral = serializer.save(referrer=request.user)
-            # In a real app, you would verify the transaction first
-            referral.amount_earned = 500  # Rs. 500 per referral
-            referral.save()
-            
-            # Update user's pending balance
-            user = request.user
-            user.pending_balance += referral.amount_earned
-            user.save()
-            
-            return Response({
-                'message': 'Referral submitted successfully!',
-                'referral_id': referral.id,
-                'pending_balance': user.pending_balance
-            }, status=status.HTTP_201_CREATED)
-        return Response({
-            'errors': serializer.errors,
-            'message': 'Referral submission failed'
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-class WithdrawalRequestView(generics.CreateAPIView):
-    serializer_class = WithdrawalRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        min_withdrawal = 1000
-        
-        if user.balance < min_withdrawal:
-            raise ValidationError(
-                f"Minimum withdrawal amount is {min_withdrawal}. Your current balance is {user.balance}."
-            )
-        
-        withdrawal = serializer.save(
-            user=user,
-            amount=user.balance,
-            status='pending'
-        )
-        
-        # Deduct from user's balance immediately
-        user.balance = 0
-        user.save()
-        
-        return withdrawal
-
-# Admin Views
-class AdminUserListView(generics.ListAPIView):
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAdminUser]
-    authentication_classes = [TokenAuthentication]
-    pagination_class = None  # Or use PageNumberPagination with custom settings
-
-class AdminReferralListView(generics.ListAPIView):
-    queryset = Referral.objects.all().select_related('referrer', 'referred').order_by('-created_at')
-    serializer_class = ReferralSerializer
-    permission_classes = [permissions.IsAdminUser]
-    authentication_classes = [TokenAuthentication]
-
-class AdminWithdrawalListView(generics.ListAPIView):
-    queryset = WithdrawalRequest.objects.all().select_related('user').order_by('-created_at')
-    serializer_class = WithdrawalRequestSerializer
-    permission_classes = [permissions.IsAdminUser]
-    authentication_classes = [TokenAuthentication]
-
-class AdminProcessWithdrawalView(APIView):
-    permission_classes = [permissions.IsAdminUser]
-    authentication_classes = [TokenAuthentication]
-
-    def post(self, request, pk):
-        try:
-            withdrawal = WithdrawalRequest.objects.get(pk=pk)
-            
-            if withdrawal.status == 'completed':
+            # Skip verification check for admin and admin-created users
+            if not (user.is_staff or user.created_by_admin or user.phone_verified):
                 return Response(
-                    {'error': 'Withdrawal already processed'}, 
+                    {"error": "Phone number not verified"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+            
+            login(request, user)
+            token = "your-auth-token"  # Replace with actual token generation
+            
+            return Response({
+                "message": "Login successful",
+                "user": UserSerializer(user).data,
+                "token": token
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class VerifyOTPView(APIView):
+    def post(self, request):
+        serializer = OTPVerificationSerializer(data=request.data)
+        if serializer.is_valid():
+            phone = serializer.validated_data['phone']
+            otp = serializer.validated_data['otp']
+            
+            try:
+                otp_obj = OTPVerification.objects.filter(
+                    phone=phone,
+                    created_at__gte=datetime.now() - timedelta(minutes=10)
+                ).latest('created_at')
                 
-            if withdrawal.status == 'approved':
-                # Mark as completed
-                withdrawal.status = 'completed'
-                withdrawal.save()
-                
-                # In a real app, you would process the payment here
-                # For example, call a payment gateway API
-                
+                if otp_obj.otp == otp:
+                    otp_obj.is_verified = True
+                    otp_obj.save()
+                    
+                    # Mark user's phone as verified
+                    user = User.objects.get(phone=phone)
+                    user.phone_verified = True
+                    user.save()
+                    
+                    return Response({"message": "OTP verified successfully"})
                 return Response(
-                    {'message': 'Withdrawal processed successfully'},
-                    status=status.HTTP_200_OK
+                    {"error": "Invalid OTP"},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
-                
+            except OTPVerification.DoesNotExist:
+                return Response(
+                    {"error": "OTP expired or not found"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ResendOTPView(APIView):
+    def post(self, request):
+        phone = request.data.get('phone')
+        if not phone:
             return Response(
-                {'error': 'Withdrawal must be approved before processing'},
+                {"error": "Phone number is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Delete old OTPs
+        OTPVerification.objects.filter(phone=phone).delete()
+        
+        # Generate and send new OTP
+        otp = str(random.randint(100000, 999999))
+        OTPVerification.objects.create(phone=phone, otp=otp)
+        send_otp(phone, otp)
+        
+        return Response({"message": "OTP resent successfully"})
+
+class ReferralDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        referrals = Referral.objects.filter(referrer=user).select_related('referred_user')
+        
+        total_earnings = sum(
+            [r.reward_amount for r in referrals if r.status == 'paid'],
+            Decimal('0.00')
+        )
+        
+        serializer = ReferralDashboardSerializer({
+            "referral_code": user.referral_code,
+            "total_earnings": total_earnings,
+            "available_balance": user.wallet_balance,
+            "referrals": referrals
+        })
+        return Response(serializer.data)
+
+class WithdrawalRequestView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    @transaction.atomic
+    def post(self, request):
+        if request.user.wallet_balance < Decimal('500.00'):
+            return Response(
+                {"error": "Minimum withdrawal amount is ₹500"},
                 status=status.HTTP_400_BAD_REQUEST
             )
             
-        except WithdrawalRequest.DoesNotExist:
-            return Response(
-                {'error': 'Withdrawal not found'},
-                status=status.HTTP_404_NOT_FOUND
+        serializer = WithdrawalRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            # Create withdrawal request
+            withdrawal = WithdrawalRequest.objects.create(
+                user=request.user,
+                amount=request.user.wallet_balance,
+                **serializer.validated_data
             )
+            
+            # Deduct from wallet (admin will approve/reject)
+            request.user.wallet_balance = Decimal('0.00')
+            request.user.save()
+            
+            # Notify admin (in production, send email/notification)
+            
+            return Response(
+                {"message": "Withdrawal request submitted successfully"},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ReferralCodeValidationView(APIView):
+    def get(self, request):
+        code = request.query_params.get('code')
+        if not code:
+            return Response(
+                {"error": "Referral code is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            user = User.objects.get(referral_code=code)
+            return Response({
+                "valid": True,
+                "referrer_name": user.full_name
+            })
+        except User.DoesNotExist:
+            return Response({
+                "valid": False,
+                "message": "Invalid referral code"
+            })
+
+def send_otp(phone, otp):
+    if not settings.DEBUG:
+        url = "https://www.fast2sms.com/dev/bulkV2"
+        payload = {
+            "route": "otp",
+            "variables_values": otp,
+            "numbers": phone,
+            "flash": 0
+        }
+        headers = {
+            'authorization': settings.FAST2SMS_API_KEY,
+            'Content-Type': "application/json"
+        }
+        response = requests.post(url, json=payload, headers=headers)
+        return response.json()
+    print(f"DEBUG: OTP for {phone} is {otp}")  # For development
+    return {"message": "OTP would be sent in production"}
+
+def send_verification_email(email, user_id):
+    # In production, implement email sending with verification link
+    verification_link = f"{settings.FRONTEND_URL}/verify-email/{user_id}/"
+    print(f"DEBUG: Email verification link for {email}: {verification_link}")

@@ -1,128 +1,151 @@
-#backend/accounts/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MinValueValidator
 import uuid
-from django.utils import timezone
+from decimal import Decimal
 
 class User(AbstractUser):
     phone_regex = RegexValidator(
-        regex=r'^[0-9]{10}$',
-        message="Phone number must be 10 digits without country code"
+        regex=r'^[6-9]\d{9}$',
+        message="Phone number must be 10 digits and start with 6-9"
     )
     
     phone = models.CharField(
-        validators=[phone_regex],
-        max_length=10,
+        validators=[phone_regex], 
+        max_length=10, 
+        blank=True, 
+        null=True,
         unique=True
     )
-    email = models.EmailField(unique=True)
-    is_verified = models.BooleanField(default=False)
-    is_phone_verified = models.BooleanField(default=False)
-    otp = models.CharField(max_length=6, null=True, blank=True)
-    otp_created_at = models.DateTimeField(null=True, blank=True)
+    email_verified = models.BooleanField(default=False)
+    phone_verified = models.BooleanField(default=False)
     referral_code = models.CharField(max_length=10, unique=True, blank=True)
     referred_by = models.ForeignKey(
-        'self',
-        on_delete=models.SET_NULL,
-        null=True,
+        'self', 
+        on_delete=models.SET_NULL, 
+        null=True, 
         blank=True,
-        related_name='referrals'
+        related_name='referred_users'
     )
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    pending_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    wallet_balance = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    created_by_admin = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):
         if not self.referral_code:
-            self.referral_code = str(uuid.uuid4())[:8].upper()
+            self.referral_code = self.generate_referral_code()
+        
+        # Admin users and admin-created users are always verified
+        if self.is_staff or self.created_by_admin:
+            self.email_verified = True
+            self.phone_verified = True
+            
         super().save(*args, **kwargs)
     
-    def generate_otp(self):
-        self.otp = str(uuid.uuid4())[:6]
-        self.otp_created_at = timezone.now()
-        self.save()
-        return self.otp
+    def generate_referral_code(self):
+        return str(uuid.uuid4())[:8].upper()
     
-    def verify_otp(self, otp):
-        if self.otp == otp and (timezone.now() - self.otp_created_at).seconds < 300:
-            self.is_verified = True
-            self.otp = None
-            self.otp_created_at = None
-            self.save()
-            return True
-        return False
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
 class Referral(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('paid', 'Paid'),
+    ]
+    
     referrer = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='referral_activities'
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='referrals_made'
     )
-    referee_name = models.CharField(max_length=100)
-    referee_email = models.EmailField()
-    referee_phone = models.CharField(max_length=10)
-    transaction_id = models.CharField(max_length=50)
-    additional_info = models.TextField(blank=True)
-    is_confirmed = models.BooleanField(default=False)
-    is_completed = models.BooleanField(default=False)
-    amount_earned = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def confirm_referral(self):
-        self.is_confirmed = True
-        self.save()
-        # Add pending balance to referrer
-        self.referrer.pending_balance += self.amount_earned
-        self.referrer.save()
-
-    def complete_referral(self):
-        self.is_completed = True
-        self.save()
-        # Move from pending to actual balance
-        self.referrer.pending_balance -= self.amount_earned
-        self.referrer.balance += self.amount_earned
-        self.referrer.save()
-
-class WithdrawalRequest(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    account_holder_name = models.CharField(max_length=100)
-    account_number = models.CharField(max_length=20)
-    ifsc_code = models.CharField(max_length=20)
-    pan_number = models.CharField(max_length=10)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    referred_user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='referrals_received'
+    )
+    project_value = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    reward_percentage = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    reward_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
     status = models.CharField(
-        max_length=20,
-        choices=[
-            ('pending', 'Pending'),
-            ('approved', 'Approved'),
-            ('rejected', 'Rejected'),
-            ('processed', 'Processed')
-        ],
+        max_length=10, 
+        choices=STATUS_CHOICES, 
         default='pending'
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:  # Only on creation
+            self.calculate_reward()
+        super().save(*args, **kwargs)
+    
+    def calculate_reward(self):
+        if self.project_value >= 200000:
+            self.reward_percentage = Decimal('5.00')
+        elif self.project_value >= 100000:
+            self.reward_percentage = Decimal('3.00')
+        else:
+            self.reward_percentage = Decimal('1.00')
+        
+        self.reward_amount = (self.project_value * self.reward_percentage) / 100
 
-    def approve(self):
-        if self.status == 'pending' and self.user.balance >= self.amount:
-            self.status = 'approved'
-            self.save()
-            return True
-        return False
+class WithdrawalRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('processed', 'Processed'),
+    ]
+    
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='withdrawals'
+    )
+    amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(500)]
+    )
+    account_number = models.CharField(max_length=20)
+    ifsc_code = models.CharField(max_length=20)
+    account_holder_name = models.CharField(max_length=100)
+    pan_number = models.CharField(max_length=10)
+    status = models.CharField(
+        max_length=10, 
+        choices=STATUS_CHOICES, 
+        default='pending'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
 
-    def reject(self):
-        if self.status == 'pending':
-            self.status = 'rejected'
-            self.save()
-            return True
-        return False
-
-    def process(self):
-        if self.status == 'approved':
-            self.user.balance -= self.amount
-            self.user.save()
-            self.status = 'processed'
-            self.save()
-            return True
-        return False
+class OTPVerification(models.Model):
+    phone = models.CharField(max_length=10)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.phone} - {self.otp}"

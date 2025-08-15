@@ -1,132 +1,123 @@
-#backend/accounts/serializers.py
 from rest_framework import serializers
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from .models import User, Referral, WithdrawalRequest
-import re
-
-
-User = get_user_model()
+from .models import User, Referral, WithdrawalRequest, OTPVerification
+from django.contrib.auth.password_validation import validate_password
+from django.core.validators import RegexValidator
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone', 'first_name', 'last_name']
-        read_only_fields = ['id']
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name', 
+            'phone', 'referral_code', 'wallet_balance'
+        ]
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=8)
-    confirm_password = serializers.CharField(write_only=True)
-    referral_code = serializers.CharField(required=False, allow_blank=True)
-
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password]
+    )
+    confirm_password = serializers.CharField(write_only=True, required=True)
+    
     class Meta:
         model = User
-        fields = ('username', 'email', 'phone', 'password', 'confirm_password', 'referral_code')
+        fields = [
+            'username', 'email', 'first_name', 'last_name', 'phone',
+            'password', 'confirm_password', 'referral_code'
+        ]
         extra_kwargs = {
             'username': {'required': True},
             'email': {'required': True},
+            'first_name': {'required': True},
+            'last_name': {'required': True},
             'phone': {'required': True},
         }
-
-    def validate_email(self, value):
-        try:
-            validate_email(value)
-        except ValidationError:
-            raise serializers.ValidationError("Enter a valid email address.")
-        return value
-
-    def validate_phone(self, value):
-        if not re.match(r'^[0-9]{10}$', value):
-            raise serializers.ValidationError("Phone number must be 10 digits.")
-        return value
-
+    
     def validate(self, data):
         if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Passwords do not match.")
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        
+        try:
+            validate_email(data['email'])
+        except ValidationError:
+            raise serializers.ValidationError({"email": "Enter a valid email address."})
+            
+        if not data['phone'].isdigit() or len(data['phone']) != 10 or not data['phone'].startswith(('6','7','8','9')):
+            raise serializers.ValidationError({"phone": "Enter a valid 10-digit Indian phone number starting with 6-9."})
+            
         return data
-
+    
     def create(self, validated_data):
         validated_data.pop('confirm_password')
         referral_code = validated_data.pop('referral_code', None)
         
+        # Check if the request is made by admin
+        request = self.context.get('request')
+        if request and request.user.is_staff:
+            validated_data['created_by_admin'] = True
+        
         user = User.objects.create_user(**validated_data)
-        user.generate_otp()
         
         if referral_code:
             try:
                 referrer = User.objects.get(referral_code=referral_code)
                 user.referred_by = referrer
                 user.save()
+                
+                # Create referral record
+                Referral.objects.create(
+                    referrer=referrer,
+                    referred_user=user,
+                    project_value=0,
+                    reward_percentage=0,
+                    reward_amount=0,
+                    status='pending'
+                )
             except User.DoesNotExist:
                 pass
-        
+                
         return user
 
-class UserLoginSerializer(serializers.Serializer):
-    email = serializers.CharField()
-    password = serializers.CharField(write_only=True)
-
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+    
     def validate(self, data):
-        email = data.get('email')
-        password = data.get('password')
-
-        if email and password:
-            try:
-                user = User.objects.get(email=email)
-                user = authenticate(
-                    username=user.username,
-                    password=password
-                )
-                
-                if not user:
-                    raise serializers.ValidationError("Invalid credentials")
-                    
-                if not user.is_verified and not (user.is_staff or user.is_superuser):
-                    raise serializers.ValidationError("Account not verified")
-                
-                data['user'] = user
-                return data
-                
-            except User.DoesNotExist:
-                raise serializers.ValidationError("User with this email does not exist")
-        else:
-            raise serializers.ValidationError("Must include 'email' and 'password'")
-        
-        
-class VerifyOTPSerializer(serializers.Serializer):
-    email = serializers.CharField()
-    otp = serializers.CharField()
-
-    def validate(self, data):
-        try:
-            user = User.objects.get(email=data['email'])
-            if not user.verify_otp(data['otp']):
-                raise serializers.ValidationError("Invalid or expired OTP.")
-            return user
-        except User.DoesNotExist:
-            raise serializers.ValidationError("User with this email does not exist.")
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'phone', 'referral_code', 'balance', 'pending_balance')
+        user = authenticate(username=data['username'], password=data['password'])
+        if not user:
+            raise serializers.ValidationError("Invalid credentials")
+        if not user.email_verified:
+            raise serializers.ValidationError("Email not verified")
+        return user
 
 class ReferralSerializer(serializers.ModelSerializer):
+    referred_user = UserSerializer()
+    
     class Meta:
         model = Referral
-        fields = '__all__'
-        read_only_fields = ('referrer', 'is_confirmed', 'is_completed', 'amount_earned')
+        fields = [
+            'id', 'referred_user', 'project_value', 'reward_percentage',
+            'reward_amount', 'status', 'created_at'
+        ]
+
+class ReferralDashboardSerializer(serializers.Serializer):
+    referral_code = serializers.CharField()
+    total_earnings = serializers.DecimalField(max_digits=10, decimal_places=2)
+    available_balance = serializers.DecimalField(max_digits=10, decimal_places=2)
+    referrals = ReferralSerializer(many=True)
 
 class WithdrawalRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = WithdrawalRequest
-        fields = '__all__'
-        read_only_fields = ('user', 'status', 'amount')
+        fields = [
+            'amount', 'account_number', 'ifsc_code', 
+            'account_holder_name', 'pan_number'
+        ]
 
-class ReferralDataSerializer(serializers.Serializer):
-    referral_code = serializers.CharField()
-    balance = serializers.DecimalField(max_digits=10, decimal_places=2)
-    pending_balance = serializers.DecimalField(max_digits=10, decimal_places=2)
-    min_withdrawal = serializers.DecimalField(max_digits=10, decimal_places=2)
-    referral_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+class OTPVerificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OTPVerification
+        fields = ['phone', 'otp']

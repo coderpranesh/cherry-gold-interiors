@@ -135,7 +135,7 @@ const HeroSection = () => {
             {/* CTA Button */}
             <div className="flex justify-center lg:justify-start mt-6">
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => window.location.href = '/services'}
                 className="bg-red-600 hover:bg-red-700 text-white px-5 sm:px-6 py-3 rounded-xl text-base sm:text-lg font-semibold shadow-lg transition-transform hover:scale-105"
               >
                 Book a Free Consultation

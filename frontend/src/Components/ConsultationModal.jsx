@@ -185,6 +185,7 @@ const ConsultationModal = ({
             {/* Submit */}
             <button
               type="submit"
+              onClick={() => window.location.href = '/services'}
               className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-3 rounded-lg font-semibold text-lg hover:from-red-700 hover:to-red-800 transition-transform hover:scale-105"
             >
               Book a Free Consultation

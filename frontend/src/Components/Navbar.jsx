@@ -9,7 +9,7 @@ const Navbar = () => {
   const location = useLocation();
 
   const navItems = [
-    // { path: '/', label: 'Home' },
+    { path: '/', label: 'Home' },
     {path: '/about', label: 'About' },
     
 
@@ -23,6 +23,7 @@ const Navbar = () => {
       ) 
     },
     { path: '/services', label: 'Services' },
+    { path: '/offers', label: 'Offers' },
     // { path: '/catalogue', label: 'Catalogue' },
     { path: '/refer-earn', label: 'Refer&Earn' },
     { path: '/track-project', label: 'ProjectTracking' },
@@ -102,6 +103,7 @@ const Navbar = () => {
           {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
+
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
