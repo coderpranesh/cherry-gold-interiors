@@ -17,8 +17,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 1. CORE CONFIGURATION
 # ========================
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-fallback-key')
-DEBUG = 'False'
-ALLOWED_HOSTS = os.getenv('cherrygoldinteriors.com', 'localhost,127.0.0.1').split(',')
+DEBUG = False
+ALLOWED_HOSTS = ['cherrygoldinteriors.com', 'www.cherrygoldinteriors.com', '127.0.0.1', 'localhost']
 ROOT_URLCONF = 'core.urls'
 WSGI_APPLICATION = 'core.wsgi.application'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -233,6 +233,8 @@ FRONTEND_URL = 'http://localhost:5173'  # Update with your frontend URL
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:8000",
+    "https://cherrygoldinteriors.com",
+    "https://www.cherrygoldinteriors.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
