@@ -1,25 +1,23 @@
-/*frontend/src/Components/Chatbot.jsx */
-import { useState, useRef, useEffect } from "react";
-import { 
-  MessageCircle, 
-  X, 
-  Send, 
-  Bot, 
-  User, 
+import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  MessageCircle,
+  X,
+  Send,
+  Bot,
+  User,
   Calculator,
-  MapPin,
   Calendar,
   Phone,
-  Mail,
-  Home,
-  IndianRupee,
-  Clock,
-  Shield,
-  CheckCircle,
-  ExternalLink,
   Search,
   AlertCircle,
-  Info
+  Info,
+  Mic,
+  MicOff,
+  FileText,
+  Zap,
+  Sparkles,
+  CheckCircle,
+  Clock
 } from "lucide-react";
 
 const ChatBot = () => {
@@ -27,6 +25,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [leadData, setLeadData] = useState({
     name: "", phone: "", email: "", city: "", roomType: "", budget: ""
   });
@@ -36,7 +35,14 @@ const ChatBot = () => {
   const [projectCode, setProjectCode] = useState("");
   const [projectData, setProjectData] = useState(null);
   const [currentFlow, setCurrentFlow] = useState('main');
+  const [userPreferences, setUserPreferences] = useState({
+    name: localStorage.getItem('chatbot_user_name') || '',
+    preferredContact: localStorage.getItem('chatbot_preferred_contact') || 'phone'
+  });
+  const [chatHistory, setChatHistory] = useState([]);
+  const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   const packages = {
     basic: { rate: 1200, name: "Basic Package" },
@@ -55,17 +61,55 @@ const ChatBot = () => {
     howwework: "Our process: 1) Free Consultation 2) Site Survey 3) 2D/3D Design 4) Material Selection 5) Execution 6) Quality Check 7) Handover"
   };
 
+  // Initialize speech recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInputValue(transcript);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      addBotMessage("Hello! 👋 Welcome to Cherry Gold Interiors! I'm your AI assistant here to help you with:\n\n🏠 Interior design guidance\n📞 Booking consultations\n💰 Budget estimation\n📋 Project tracking\n❓ Answering your questions\n\nHow can I assist you today?", [
-        { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-        { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "Browse Services", action: () => handleOptionClick("Browse Services") },
-        { text: "How We Work", action: () => handleOptionClick("How We Work") },
-        { text: "FAQ & Help", action: () => handleOptionClick("FAQ") }
+      const greeting = userPreferences.name
+        ? `Welcome back, ${userPreferences.name}! ✨ Great to see you again at Cherry Gold Interiors!`
+        : "Hello! 👋 Welcome to Cherry Gold Interiors! I'm your AI assistant here to help you with:";
+
+      const welcomeMessage = userPreferences.name
+        ? `${greeting}\n\n🎯 **Quick Access to All Features:**`
+        : `${greeting}\n\n🏠 Interior design guidance\n📞 Booking consultations\n💰 Budget estimation\n🍳 3D Kitchen Designer\n📊 Cost Estimator\n📋 Project tracking\n🎁 Current offers & deals\n📸 Portfolio gallery\n💎 Refer & earn rewards\n❓ Complete FAQ support\n\n🎯 **Choose what interests you most:**`;
+
+      addBotMessage(welcomeMessage, [
+        { text: "💰 Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+        { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
+        { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+        { text: "📊 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
+        { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
+        { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
+        { text: "🛍️ Browse Services", action: () => handleOptionClick("Browse Services") },
+        { text: "💎 Refer & Earn", action: () => handleOptionClick("Refer & Earn") },
+        { text: "📋 Track Project", action: () => handleOptionClick("Track My Project") },
+        { text: "❓ FAQ & Help", action: () => handleOptionClick("FAQ") }
       ]);
     }
-  }, [isOpen]);
+  }, [isOpen, userPreferences.name]);
 
   useEffect(() => {
     scrollToBottom();
@@ -75,7 +119,7 @@ const ChatBot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const addMessage = (content, type, options, showBudgetCalculator, showLeadForm, showProjectTracker) => {
+  const addMessage = useCallback((content, type, options, showBudgetCalculator, showLeadForm, showProjectTracker) => {
     const newMessage = {
       id: Date.now().toString(),
       type,
@@ -84,22 +128,45 @@ const ChatBot = () => {
       options,
       showBudgetCalculator,
       showLeadForm,
-      showProjectTracker
+      showProjectTracker,
+      isNew: true
     };
     setMessages(prev => [...prev, newMessage]);
-  };
 
-  const addBotMessage = (content, options, showBudgetCalculator = false, showLeadForm = false, showProjectTracker = false) => {
+    // Save to chat history
+    if (type === 'user' || type === 'bot') {
+      setChatHistory(prev => [...prev.slice(-20), newMessage]); // Keep last 20 messages
+    }
+  }, []);
+
+  const addBotMessage = useCallback((content, options, showBudgetCalculator = false, showLeadForm = false, showProjectTracker = false) => {
     setIsTyping(true);
+    const typingDelay = Math.min(content.length * 20, 2000); // Dynamic typing delay based on content length
     setTimeout(() => {
       setIsTyping(false);
       addMessage(content, 'bot', options, showBudgetCalculator, showLeadForm, showProjectTracker);
-    }, 1000);
+    }, typingDelay);
+  }, [addMessage]);
+
+  // Voice input functionality
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      alert('Voice recognition is not supported in your browser.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
   };
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
-    
+
     addMessage(inputValue, 'user');
     processUserMessage(inputValue);
     setInputValue("");
@@ -107,7 +174,7 @@ const ChatBot = () => {
 
   const processUserMessage = (message) => {
     const lowerMessage = message.toLowerCase();
-    
+
     switch (currentFlow) {
       case 'leadCollection':
         handleLeadCollection(lowerMessage);
@@ -124,84 +191,176 @@ const ChatBot = () => {
   };
 
   const handleGeneralInput = (message) => {
-    if (message.includes('service') || message.includes('what do you offer')) {
-      addBotMessage(faqData.services, [
-        { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-        { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "View Portfolio", action: () => addBotMessage("Visit /portfolio to see our completed projects.") }
-      ]);
-    } else if (message.includes('location') || message.includes('where') || message.includes('city')) {
-      addBotMessage(faqData.locations, [
-        { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") }
-      ]);
-    } else if (message.includes('cost') || message.includes('price') || message.includes('budget')) {
-      addBotMessage(faqData.costs + "\n\nWould you like me to calculate an estimate for your space?", [
-        { text: "Calculate Budget", action: () => handleOptionClick("Get Budget Estimate") },
-        { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") }
-      ]);
-    } else if (message.includes('time') || message.includes('duration') || message.includes('how long')) {
-      addBotMessage(faqData.timeline, [
-        { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "How We Work", action: () => handleOptionClick("How We Work") }
-      ]);
-    } else if (message.includes('warranty') || message.includes('guarantee')) {
-      addBotMessage(faqData.warranty, [
-        { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "Terms & Conditions", action: () => addBotMessage("Contact us at +91 9876543210 for detailed terms.") }
-      ]);
-    } else if (message.includes('payment') || message.includes('emi')) {
-      addBotMessage(faqData.payment + "\n\nWe also offer flexible EMI options through our financial partners.", [
-        { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-        { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") }
-      ]);
-    } else if (message.includes('book') || message.includes('appointment') || message.includes('consultation')) {
-      handleOptionClick("Book Consultation");
-    } else if (message.includes('track') || message.includes('status') || message.includes('project')) {
-      handleOptionClick("Track My Project");
-    } else if (message.includes('faq') || message.includes('help')) {
-      handleOptionClick("FAQ");
-    } else {
-      addBotMessage("I understand you're looking for information. Here are some things I can help you with:", [
-        { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-        { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "Track My Project", action: () => handleOptionClick("Track My Project") },
-        { text: "Browse Services", action: () => handleOptionClick("Browse Services") },
-        { text: "How We Work", action: () => handleOptionClick("How We Work") },
-        { text: "FAQ & Help", action: () => handleOptionClick("FAQ") }
-      ]);
+    // Enhanced AI-like responses with more natural language processing
+    const responses = {
+      greetings: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'],
+      services: ['service', 'what do you offer', 'what can you do', 'offerings', 'specialties'],
+      location: ['location', 'where', 'city', 'area', 'serve', 'available'],
+      cost: ['cost', 'price', 'budget', 'expensive', 'cheap', 'affordable', 'rate'],
+      time: ['time', 'duration', 'how long', 'timeline', 'when', 'schedule'],
+      warranty: ['warranty', 'guarantee', 'protection', 'coverage'],
+      payment: ['payment', 'emi', 'installment', 'pay', 'finance'],
+      booking: ['book', 'appointment', 'consultation', 'schedule', 'meet'],
+      tracking: ['track', 'status', 'project', 'progress', 'update'],
+      help: ['faq', 'help', 'support', 'question', 'doubt'],
+      thanks: ['thank', 'thanks', 'appreciate', 'grateful'],
+      goodbye: ['bye', 'goodbye', 'see you', 'later', 'exit']
+    };
+
+    const getResponseType = (msg) => {
+      for (const [type, keywords] of Object.entries(responses)) {
+        if (keywords.some(keyword => msg.includes(keyword))) {
+          return type;
+        }
+      }
+      return 'general';
+    };
+
+    const responseType = getResponseType(message);
+
+    switch (responseType) {
+      case 'greetings':
+        const greetingResponses = [
+          "Hello there! 😊 Welcome to Cherry Gold Interiors!",
+          "Hi! Great to have you here! ✨",
+          "Hey! Ready to transform your space? 🏠"
+        ];
+        const randomGreeting = greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
+        addBotMessage(randomGreeting + " How can I help you today?", [
+          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "Browse Services", action: () => handleOptionClick("Browse Services") }
+        ]);
+        break;
+
+      case 'services':
+        addBotMessage("🌟 " + faqData.services + "\n\nWhich service interests you the most?", [
+          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "View Portfolio", action: () => addBotMessage("Visit our portfolio section to see our amazing completed projects! 🎨") }
+        ]);
+        break;
+
+      case 'location':
+        addBotMessage("📍 " + faqData.locations + "\n\nWould you like to schedule a free site visit?", [
+          { text: "Book Site Visit", action: () => handleOptionClick("Book Consultation") },
+          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") }
+        ]);
+        break;
+
+      case 'cost':
+        addBotMessage("💰 " + faqData.costs + "\n\n✨ Would you like me to calculate a personalized estimate for your space?", [
+          { text: "Calculate My Budget", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "Book Free Consultation", action: () => handleOptionClick("Book Consultation") }
+        ]);
+        break;
+
+      case 'time':
+        addBotMessage("⏰ " + faqData.timeline + "\n\nWant to get started with your project timeline?", [
+          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "How We Work", action: () => handleOptionClick("How We Work") }
+        ]);
+        break;
+
+      case 'warranty':
+        addBotMessage("🛡️ " + faqData.warranty + "\n\nOur warranty ensures your peace of mind!", [
+          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "Terms & Conditions", action: () => addBotMessage("For detailed terms and conditions, please contact us at +91 9876543210 📞") }
+        ]);
+        break;
+
+      case 'payment':
+        addBotMessage("💳 " + faqData.payment + "\n\n🏦 We also offer flexible EMI options through our financial partners to make your dream home affordable!", [
+          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") }
+        ]);
+        break;
+
+      case 'booking':
+        handleOptionClick("Book Consultation");
+        break;
+
+      case 'tracking':
+        handleOptionClick("Track My Project");
+        break;
+
+      case 'help':
+        handleOptionClick("FAQ");
+        break;
+
+      case 'thanks':
+        const thankResponses = [
+          "You're very welcome! 😊 Happy to help!",
+          "My pleasure! 🌟 Anything else I can assist with?",
+          "Glad I could help! ✨ What else would you like to know?"
+        ];
+        const randomThank = thankResponses[Math.floor(Math.random() * thankResponses.length)];
+        addBotMessage(randomThank, [
+          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "Browse Services", action: () => handleOptionClick("Browse Services") }
+        ]);
+        break;
+
+      case 'goodbye':
+        addBotMessage("Thank you for visiting Cherry Gold Interiors! 👋 Feel free to come back anytime. Have a wonderful day! ✨", [
+          { text: "Quick Question", action: () => showMainMenu() },
+          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") }
+        ]);
+        break;
+
+      default:
+        const smartResponses = [
+          "I understand you're looking for information about interior design! 🏠",
+          "That's a great question! Let me help you with that. ✨",
+          "I'm here to assist you with all your interior design needs! 🎨"
+        ];
+        const randomSmart = smartResponses[Math.floor(Math.random() * smartResponses.length)];
+        addBotMessage(randomSmart + " Here are all the ways I can help:", [
+          { text: "💰 Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "📋 Track My Project", action: () => handleOptionClick("Track My Project") },
+          { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+          { text: "📊 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
+          { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
+          { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
+          { text: "💎 Refer & Earn", action: () => handleOptionClick("Refer & Earn") },
+          { text: "🛍️ Browse Services", action: () => handleOptionClick("Browse Services") },
+          { text: "❓ FAQ & Help", action: () => handleOptionClick("FAQ") }
+        ]);
     }
   };
 
   const handleOptionClick = (option) => {
     addMessage(option, 'user');
-    
+
     switch (option) {
       case "Get Budget Estimate":
         setCurrentFlow('budgetEstimation');
         addBotMessage("Great! I'll help you calculate a budget estimate for your interior project. What's the length of your room in feet?", [], true);
         break;
-      
+
       case "Book Consultation":
         setCurrentFlow('leadCollection');
         addBotMessage("Excellent! I'll help you book a free consultation with our design experts. What's your full name?", [], false, true);
         break;
-      
+
       case "Track My Project":
         setCurrentFlow('projectTracking');
         addBotMessage("Please enter your project name or Unique Work Code (UWC) to track your project status:", [], false, false, true);
         break;
-      
+
       case "Browse Services":
-        addBotMessage("We offer comprehensive interior design services:\n\n🍳 Modular Kitchen - Starting ₹1,50,000\n🛏️ Bedroom Interior - Starting ₹80,000\n🛋️ Living Room - Starting ₹1,00,000\n🛁 Bathroom Interior - Starting ₹60,000\n🏠 Complete Home - Starting ₹5,00,000\n🏢 Office Interior - Starting ₹2,00,000\n\nWhich service interests you?", [
-          { text: "Modular Kitchen", action: () => handleServiceOption("Modular Kitchen") },
-          { text: "Bedroom Interior", action: () => handleServiceOption("Bedroom Interior") },
-          { text: "Living Room", action: () => handleServiceOption("Living Room") },
-          { text: "Complete Home", action: () => handleServiceOption("Complete Home") },
+        addBotMessage("🌟 **Our Complete Interior Design Services:**\n\n🍳 **Modular Kitchen** - Starting ₹1,50,000\n• L-shaped, U-shaped, Island designs\n• Premium finishes & smart storage\n• 3D Kitchen Designer available\n\n🛏️ **Bedroom Interior** - Starting ₹80,000\n• Wardrobes, bed designs, lighting\n• Space optimization solutions\n\n🛋️ **Living Room** - Starting ₹1,00,000\n• TV units, false ceiling, furniture\n• Modern & traditional designs\n\n🛁 **Bathroom Interior** - Starting ₹60,000\n• Complete renovation solutions\n• Premium fixtures & fittings\n\n🏠 **Complete Home** - Starting ₹5,00,000\n• End-to-end interior solutions\n• Project management included\n\n🏢 **Office Interior** - Starting ₹2,00,000\n• Corporate & co-working spaces\n• Ergonomic designs\n\nWhich service interests you?", [
+          { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+          { text: "📋 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
+          { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
+          { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
+          { text: "📖 Service Catalogue", action: () => handleOptionClick("Service Catalogue") },
           { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") }
         ]);
         break;
-      
+
       case "How We Work":
         addBotMessage(faqData.howwework, [
           { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
@@ -209,39 +368,88 @@ const ChatBot = () => {
           { text: "View Portfolio", action: () => addBotMessage("Visit /portfolio to see our completed projects.") }
         ]);
         break;
-      
-      case "FAQ":
-        addBotMessage("Here are some frequently asked questions:", [
-          { text: "What services do you offer?", action: () => addBotMessage(faqData.services, [], false, false, false, <Info className="w-4 h-4 text-blue-600 inline ml-1" />) },
-          { text: "Which locations do you serve?", action: () => addBotMessage(faqData.locations, [], false, false, false, <Info className="w-4 h-4 text-blue-600 inline ml-1" />) },
-          { text: "What are your package costs?", action: () => addBotMessage(faqData.costs, [], false, false, false, <Info className="w-4 h-4 text-blue-600 inline ml-1" />) },
-          { text: "How long does a project take?", action: () => addBotMessage(faqData.timeline, [], false, false, false, <Info className="w-4 h-4 text-blue-600 inline ml-1" />) },
-          { text: "What warranty do you provide?", action: () => addBotMessage(faqData.warranty, [], false, false, false, <Info className="w-4 h-4 text-blue-600 inline ml-1" />) },
-          { text: "What's the payment schedule?", action: () => addBotMessage(faqData.payment, [], false, false, false, <Info className="w-4 h-4 text-blue-600 inline ml-1" />) },
-          { text: "How to book/reschedule?", action: () => addBotMessage(faqData.booking, [], false, false, false, <Info className="w-4 h-4 text-blue-600 inline ml-1" />) },
-          { text: "Back to Main Menu", action: () => showMainMenu() }
+
+      case "Kitchen Designer":
+        addBotMessage("🍳 **3D Kitchen Designer** - Design your dream kitchen!\n\n✨ **Features:**\n• Real-time 3D visualization\n• 50+ premium finishes & colors\n• L-shaped, U-shaped, Island layouts\n• Lacquered glass, acrylics, veneers\n• Instant cost estimation\n• Save & share designs\n\n🎨 **Available Finishes:**\n• Lacquered Glass (High-gloss)\n• Acrylics (Smooth & vibrant)\n• Veneers (Natural wood grain)\n• Standard & Premium Laminates\n\nReady to design your kitchen?", [
+          { text: "🚀 Open Kitchen Designer", action: () => addBotMessage("Visit /kitchen-designer to start designing your dream kitchen! 🍳✨") },
+          { text: "📞 Book Kitchen Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "💰 Get Kitchen Quote", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "📸 Kitchen Portfolio", action: () => addBotMessage("Check our stunning kitchen designs at /portfolio! 🎨") }
         ]);
         break;
-      
-      case "Calculate Budget":
-        addBotMessage("Let me help you calculate the budget for your space:", [], true);
+
+      case "Cost Estimator":
+        addBotMessage("📊 **Advanced Cost Estimator** - Get detailed project estimates!\n\n🔧 **Features:**\n• Room-wise cost breakdown\n• Material & labor estimates\n• Multiple package options\n• Instant calculations\n• PDF report generation\n• Comparison tools\n\n💡 **Estimate Types:**\n• Basic Package: ₹1,200/sqft\n• Premium Package: ₹1,800/sqft\n• Luxury Package: ₹2,500/sqft\n\nGet your detailed estimate now!", [
+          { text: "🧮 Open Cost Estimator", action: () => addBotMessage("Visit /cost-estimator for detailed project estimates! 📊💰") },
+          { text: "📞 Book Free Site Visit", action: () => handleOptionClick("Book Consultation") },
+          { text: "🍳 Kitchen Cost Calculator", action: () => handleOptionClick("Get Budget Estimate") }
+        ]);
         break;
-      
+
+      case "View Portfolio":
+        addBotMessage("📸 **Our Stunning Portfolio** - See our completed projects!\n\n🏆 **Featured Projects:**\n• 500+ completed projects\n• Modern & traditional designs\n• Before & after galleries\n• Customer testimonials\n• Award-winning designs\n\n🎨 **Categories:**\n• Modular Kitchens\n• Bedroom Interiors\n• Living Rooms\n• Complete Homes\n• Office Spaces\n• Luxury Apartments\n\nExplore our work!", [
+          { text: "🖼️ View Full Portfolio", action: () => addBotMessage("Explore our amazing work at /portfolio! 📸✨") },
+          { text: "🍳 Kitchen Gallery", action: () => addBotMessage("See our kitchen designs at /portfolio#kitchens! 🍳") },
+          { text: "🛏️ Bedroom Gallery", action: () => addBotMessage("Check bedroom designs at /portfolio#bedrooms! 🛏️") },
+          { text: "📞 Discuss Your Project", action: () => handleOptionClick("Book Consultation") }
+        ]);
+        break;
+
+      case "Current Offers":
+        addBotMessage("🎁 **Exclusive Offers & Deals** - Save big on your dream home!\n\n🔥 **Current Promotions:**\n• 20% OFF on complete home interiors\n• Free 3D design consultation\n• Zero-cost EMI options\n• Monsoon special discounts\n• Festive season bonuses\n\n💎 **Premium Benefits:**\n• Extended warranty\n• Priority scheduling\n• Premium material upgrades\n• Dedicated project manager\n\nDon't miss these amazing deals!", [
+          { text: "🎯 View All Offers", action: () => addBotMessage("Check all current offers at /offers! 🎁💰") },
+          { text: "📞 Book to Claim Offer", action: () => handleOptionClick("Book Consultation") },
+          { text: "💰 Calculate Savings", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "⏰ Offer Validity", action: () => addBotMessage("Most offers valid till month-end. Book now to secure your discount! ⏰") }
+        ]);
+        break;
+
+      case "Service Catalogue":
+        addBotMessage("📖 **Complete Service Catalogue** - Everything we offer!\n\n📋 **Detailed Services:**\n• Service descriptions\n• Material specifications\n• Design options\n• Price ranges\n• Timeline estimates\n• Warranty details\n\n🎨 **Categories:**\n• Modular Kitchens\n• Wardrobes & Storage\n• Living Room Solutions\n• Bedroom Interiors\n• Bathroom Renovations\n• Office Interiors\n• False Ceilings\n• Flooring & Wall Panels\n\nExplore our complete range!", [
+          { text: "📚 Browse Catalogue", action: () => addBotMessage("View our complete catalogue at /catalogue! 📖✨") },
+          { text: "🍳 Kitchen Catalogue", action: () => addBotMessage("Kitchen designs at /catalogue#kitchens! 🍳") },
+          { text: "📞 Discuss Requirements", action: () => handleOptionClick("Book Consultation") },
+          { text: "💰 Get Service Quote", action: () => handleOptionClick("Get Budget Estimate") }
+        ]);
+        break;
+
+      case "Refer & Earn":
+        addBotMessage("💎 **Refer & Earn Program** - Earn rewards for referrals!\n\n🎯 **How It Works:**\n1. Refer friends & family\n2. They book our services\n3. You earn cash rewards\n4. No limit on referrals!\n\n💰 **Reward Structure:**\n• Kitchen projects: ₹5,000\n• Bedroom interiors: ₹3,000\n• Complete homes: ₹15,000\n• Office projects: ₹8,000\n\n🏆 **Benefits:**\n• Instant reward credits\n• Multiple referral bonuses\n• Special recognition\n• Exclusive member perks\n\nStart earning today!", [
+          { text: "🚀 Join Refer & Earn", action: () => addBotMessage("Join our referral program at /refer-earn! 💎💰") },
+          { text: "📞 Refer Someone Now", action: () => handleOptionClick("Book Consultation") },
+          { text: "💰 Check Reward Rates", action: () => addBotMessage("Rewards: Kitchen ₹5K, Bedroom ₹3K, Complete Home ₹15K! 💰") },
+          { text: "📋 Terms & Conditions", action: () => addBotMessage("Visit /refer-earn for complete T&C! 📋") }
+        ]);
+        break;
+
+      case "About Us":
+        addBotMessage("🏢 **About Cherry Gold Interiors** - Your trusted design partner!\n\n🌟 **Our Story:**\n• 10+ years of excellence\n• 500+ happy customers\n• Award-winning designs\n• Expert team of designers\n• Quality craftsmanship\n\n🎯 **Our Mission:**\nTo transform spaces into beautiful, functional homes that reflect your personality and lifestyle.\n\n🏆 **Why Choose Us:**\n• Free 3D design consultation\n• Premium quality materials\n• Timely project delivery\n• Comprehensive warranty\n• Post-installation support\n\nLet's create your dream space!", [
+          { text: "📖 Read Full Story", action: () => addBotMessage("Learn more about us at /about! 🏢✨") },
+          { text: "👥 Meet Our Team", action: () => addBotMessage("Meet our expert designers at /about#team! 👥") },
+          { text: "🏆 Our Achievements", action: () => addBotMessage("See our awards at /about#achievements! 🏆") },
+          { text: "📞 Start Your Project", action: () => handleOptionClick("Book Consultation") }
+        ]);
+        break;
+
+      case "FAQ":
+        addBotMessage("❓ **Frequently Asked Questions** - Get instant answers!\n\n📋 **Popular Questions:**", [
+          { text: "What services do you offer?", action: () => addBotMessage("🌟 " + faqData.services) },
+          { text: "Which locations do you serve?", action: () => addBotMessage("📍 " + faqData.locations) },
+          { text: "What are your package costs?", action: () => addBotMessage("💰 " + faqData.costs) },
+          { text: "How long does a project take?", action: () => addBotMessage("⏰ " + faqData.timeline) },
+          { text: "What warranty do you provide?", action: () => addBotMessage("🛡️ " + faqData.warranty) },
+          { text: "What's the payment schedule?", action: () => addBotMessage("💳 " + faqData.payment) },
+          { text: "📚 View All FAQs", action: () => addBotMessage("Visit /faq for comprehensive answers! ❓📚") },
+          { text: "🔙 Back to Main Menu", action: () => showMainMenu() }
+        ]);
+        break;
+
       default:
-        if (option.includes("sqft")) {
-          const service = option.split(" - ")[0];
-          addBotMessage(`Great choice! ${service} is one of our most popular services. Would you like to:\n\n📏 Get a budget estimate\n📞 Book a consultation\n🎨 See design ideas`, [
-            { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-            { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-            { text: "Design Ideas", action: () => addBotMessage(`For ${service}, we recommend modern designs with premium materials. Visit /portfolio for inspiration!`) }
-          ]);
-        } else {
-          addBotMessage("Thank you for your interest! How else can I assist you?", [
-            { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-            { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-            { text: "Browse Services", action: () => handleOptionClick("Browse Services") }
-          ]);
-        }
+        addBotMessage("Thank you for your interest! How else can I assist you?", [
+          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "Browse Services", action: () => handleOptionClick("Browse Services") }
+        ]);
     }
   };
 
@@ -255,20 +463,54 @@ const ChatBot = () => {
 
   const showMainMenu = () => {
     setCurrentFlow('main');
-    addBotMessage("How else can I help you today?", [
-      { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-      { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-      { text: "Track My Project", action: () => handleOptionClick("Track My Project") },
-      { text: "Browse Services", action: () => handleOptionClick("Browse Services") },
-      { text: "How We Work", action: () => handleOptionClick("How We Work") },
-      { text: "FAQ & Help", action: () => handleOptionClick("FAQ") }
+    const menuMessage = userPreferences.name
+      ? `What else can I help you with today, ${userPreferences.name}? ✨\n\n🎯 **All Available Features:**`
+      : "How else can I help you today? 😊\n\n🎯 **Complete Feature Menu:**";
+
+    addBotMessage(menuMessage, [
+      { text: "💰 Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+      { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
+      { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+      { text: "📊 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
+      { text: "📋 Track My Project", action: () => handleOptionClick("Track My Project") },
+      { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
+      { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
+      { text: "💎 Refer & Earn", action: () => handleOptionClick("Refer & Earn") },
+      { text: "🛍️ Browse Services", action: () => handleOptionClick("Browse Services") },
+      { text: "📖 Service Catalogue", action: () => handleOptionClick("Service Catalogue") },
+      { text: "🏢 About Us", action: () => handleOptionClick("About Us") },
+      { text: "❓ FAQ & Help", action: () => handleOptionClick("FAQ") }
     ]);
+  };
+
+  const clearChat = () => {
+    setMessages([]);
+    setChatHistory([]);
+    setCurrentFlow('main');
+    setTimeout(() => {
+      const greeting = userPreferences.name
+        ? `Welcome back, ${userPreferences.name}! ✨ Ready for a fresh start?`
+        : "Hello! 👋 Welcome to Cherry Gold Interiors!";
+
+      addBotMessage(greeting + " How can I assist you today?\n\n🎯 **All Features Available:**", [
+        { text: "💰 Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+        { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
+        { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+        { text: "📊 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
+        { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
+        { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
+        { text: "💎 Refer & Earn", action: () => handleOptionClick("Refer & Earn") },
+        { text: "🛍️ Browse Services", action: () => handleOptionClick("Browse Services") },
+        { text: "📋 Track Project", action: () => handleOptionClick("Track My Project") },
+        { text: "❓ FAQ & Help", action: () => handleOptionClick("FAQ") }
+      ]);
+    }, 500);
   };
 
   const calculateBudget = () => {
     const { height, width, package: pkg } = budgetCalc;
     if (!height || !width || !pkg) {
-      alert("Please fill all required fields for budget calculation.");
+      addBotMessage("Please fill in all the required fields for an accurate budget calculation! 📊", [], true);
       return;
     }
 
@@ -276,10 +518,16 @@ const ChatBot = () => {
     const rate = packages[pkg].rate;
     const totalCost = area * rate;
 
-    addBotMessage(`Based on your requirements:\n\n📐 Area: ${area} sq ft\n📦 Package: ${packages[pkg].name}\n💰 Rate: ₹${rate}/sq ft\n\n Estimated Cost: ₹${totalCost.toLocaleString()}**\n\n*This is a rough estimate. Final cost may vary based on materials, finishes, and specific requirements.\n\nWould you like to proceed with a free consultation?`, [
-      { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-      { text: "Modify Calculation", action: () => setBudgetCalc({ height: "", width: "", package: 'basic', roomType: "" }) },
-      { text: "View Services", action: () => handleOptionClick("Browse Services") }
+    // Add some additional cost breakdowns
+    const designCost = Math.round(totalCost * 0.15);
+    const materialCost = Math.round(totalCost * 0.60);
+    const laborCost = Math.round(totalCost * 0.25);
+
+    addBotMessage(`🎉 **Your Personalized Budget Estimate**\n\n📐 **Room Dimensions:** ${height}' × ${width}' (${area} sq ft)\n📦 **Selected Package:** ${packages[pkg].name}\n💰 **Rate:** ₹${rate.toLocaleString()}/sq ft\n\n💎 **Cost Breakdown:**\n🎨 Design & Planning: ₹${designCost.toLocaleString()}\n🏗️ Materials: ₹${materialCost.toLocaleString()}\n👷 Labor & Installation: ₹${laborCost.toLocaleString()}\n\n✨ **Total Estimated Cost: ₹${totalCost.toLocaleString()}**\n\n*This is a preliminary estimate. Final cost may vary based on specific materials, finishes, and design complexity.*\n\n🎯 Ready to bring your vision to life?`, [
+      { text: "Book Free Consultation", action: () => handleOptionClick("Book Consultation") },
+      { text: "Recalculate", action: () => setBudgetCalc({ height: "", width: "", package: 'basic', roomType: "" }) },
+      { text: "View Our Services", action: () => handleOptionClick("Browse Services") },
+      { text: "How We Work", action: () => handleOptionClick("How We Work") }
     ]);
 
     setCurrentFlow('main');
@@ -306,36 +554,44 @@ const ChatBot = () => {
         { text: "Premium (₹1,800/sqft)", action: () => setBudgetCalc(prev => ({ ...prev, package: 'premium' })) },
         { text: "Luxury (₹2,500/sqft)", action: () => setBudgetCalc(prev => ({ ...prev, package: 'luxury' })) }
       ], true);
-    } else if (!budgetCalc.package) {
-      const pkg = input.toLowerCase();
-      if (pkg === 'basic' || pkg === 'premium' || pkg === 'luxury') {
-        setBudgetCalc(prev => ({ ...prev, package: pkg }));
-        calculateBudget();
-      } else {
-        addBotMessage("Please select a valid package (Basic, Premium, or Luxury)", [], true);
-      }
     }
   };
 
   const submitLeadForm = () => {
     const { name, phone, email } = leadData;
-    if (!name || !phone || !email) {
-      alert("Please fill in Name, Phone, and Email to proceed.");
+
+    // Enhanced validation
+    if (!name.trim()) {
+      addBotMessage("Please enter your full name to proceed. 😊", [], false, true);
       return;
     }
 
+    if (!phone.trim() || !/^\d{10}$/.test(phone.replace(/\D/g, ''))) {
+      addBotMessage("Please enter a valid 10-digit phone number. 📱", [], false, true);
+      return;
+    }
+
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      addBotMessage("Please enter a valid email address. 📧", [], false, true);
+      return;
+    }
+
+    // Save user preferences
+    localStorage.setItem('chatbot_user_name', name);
     localStorage.setItem('chatbot_lead', JSON.stringify(leadData));
-    
-    addBotMessage(`Thank you ${name}! 🎉\n\nYour consultation request has been submitted successfully. Here's what happens next:\n\n📞 Our team will call you within 2 hours\n📧 You'll receive a confirmation email\n📅 We'll schedule a convenient time for site visit\n🎨 Free 3D design consultation included\n\n**Your Reference ID**: CG${Date.now().toString().slice(-6)}\n\nIs there anything else I can help you with?`, [
+    setUserPreferences(prev => ({ ...prev, name }));
+
+    const referenceId = `CG${Date.now().toString().slice(-6)}`;
+
+    addBotMessage(`🎉 Fantastic, ${name}! Your consultation is booked!\n\n✨ **Confirmation Details:**\n📋 Reference ID: ${referenceId}\n📞 We'll call you within 2 hours\n📧 Confirmation email sent\n📅 Free site visit scheduled\n🎨 3D design consultation included\n💎 Premium service guaranteed\n\n🌟 **What's Next?**\nOur design expert will contact you to discuss your vision and schedule the perfect time for your consultation!\n\nAnything else I can help you with today?`, [
       { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
       { text: "How We Work", action: () => handleOptionClick("How We Work") },
-      { text: "Track My Project", action: () => handleOptionClick("Track My Project") }
+      { text: "Track My Project", action: () => handleOptionClick("Track My Project") },
+      { text: "Browse Portfolio", action: () => addBotMessage("Check out our stunning portfolio at /portfolio! 🎨✨") }
     ]);
 
     setLeadData({ name: "", phone: "", email: "", city: "", roomType: "", budget: "" });
     setCurrentFlow('main');
-    
-    alert("Consultation Booked! Our team will contact you within 2 hours.");
   };
 
   const handleLeadCollection = (input) => {
@@ -371,35 +627,13 @@ const ChatBot = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'current':
-        return <Clock className="w-5 h-5 text-yellow-600" />;
-      default:
-        return <AlertCircle className="w-5 h-5 text-gray-400" />;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'current':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-200 text-gray-600';
-    }
-  };
-
   const trackProject = () => {
     if (!projectCode.trim()) {
-      alert("Please enter your project name or Unique Work Code (UWC).");
+      addBotMessage("Please enter your project name or Unique Work Code (UWC). 😊", [], false, false, true);
       return;
     }
 
-    let project = null;
+    // Mock project data for demo
     const mockProjects = {
       "CG2024001": {
         serviceNumber: "CG2024001",
@@ -409,77 +643,9 @@ const ChatBot = () => {
         expectedCompletion: "2024-02-15",
         status: "In Progress",
         currentStage: "Manufacturing",
-        progress: 60,
-        stages: [
-          { id: 1, name: "Consultation", status: "completed", date: "2024-01-15" },
-          { id: 2, name: "Design Approval", status: "completed", date: "2024-01-20" },
-          { id: 3, name: "Manufacturing", status: "current", date: "2024-01-25" },
-          { id: 4, name: "Installation", status: "upcoming", date: "2024-02-10" },
-          { id: 5, name: "Final Delivery", status: "upcoming", date: "2024-02-15" }
-        ],
-        updates: [
-          {
-            id: 1,
-            date: "2024-01-25",
-            title: "Manufacturing Started",
-            description: "Kitchen modules manufacturing has begun at our facility.",
-            images: ["https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=300"]
-          },
-          {
-            id: 2,
-            date: "2024-01-20",
-            title: "Design Approved",
-            description: "Final design approved by customer. Manufacturing will begin soon.",
-            images: []
-          },
-          {
-            id: 3,
-            date: "2024-01-15",
-            title: "Project Initiated",
-            description: "Initial consultation completed and project officially started.",
-            images: []
-          }
-        ]
+        progress: 60
       },
-      "CG2024002": {
-        serviceNumber: "CG2024002",
-        customerName: "Priya Patel",
-        projectType: "Bedroom Interior",
-        startDate: "2024-02-01",
-        expectedCompletion: "2024-03-01",
-        status: "In Progress",
-        currentStage: "Installation",
-        progress: 75,
-        stages: [
-          { id: 1, name: "Consultation", status: "completed", date: "2024-02-01" },
-          { id: 2, name: "Design Approval", status: "completed", date: "2024-02-05" },
-          { id: 3, name: "Manufacturing", status: "completed", date: "2024-02-15" },
-          { id: 4, name: "Installation", status: "current", date: "2024-02-20" },
-          { id: 5, name: "Final Delivery", status: "upcoming", date: "2024-03-01" }
-        ],
-        updates: [
-          {
-            id: 1,
-            date: "2024-02-20",
-            title: "Installation Started",
-            description: "Bedroom installation is in progress.",
-            images: ["https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=300"]
-          },
-          {
-            id: 2,
-            date: "2024-02-15",
-            title: "Manufacturing Completed",
-            description: "All components have been manufactured.",
-            images: []
-          }
-        ]
-      }
-    };
-
-    project = mockProjects[projectCode.toUpperCase()];
-    
-    if (!project && projectCode.toLowerCase() === "ishma") {
-      project = {
+      "ISHMA": {
         serviceNumber: "IS2025001",
         customerName: "Ishma Team",
         projectType: "Music Studio Interior",
@@ -487,68 +653,28 @@ const ChatBot = () => {
         expectedCompletion: "2025-08-15",
         status: "In Progress",
         currentStage: "Design Approval",
-        progress: 20,
-        stages: [
-          { id: 1, name: "Consultation", status: "completed", date: "2025-07-01" },
-          { id: 2, name: "Design Approval", status: "current", date: "2025-07-10" },
-          { id: 3, name: "Manufacturing", status: "upcoming", date: "2025-07-20" },
-          { id: 4, name: "Installation", status: "upcoming", date: "2025-08-01" },
-          { id: 5, name: "Final Delivery", status: "upcoming", date: "2025-08-15" }
-        ],
-        updates: [
-          {
-            id: 1,
-            date: "2025-07-01",
-            title: "Project Initiated",
-            description: "Consultation completed for Ishma studio setup.",
-            images: []
-          }
-        ]
-      };
+        progress: 20
+      }
+    };
 
-      let progress = project.progress;
-      const interval = setInterval(() => {
-        progress = Math.min(progress + 5, 100);
-        const currentStageIndex = project.stages.findIndex(s => s.status === "current");
-        if (currentStageIndex !== -1 && progress >= 100) {
-          project.stages[currentStageIndex].status = "completed";
-          if (currentStageIndex + 1 < project.stages.length) {
-            project.stages[currentStageIndex + 1].status = "current";
-            project.currentStage = project.stages[currentStageIndex + 1].name;
-          }
-          project.updates.push({
-            id: project.updates.length + 1,
-            date: new Date().toISOString().split('T')[0],
-            title: `Stage ${project.currentStage} Started`,
-            description: `Work on ${project.currentStage} has begun for Ishma project.`,
-            images: []
-          });
-        }
-        project.progress = progress;
-        if (progress === 100) {
-          clearInterval(interval);
-          project.status = "Completed";
-        }
-        setProjectData({ ...project });
-      }, 5000);
-    }
+    const project = mockProjects[projectCode.toUpperCase()];
 
     if (project) {
       setProjectData(project);
-      addBotMessage(`📋 Project Status for ${projectCode.toUpperCase()} \n\n🔄 Current Status: ${project.status}\n📊 Progress: ${project.progress}%\n👨‍🎨 Customer: ${project.customerName}\n⏰ Expected Completion: ${project.expectedCompletion}\n📝 Current Stage: ${project.currentStage}\n\nView detailed project information below:`, [
-        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9876543210 for support.") },
+      addBotMessage(`📋 **Project Status for ${projectCode.toUpperCase()}**\n\n🔄 **Current Status:** ${project.status}\n📊 **Progress:** ${project.progress}%\n👨‍🎨 **Customer:** ${project.customerName}\n🏗️ **Project Type:** ${project.projectType}\n📅 **Start Date:** ${project.startDate}\n⏰ **Expected Completion:** ${project.expectedCompletion}\n📝 **Current Stage:** ${project.currentStage}\n\n✨ Your project is progressing well!`, [
+        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9876543210 for support. 📞") },
         { text: "Book New Consultation", action: () => handleOptionClick("Book Consultation") },
         { text: "Track Another Project", action: () => handleOptionClick("Track My Project") }
-      ], false, false, true);
+      ]);
     } else {
       setProjectData(null);
-      addBotMessage("❌ Project code not found. Please check your project name or Unique Work Code (UWC) and try again.\n\n💡 You can find your UWC in:\n• Confirmation email\n• Site visit receipt\n• WhatsApp updates\n\nNeed help finding your code?", [
-        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9876543210 for support.") },
+      addBotMessage("❌ Project code not found. Please check your project name or Unique Work Code (UWC) and try again.\n\n💡 **You can find your UWC in:**\n• Confirmation email\n• Site visit receipt\n• WhatsApp updates\n\nNeed help finding your code?", [
+        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9876543210 for support. 📞") },
         { text: "Book New Project", action: () => handleOptionClick("Book Consultation") },
         { text: "Try Again", action: () => handleOptionClick("Track My Project") }
-      ], false, false, true);
+      ]);
     }
-    
+
     setProjectCode("");
     setCurrentFlow('main');
   };
@@ -560,336 +686,428 @@ const ChatBot = () => {
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-8 right-4 w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg z-50 flex items-center justify-center transition-colors ${
-          isOpen
-            ? 'bg-red-600 hover:bg-red-700 border border-white/30 hover:border-white/50'
-            : 'bg-gradient-to-br from-yellow-400 to-yellow-600 hover:from-red-600 hover:to-red-700'
-        } text-white`}
-      >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
-      </button>
+      {/* Floating Chat Button */}
+      <div className="fixed bottom-8 right-4 z-50">
+        {/* Notification badge for new messages */}
+        {!isOpen && messages.length > 0 && (
+          <div className="absolute -top-2 -left-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+            <Sparkles className="w-3 h-3" />
+          </div>
+        )}
 
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${isOpen
+            ? 'bg-red-600 hover:bg-red-700 border-2 border-white/30 hover:border-white/50 rotate-180'
+            : 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-red-600 hover:from-yellow-500 hover:to-red-700 animate-pulse'
+            } text-white`}
+        >
+          {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        </button>
+
+        {/* Floating action hint */}
+        {!isOpen && (
+          <div className="absolute bottom-16 right-0 bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            Chat with us! 💬
+          </div>
+        )}
+      </div>
+
+      {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-4 w-[90vw] max-w-[400px] h-[calc(100vh-120px)] max-h-[600px] sm:w-96 sm:max-w-[450px] sm:h-[600px] sm:bottom-20 bg-white border border-gray-200 rounded-lg shadow-lg z-50 flex flex-col">
-          <div className="bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded-t-lg py-3 px-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold">🍒 Cherry Gold Interiors</span>
+        <div className={`fixed bottom-24 right-4 w-[90vw] max-w-[420px] sm:w-96 sm:max-w-[450px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 flex flex-col transition-all duration-300 ${isMinimized ? 'h-16' : 'h-[calc(100vh-120px)] max-h-[650px] sm:h-[650px]'
+          } sm:bottom-20`}>
+
+          {/* Enhanced Header */}
+          <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-red-600 text-white rounded-t-2xl py-4 px-4 flex items-center justify-between shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span className="text-lg font-bold">🍒 Cherry Gold AI</span>
+                <div className="flex items-center gap-1 text-xs opacity-90">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span>Online & Ready to Help</span>
+                </div>
+              </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-white hover:text-gray-200">
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
-            {messages.map((message) => (
-              <div key={message.id} className="space-y-2">
-                <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex items-start gap-2 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${message.type === 'user' ? 'bg-yellow-600' : 'bg-gradient-to-br from-yellow-400 to-red-600'}`}>
-                      {message.type === 'user' ? (
-                        <User className="w-3 h-3 text-white" />
-                      ) : (
-                        <Bot className="w-3 h-3 text-white" />
-                      )}
-                    </div>
-                    <div className={`rounded-lg p-2 sm:p-3 ${message.type === 'user' ? 'bg-yellow-100 text-yellow-800' : 'bg-yellow-50 text-yellow-900'}`}>
-                      <div className="text-xs sm:text-sm whitespace-pre-line">{message.content}{message.showProjectTracker && message.options && message.options.length > 0 ? message.options.map(opt => <span key={opt.text} className="text-red-600">{opt.text}</span>) : null}</div>
-                    </div>
-                  </div>
-                </div>
-
-                {message.options && (
-                  <div className="flex flex-wrap gap-2 ml-6 sm:ml-8">
-                    {message.options.map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => option.action()}
-                        className="text-xs sm:text-sm bg-gradient-to-br from-yellow-200 to-red-300 text-white border border-red-300 rounded px-3 py-1.5 hover:from-yellow-300 hover:to-red-400 transition-colors"
-                      >
-                        {option.text}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {message.showBudgetCalculator && (
-                  <div className="ml-6 sm:ml-8 p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold flex items-center gap-2 text-yellow-800 text-sm sm:text-base">
-                      <Calculator className="w-4 h-4 text-yellow-600" />
-                      Budget Calculator
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs text-yellow-600">Height (ft)</label>
-                        <input
-                          type="number"
-                          placeholder="e.g. 10"
-                          value={budgetCalc.height}
-                          onChange={(e) => setBudgetCalc(prev => ({ ...prev, height: e.target.value }))}
-                          className="w-full p-2 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-yellow-600">Width (ft)</label>
-                        <input
-                          type="number"
-                          placeholder="e.g. 12"
-                          value={budgetCalc.width}
-                          onChange={(e) => setBudgetCalc(prev => ({ ...prev, width: e.target.value }))}
-                          className="w-full p-2 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs text-yellow-600">Package</label>
-                      <select 
-                        className="w-full p-2 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                        value={budgetCalc.package}
-                        onChange={(e) => setBudgetCalc(prev => ({ ...prev, package: e.target.value }))}
-                      >
-                        <option value="basic">Basic - ₹1,200/sqft</option>
-                        <option value="premium">Premium - ₹1,800/sqft</option>
-                        <option value="luxury">Luxury - ₹2,500/sqft</option>
-                      </select>
-                    </div>
-                    <button onClick={calculateBudget} className="w-full bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded p-2 hover:from-yellow-500 hover:to-red-700 text-xs sm:text-sm">
-                      Calculate Budget
-                    </button>
-                  </div>
-                )}
-
-                {message.showLeadForm && (
-                  <div className="ml-6 sm:ml-8 p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold flex items-center gap-2 text-yellow-800 text-sm sm:text-base">
-                      <Calendar className="w-4 h-4 text-yellow-600" />
-                      Book Free Consultation
-                    </h4>
-                    <div className="space-y-2">
-                      <input
-                        placeholder="Full Name *"
-                        value={leadData.name}
-                        onChange={(e) => setLeadData(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full p-2 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                      />
-                      <input
-                        placeholder="Phone Number *"
-                        value={leadData.phone}
-                        onChange={(e) => setLeadData(prev => ({ ...prev, phone: e.target.value }))}
-                        className="w-full p-2 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                      />
-                      <input
-                        placeholder="Email Address *"
-                        value={leadData.email}
-                        onChange={(e) => setLeadData(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full p-2 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                      />
-                      <input
-                        placeholder="City"
-                        value={leadData.city}
-                        onChange={(e) => setLeadData(prev => ({ ...prev, city: e.target.value }))}
-                        className="w-full p-2 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                      />
-                      <select 
-                        className="w-full p-2 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                        value={leadData.roomType}
-                        onChange={(e) => setLeadData(prev => ({ ...prev, roomType: e.target.value }))}
-                      >
-                        <option value="">Select Room Type</option>
-                        <option value="kitchen">Kitchen</option>
-                        <option value="bedroom">Bedroom</option>
-                        <option value="living">Living Room</option>
-                        <option value="bathroom">Bathroom</option>
-                        <option value="complete">Complete Home</option>
-                        <option value="office">Office</option>
-                      </select>
-                      <select 
-                        className="w-full p-2 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                        value={leadData.budget}
-                        onChange={(e) => setLeadData(prev => ({ ...prev, budget: e.target.value }))}
-                      >
-                        <option value="">Budget Range</option>
-                        <option value="1-2">₹1-2 Lakhs</option>
-                        <option value="2-5">₹2-5 Lakhs</option>
-                        <option value="5-10">₹5-10 Lakhs</option>
-                        <option value="10+">₹10+ Lakhs</option>
-                      </select>
-                    </div>
-                    <button onClick={submitLeadForm} className="w-full bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded p-2 hover:from-yellow-500 hover:to-red-700 text-xs sm:text-sm">
-                      Book Consultation
-                    </button>
-                  </div>
-                )}
-
-                {message.showProjectTracker && (
-                  <div className="ml-6 sm:ml-8 p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold flex items-center gap-2 text-yellow-800 text-sm sm:text-base">
-                      <CheckCircle className="w-4 h-4 text-yellow-600" />
-                      Project Status Tracker
-                    </h4>
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <input
-                          placeholder="Enter your project name or Unique Work Code (UWC)"
-                          value={projectCode}
-                          onChange={(e) => setProjectCode(e.target.value)}
-                          className="w-full p-2 pl-10 border border-yellow-300 rounded text-xs sm:text-sm bg-white text-yellow-900"
-                        />
-                        <Search className="absolute left-2 top-2.5 w-5 h-5 text-yellow-400" />
-                      </div>
-                      <div className="text-xs text-yellow-600">
-                        Example: Ishma or CG2024001 (Try this for demo)
-                      </div>
-                    </div>
-                    <button onClick={trackProject} className="w-full bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded p-2 hover:from-yellow-500 hover:to-red-700 text-xs sm:text-sm">
-                      Track Project
-                    </button>
-
-                    {projectData && (
-                      <div className="space-y-4 mt-4">
-                        <div className="p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                            <div>
-                              <h5 className="text-xs sm:text-sm text-yellow-600">Customer Name</h5>
-                              <p className="text-sm sm:text-base font-semibold text-yellow-900">{projectData.customerName}</p>
-                            </div>
-                            <div>
-                              <h5 className="text-xs sm:text-sm text-yellow-600">Project Type</h5>
-                              <p className="text-sm sm:text-base font-semibold text-yellow-900">{projectData.projectType}</p>
-                            </div>
-                            <div>
-                              <h5 className="text-xs sm:text-sm text-yellow-600">Start Date</h5>
-                              <p className="text-sm sm:text-base font-semibold text-yellow-900">{projectData.startDate}</p>
-                            </div>
-                            <div>
-                              <h5 className="text-xs sm:text-sm text-yellow-600">Expected Completion</h5>
-                              <p className="text-sm sm:text-base font-semibold text-yellow-900">{projectData.expectedCompletion}</p>
-                            </div>
-                          </div>
-                          <div className="mt-3 sm:mt-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <h5 className="text-xs sm:text-sm text-yellow-600">Progress</h5>
-                              <span className="text-xs sm:text-sm font-semibold text-yellow-900">{projectData.progress}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${projectData.progress}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <h4 className="text-sm sm:text-lg font-bold text-yellow-900 mb-3 sm:mb-4">Project Timeline</h4>
-                          <div className="space-y-3 sm:space-y-4">
-                            {projectData.stages.map((stage) => (
-                              <div key={stage.id} className="flex items-center space-x-3 sm:space-x-4">
-                                <div className="flex-shrink-0">
-                                  {getStatusIcon(stage.status)}
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between">
-                                    <h5 className="text-sm sm:text-base font-semibold text-yellow-900">{stage.name}</h5>
-                                    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${getStatusColor(stage.status)}`}>
-                                      {stage.status.charAt(0).toUpperCase() + stage.status.slice(1)}
-                                    </span>
-                                  </div>
-                                  <p className="text-xs sm:text-sm text-yellow-900 mt-1">
-                                    <Calendar className="w-3 sm:w-4 h-3 sm:h-4 inline mr-1 text-yellow-400" />
-                                    {stage.date}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <h4 className="text-sm sm:text-lg font-bold text-yellow-900 mb-3 sm:mb-4">Recent Updates</h4>
-                          <div className="space-y-3 sm:space-y-4">
-                            {projectData.updates.map((update) => (
-                              <div key={update.id} className="border-l-4 border-yellow-500 pl-4 sm:pl-6 pb-3 sm:pb-4">
-                                <div className="flex items-center justify-between mb-2">
-                                  <h5 className="text-sm sm:text-base font-semibold text-yellow-900">{update.title}</h5>
-                                  <span className="text-xs sm:text-sm text-yellow-600">{update.date}</span>
-                                </div>
-                                <p className="text-xs sm:text-sm text-yellow-700 mb-2">{update.description}</p>
-                                {update.images && update.images.length > 0 && (
-                                  <div className="grid grid-cols-1 gap-3 sm:gap-4">
-                                    {update.images.map((image, index) => (
-                                      <img
-                                        key={index}
-                                        src={image}
-                                        alt={`Update ${update.id} - ${index + 1}`}
-                                        className="w-full h-24 sm:h-32 object-cover rounded-lg border border-yellow-200"
-                                      />
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="p-3 sm:p-4 bg-gradient-to-br from-yellow-400 to-red-600 rounded-lg text-white text-center">
-                          <h4 className="text-sm sm:text-lg font-bold mb-2">Need Help?</h4>
-                          <p className="text-xs sm:text-sm mb-3 sm:mb-4 opacity-90">
-                            Can't find your service number or have questions about your project?
-                          </p>
-                          <div className="flex flex-wrap justify-center gap-2">
-                            <button className="bg-red-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-xs sm:text-sm">
-                              Contact Support
-                            </button>
-                            <button className="bg-red-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-xs sm:text-sm">
-                              WhatsApp Us
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="flex items-start gap-2 max-w-[80%]">
-                  <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-red-600 rounded-full flex items-center justify-center">
-                    <Bot className="w-3 h-3 text-white" />
-                  </div>
-                  <div className="bg-gray-100 rounded-lg p-2 sm:p-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="p-3 sm:p-4 border-t border-gray-200">
-            <div className="flex gap-2 items-center">
-              <input
-                placeholder="Type your message..."
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                className="flex-1 p-2 sm:p-3 border border-gray-300 rounded text-xs sm:text-sm bg-white text-gray-900 min-h-[40px]"
-              />
-              <button onClick={handleSendMessage} className="p-2 sm:p-3 bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded flex items-center justify-center hover:from-yellow-500 hover:to-red-700 transition-colors">
-                <Send className="w-4 h-4" />
+            <div className="flex items-center gap-2">
+              {messages.length > 0 && (
+                <button
+                  onClick={clearChat}
+                  className="text-white/80 hover:text-white transition-colors p-1"
+                  title="Clear Chat"
+                >
+                  <FileText className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={() => setIsMinimized(!isMinimized)}
+                className="text-white/80 hover:text-white transition-colors p-1"
+                title={isMinimized ? "Expand" : "Minimize"}
+              >
+                {isMinimized ? <Zap className="w-5 h-5" /> : <Zap className="w-5 h-5 rotate-180" />}
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-white/80 hover:text-white transition-colors p-1"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
           </div>
+
+          {!isMinimized && (
+            <>
+              {/* Messages Container */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white">
+                {messages.map((message, index) => (
+                  <div key={message.id} className={`space-y-3 animate-fadeIn ${message.isNew ? 'animate-slideUp' : ''}`}>
+                    <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex items-start gap-3 max-w-[85%] ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        {/* Enhanced Avatar */}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md ${message.type === 'user'
+                          ? 'bg-gradient-to-br from-blue-500 to-blue-600'
+                          : 'bg-gradient-to-br from-yellow-400 to-red-600'
+                          }`}>
+                          {message.type === 'user' ? (
+                            <User className="w-4 h-4 text-white" />
+                          ) : (
+                            <Bot className="w-4 h-4 text-white" />
+                          )}
+                        </div>
+
+                        {/* Enhanced Message Bubble */}
+                        <div className={`rounded-2xl p-4 shadow-sm border ${message.type === 'user'
+                          ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white border-blue-200'
+                          : 'bg-white text-gray-800 border-gray-200'
+                          }`}>
+                          <div className="text-sm leading-relaxed whitespace-pre-line">
+                            {message.content}
+                          </div>
+
+                          {/* Timestamp */}
+                          <div className={`text-xs mt-2 ${message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
+                            }`}>
+                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Quick Action Buttons */}
+                    {message.options && (
+                      <div className="flex flex-wrap gap-2 ml-11 mt-3">
+                        {message.options.map((option, optionIndex) => (
+                          <button
+                            key={optionIndex}
+                            onClick={() => option.action()}
+                            className="text-sm bg-gradient-to-r from-yellow-400 to-red-500 text-white border-0 rounded-full px-4 py-2 hover:from-yellow-500 hover:to-red-600 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2"
+                          >
+                            {option.text.includes('Budget') && <Calculator className="w-4 h-4" />}
+                            {option.text.includes('Book') && <Calendar className="w-4 h-4" />}
+                            {option.text.includes('Track') && <Search className="w-4 h-4" />}
+                            {option.text.includes('FAQ') && <Info className="w-4 h-4" />}
+                            <span>{option.text}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Budget Calculator */}
+                    {message.showBudgetCalculator && (
+                      <div className="ml-11 p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
+                        <h4 className="font-semibold flex items-center gap-2 text-yellow-800">
+                          <Calculator className="w-4 h-4 text-yellow-600" />
+                          Budget Calculator
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-xs text-yellow-600">Height (ft)</label>
+                            <input
+                              type="number"
+                              placeholder="e.g. 10"
+                              value={budgetCalc.height}
+                              onChange={(e) => setBudgetCalc(prev => ({ ...prev, height: e.target.value }))}
+                              className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-yellow-600">Width (ft)</label>
+                            <input
+                              type="number"
+                              placeholder="e.g. 12"
+                              value={budgetCalc.width}
+                              onChange={(e) => setBudgetCalc(prev => ({ ...prev, width: e.target.value }))}
+                              className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs text-yellow-600">Package</label>
+                          <select
+                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                            value={budgetCalc.package}
+                            onChange={(e) => setBudgetCalc(prev => ({ ...prev, package: e.target.value }))}
+                          >
+                            <option value="basic">Basic - ₹1,200/sqft</option>
+                            <option value="premium">Premium - ₹1,800/sqft</option>
+                            <option value="luxury">Luxury - ₹2,500/sqft</option>
+                          </select>
+                        </div>
+                        <button onClick={calculateBudget} className="w-full bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded p-2 hover:from-yellow-500 hover:to-red-700 text-sm">
+                          Calculate Budget
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Lead Form */}
+                    {message.showLeadForm && (
+                      <div className="ml-11 p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
+                        <h4 className="font-semibold flex items-center gap-2 text-yellow-800">
+                          <Calendar className="w-4 h-4 text-yellow-600" />
+                          Book Free Consultation
+                        </h4>
+                        <div className="space-y-2">
+                          <input
+                            placeholder="Full Name *"
+                            value={leadData.name}
+                            onChange={(e) => setLeadData(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                          />
+                          <input
+                            placeholder="Phone Number *"
+                            value={leadData.phone}
+                            onChange={(e) => setLeadData(prev => ({ ...prev, phone: e.target.value }))}
+                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                          />
+                          <input
+                            placeholder="Email Address *"
+                            value={leadData.email}
+                            onChange={(e) => setLeadData(prev => ({ ...prev, email: e.target.value }))}
+                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                          />
+                          <input
+                            placeholder="City"
+                            value={leadData.city}
+                            onChange={(e) => setLeadData(prev => ({ ...prev, city: e.target.value }))}
+                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                          />
+                          <select
+                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                            value={leadData.roomType}
+                            onChange={(e) => setLeadData(prev => ({ ...prev, roomType: e.target.value }))}
+                          >
+                            <option value="">Select Room Type</option>
+                            <option value="kitchen">Kitchen</option>
+                            <option value="bedroom">Bedroom</option>
+                            <option value="living">Living Room</option>
+                            <option value="bathroom">Bathroom</option>
+                            <option value="complete">Complete Home</option>
+                            <option value="office">Office</option>
+                          </select>
+                          <select
+                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                            value={leadData.budget}
+                            onChange={(e) => setLeadData(prev => ({ ...prev, budget: e.target.value }))}
+                          >
+                            <option value="">Budget Range</option>
+                            <option value="1-2">₹1-2 Lakhs</option>
+                            <option value="2-5">₹2-5 Lakhs</option>
+                            <option value="5-10">₹5-10 Lakhs</option>
+                            <option value="10+">₹10+ Lakhs</option>
+                          </select>
+                        </div>
+                        <button onClick={submitLeadForm} className="w-full bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded p-2 hover:from-yellow-500 hover:to-red-700 text-sm">
+                          Book Consultation
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Project Tracker */}
+                    {message.showProjectTracker && (
+                      <div className="ml-11 p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
+                        <h4 className="font-semibold flex items-center gap-2 text-yellow-800">
+                          <CheckCircle className="w-4 h-4 text-yellow-600" />
+                          Project Status Tracker
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <input
+                              placeholder="Enter your project name or Unique Work Code (UWC)"
+                              value={projectCode}
+                              onChange={(e) => setProjectCode(e.target.value)}
+                              className="w-full p-2 pl-10 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                            />
+                            <Search className="absolute left-2 top-2.5 w-5 h-5 text-yellow-400" />
+                          </div>
+                          <div className="text-xs text-yellow-600">
+                            Example: Ishma or CG2024001 (Try this for demo)
+                          </div>
+                        </div>
+                        <button onClick={trackProject} className="w-full bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded p-2 hover:from-yellow-500 hover:to-red-700 text-sm">
+                          Track Project
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Enhanced Typing Indicator */}
+                {isTyping && (
+                  <div className="flex justify-start animate-fadeIn">
+                    <div className="flex items-start gap-3 max-w-[85%]">
+                      <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-red-600 rounded-full flex items-center justify-center shadow-md">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+                        <div className="flex items-center gap-2">
+                          <div className="flex space-x-1">
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          </div>
+                          <span className="text-xs text-gray-500">AI is thinking...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Enhanced Input Area */}
+              <div className="p-4 border-t border-gray-200 bg-white rounded-b-2xl">
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 relative">
+                    <input
+                      placeholder="Type your message... 💬"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                      className="w-full p-3 pr-12 border-2 border-gray-200 rounded-2xl text-sm bg-gray-50 text-gray-900 focus:border-yellow-400 focus:bg-white transition-all duration-200 resize-none"
+                      disabled={isTyping}
+                    />
+
+                    {/* Voice Input Button */}
+                    <button
+                      onClick={toggleVoiceInput}
+                      className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full transition-all duration-200 ${isListening
+                        ? 'bg-red-500 text-white animate-pulse'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                      title={isListening ? "Stop listening" : "Voice input"}
+                    >
+                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {/* Send Button */}
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isTyping}
+                    className="p-3 bg-gradient-to-r from-yellow-400 to-red-600 text-white rounded-2xl hover:from-yellow-500 hover:to-red-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                  >
+                    <Send className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+                  <button
+                    onClick={() => handleOptionClick("Get Budget Estimate")}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-full text-xs whitespace-nowrap hover:bg-yellow-200 transition-colors"
+                  >
+                    <Calculator className="w-3 h-3" />
+                    Budget
+                  </button>
+                  <button
+                    onClick={() => handleOptionClick("Book Consultation")}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs whitespace-nowrap hover:bg-blue-200 transition-colors"
+                  >
+                    <Calendar className="w-3 h-3" />
+                    Book
+                  </button>
+                  <button
+                    onClick={() => handleOptionClick("Track My Project")}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-xs whitespace-nowrap hover:bg-green-200 transition-colors"
+                  >
+                    <Search className="w-3 h-3" />
+                    Track
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
+      {/* Enhanced CSS Styles */}
       <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+          from { 
+            opacity: 0; 
+            transform: translateY(20px); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0); 
+          }
+        }
+        
+        @keyframes bounce {
+          0%, 20%, 53%, 80%, 100% {
+            transform: translate3d(0,0,0);
+          }
+          40%, 43% {
+            transform: translate3d(0, -8px, 0);
+          }
+          70% {
+            transform: translate3d(0, -4px, 0);
+          }
+          90% {
+            transform: translate3d(0, -2px, 0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        
+        .animate-slideUp {
+          animation: slideUp 0.4s ease-out;
+        }
+        
+        .animate-bounce-gentle {
+          animation: bounce 2s infinite;
+        }
+        
+        /* Custom scrollbar */
+        .overflow-y-auto::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .overflow-y-auto::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 3px;
+        }
+        
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #fbbf24, #ef4444);
+          border-radius: 3px;
+        }
+        
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #f59e0b, #dc2626);
+        }
+        
         @media (max-width: 640px) {
           .fixed.bottom-24.right-4 {
             bottom: 6rem;
@@ -897,12 +1115,30 @@ const ChatBot = () => {
             width: calc(100vw - 1rem);
             height: calc(100vh - 120px);
             max-height: none;
-            border-radius: 0;
+            border-radius: 1rem;
           }
           .fixed.bottom-8.right-4 {
             bottom: 2rem;
             right: 1rem;
           }
+        }
+        
+        /* Pulse animation for new messages */
+        @keyframes pulse-ring {
+          0% {
+            transform: scale(0.33);
+          }
+          40%, 50% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1.2);
+          }
+        }
+        
+        .pulse-ring {
+          animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
         }
       `}</style>
     </>

@@ -30,6 +30,7 @@ const navItems = [
     dropdown: [
       { path: '/track-project', label: 'Track Project Status' },
       { path: '/cost-estimator', label: 'Cost Estimator' },
+      { path: '/kitchen-designer', label: 'Interactive Kitchen Designer' }
     ]
   },
 ];
