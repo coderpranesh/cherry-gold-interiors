@@ -67,7 +67,7 @@ const HeroSection = () => {
   );
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-gray-900">
+    <section className="relative py-8 min-h-screen overflow-hidden bg-gray-900">
       {/* Background Carousel */}
       <div className="absolute inset-0">
         {images.map((image, index) => (
