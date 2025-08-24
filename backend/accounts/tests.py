@@ -12,7 +12,7 @@ class AccountsTests(TestCase):
             'email': 'test@example.com',
             'first_name': 'Test',
             'last_name': 'User',
-            'phone': '9876543210',
+            'phone': '9433889668',
             'password': 'testpass123',
             'password2': 'testpass123'
         }

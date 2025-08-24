@@ -423,7 +423,7 @@ const Services = () => {
                 {activeService === 'repair' && (
                   <div className="space-y-4">
                     <a
-                      href="https://wa.me/919876543210"
+                      href="https://wa.me/919433889668"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
@@ -436,13 +436,13 @@ const Services = () => {
                     </a>
                     
                     <a
-                      href="tel:+919876543210"
+                      href="tel:+919433889668"
                       className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                     >
                       <Phone className="w-6 h-6 text-blue-600" />
                       <div>
                         <p className="font-medium text-gray-900">Call Now</p>
-                        <p className="text-sm text-gray-600">+91 9876543210</p>
+                        <p className="text-sm text-gray-600">+91 9433889668</p>
                       </div>
                     </a>
 
@@ -541,7 +541,7 @@ const Services = () => {
                     
                     <div className="mt-6">
                       <a
-                        href="tel:+919876543210"
+                        href="tel:+919433889668"
                         className="flex items-center justify-center space-x-3 w-full bg-green-500 text-white py-4 rounded-lg hover:bg-green-600 transition-colors"
                       >
                         <Phone className="w-5 h-5" />

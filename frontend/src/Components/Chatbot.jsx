@@ -51,7 +51,7 @@ const ChatBot = () => {
     timeline: "Modular kitchens: 3-4 weeks, Wardrobes: 2-3 weeks, Complete homes: 8-12 weeks. Timeline depends on project complexity and approvals.",
     warranty: "Modular Kitchen & Wardrobes: 5 years, TV Units & Storage: 3 years, False Ceiling & Lighting: 2 years. Covers manufacturing defects and hardware failures.",
     payment: "Advance: 20%, Design Approval: 40%, Manufacturing Complete: 30%, Final Delivery: 10%. EMI options available.",
-    booking: "You can book through our website forms, call +91 9876543210, or WhatsApp us. For rescheduling, contact our support team with your booking reference.",
+    booking: "You can book through our website forms, call +91 9433889668, or WhatsApp us. For rescheduling, contact our support team with your booking reference.",
     howwework: "Our process: 1) Free Consultation 2) Site Survey 3) 2D/3D Design 4) Material Selection 5) Execution 6) Quality Check 7) Handover"
   };
 
@@ -148,7 +148,7 @@ const ChatBot = () => {
     } else if (message.includes('warranty') || message.includes('guarantee')) {
       addBotMessage(faqData.warranty, [
         { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "Terms & Conditions", action: () => addBotMessage("Contact us at +91 9876543210 for detailed terms.") }
+        { text: "Terms & Conditions", action: () => addBotMessage("Contact us at +91 9433889668 for detailed terms.") }
       ]);
     } else if (message.includes('payment') || message.includes('emi')) {
       addBotMessage(faqData.payment + "\n\nWe also offer flexible EMI options through our financial partners.", [
@@ -536,14 +536,14 @@ const ChatBot = () => {
     if (project) {
       setProjectData(project);
       addBotMessage(`📋 Project Status for ${projectCode.toUpperCase()} \n\n🔄 Current Status: ${project.status}\n📊 Progress: ${project.progress}%\n👨‍🎨 Customer: ${project.customerName}\n⏰ Expected Completion: ${project.expectedCompletion}\n📝 Current Stage: ${project.currentStage}\n\nView detailed project information below:`, [
-        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9876543210 for support.") },
+        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9433889668 for support.") },
         { text: "Book New Consultation", action: () => handleOptionClick("Book Consultation") },
         { text: "Track Another Project", action: () => handleOptionClick("Track My Project") }
       ], false, false, true);
     } else {
       setProjectData(null);
       addBotMessage("❌ Project code not found. Please check your project name or Unique Work Code (UWC) and try again.\n\n💡 You can find your UWC in:\n• Confirmation email\n• Site visit receipt\n• WhatsApp updates\n\nNeed help finding your code?", [
-        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9876543210 for support.") },
+        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9433889668 for support.") },
         { text: "Book New Project", action: () => handleOptionClick("Book Consultation") },
         { text: "Try Again", action: () => handleOptionClick("Track My Project") }
       ], false, false, true);

@@ -261,7 +261,7 @@ DEFAULT_FROM_EMAIL = 'your-email@example.com'
 
 # Service specific settings
 ADMIN_EMAIL = 'admin@example.com'
-CONTACT_PHONE = '+91 9876543210'
+CONTACT_PHONE = '+91 9433889668'
 CONTACT_EMAIL = 'contact@example.com'
 COMPANY_NAME = 'Your Interior Design Company'
 SITE_NAME = 'Cherry Gold Interiors'

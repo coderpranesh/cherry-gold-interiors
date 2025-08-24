@@ -54,7 +54,7 @@ class ChatbotTests(TestCase):
             'session_id': 'test-session-123',
             'name': 'Test Lead',
             'email': 'lead@example.com',
-            'phone': '9876543210',
+            'phone': '9433889668',
             'city': 'Bangalore'
         }
         response = self.client.post(url, data, format='json')

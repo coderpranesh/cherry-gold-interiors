@@ -145,7 +145,7 @@ const ForgotPassword = () => {
                   <Option value="+91">+91</Option>
                 </Select>}
                 className="premium-input"
-                placeholder="9876543210"
+                placeholder="9433889668"
                 onChange={(e) => setPhone(e.target.value)}
               />
             </Form.Item>
