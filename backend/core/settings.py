@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'projects',
     'chatbot',
     'blog',
+    'quote',
     # 'newsletter',
 ]
 
@@ -186,6 +187,7 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -197,11 +199,17 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
     ],
+        'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20
 }
 
-
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    # other backends if you have them
+]
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Cherry Gold Interiors API',
@@ -213,9 +221,9 @@ SPECTACULAR_SETTINGS = {
 
 # JWT Settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    # 'ROTATE_REFRESH_TOKENS': True,
 }
 
 # MSG91 Configuration
@@ -233,9 +241,11 @@ FRONTEND_URL = 'http://localhost:5173'  # Update with your frontend URL
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:8000",
+    "http://localhost:3000",
     "https://cherrygoldinteriors.com",
     "https://www.cherrygoldinteriors.com",
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
 
@@ -255,7 +265,7 @@ DEFAULT_FROM_EMAIL = 'your-email@example.com'
 
 # Service specific settings
 ADMIN_EMAIL = 'admin@example.com'
-CONTACT_PHONE = '+91 9876543210'
+CONTACT_PHONE = '+91 9433889668'
 CONTACT_EMAIL = 'contact@example.com'
 COMPANY_NAME = 'Your Interior Design Company'
 SITE_NAME = 'Cherry Gold Interiors'

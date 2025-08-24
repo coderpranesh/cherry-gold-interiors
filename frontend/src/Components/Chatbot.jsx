@@ -57,7 +57,7 @@ const ChatBot = () => {
     timeline: "Modular kitchens: 3-4 weeks, Wardrobes: 2-3 weeks, Complete homes: 8-12 weeks. Timeline depends on project complexity and approvals.",
     warranty: "Modular Kitchen & Wardrobes: 5 years, TV Units & Storage: 3 years, False Ceiling & Lighting: 2 years. Covers manufacturing defects and hardware failures.",
     payment: "Advance: 20%, Design Approval: 40%, Manufacturing Complete: 30%, Final Delivery: 10%. EMI options available.",
-    booking: "You can book through our website forms, call +91 9876543210, or WhatsApp us. For rescheduling, contact our support team with your booking reference.",
+    booking: "You can book through our website forms, call +91 9433889668, or WhatsApp us. For rescheduling, contact our support team with your booking reference.",
     howwework: "Our process: 1) Free Consultation 2) Site Survey 3) 2D/3D Design 4) Material Selection 5) Execution 6) Quality Check 7) Handover"
   };
 

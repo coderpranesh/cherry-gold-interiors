@@ -1,5 +1,7 @@
+# backend/accounts/admin.py - SIMPLEST APPROACH
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib import messages
 from .models import User, Referral, WithdrawalRequest, OTPVerification
 from .forms import CustomUserCreationForm
 
@@ -23,11 +25,32 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
     
+    def has_delete_permission(self, request, obj=None):
+        # Only allow superusers to delete users
+        return request.user.is_superuser
+    
+    def delete_model(self, request, obj):
+        # Prevent deleting superusers
+        if obj.is_superuser:
+            messages.error(request, "Cannot delete superusers.")
+            return
+        
+        # Prevent deleting own account
+        if request.user.id == obj.id:
+            messages.error(request, "You cannot delete your own account.")
+            return
+        
+        # Proceed with deletion
+        super().delete_model(request, obj)
+        messages.success(request, f"User '{obj.username}' has been deleted successfully.")
+    
     def save_model(self, request, obj, form, change):
         # If admin is creating the user, mark as verified
         if not change and request.user.is_staff:
             obj.created_by_admin = True
         super().save_model(request, obj, form, change)
+
+# ... rest of your admin classes remain the same ...
 
 class ReferralAdmin(admin.ModelAdmin):
     list_display = ('referrer', 'referred_user', 'project_value', 'reward_percentage', 'reward_amount', 'status')

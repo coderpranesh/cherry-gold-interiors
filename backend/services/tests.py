@@ -45,7 +45,7 @@ class ServicesTests(TestCase):
             preferred_time=datetime.strptime('14:00', '%H:%M').time(),
             address='123 Test Street, Bangalore',
             contact_person='Test Client',
-            contact_number='9876543210'
+            contact_number='9433889668'
         )
     
     def test_service_request_create(self):
@@ -90,7 +90,7 @@ class ServicesTests(TestCase):
             'preferred_time': '15:00',
             'address': '456 Test Avenue, Bangalore',
             'contact_person': 'Test Client',
-            'contact_number': '9876543210'
+            'contact_number': '9433889668'
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

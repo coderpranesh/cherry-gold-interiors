@@ -1,3 +1,5 @@
+
+# backend/core/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -13,6 +15,7 @@ urlpatterns = [
     path('api/projects/', include('projects.urls')),
     path('api/chatbot/', include('chatbot.urls')),
     path('api/blog/', include('blog.urls')),
+    path('api/quote/', include('quote.urls')),
     
     
     # Documentation

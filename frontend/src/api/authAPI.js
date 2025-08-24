@@ -1,4 +1,4 @@
-
+// src/api/AuthAPI.js
 import axios from './axiosInstance';
 
 const AuthAPI = {
@@ -9,14 +9,25 @@ const AuthAPI = {
 
   login: async (data) => {
     const res = await axios.post('auth/login/', data);
-    localStorage.setItem('accessToken', res.data.access);
-    localStorage.setItem('refreshToken', res.data.refresh);
+    
+    // Store both access and refresh tokens
+    if (res.data.access) {
+      localStorage.setItem('accessToken', res.data.access);
+    }
+    if (res.data.refresh) {
+      localStorage.setItem('refreshToken', res.data.refresh);
+    }
     localStorage.setItem('user', JSON.stringify(res.data.user));
-    return res.data.user;
+    return res.data;
   },
 
-  fetchProfile: async () => {
-    const res = await axios.get('auth/profile/');
+  getReferrals: async () => {
+    const res = await axios.get('auth/referrals/');
+    return res.data;
+  },
+
+  requestWithdrawal: async (data) => {
+    const res = await axios.post('auth/withdraw/', data);
     return res.data;
   },
 
@@ -25,8 +36,13 @@ const AuthAPI = {
     return res.data;
   },
 
-  resendOTP: async (email) => {
-    const res = await axios.post('auth/resend-otp/', { email });
+  resendOTP: async (phone) => {
+    const res = await axios.post('auth/resend-otp/', { phone });
+    return res.data;
+  },
+
+  validateReferral: async (code) => {
+    const res = await axios.get(`auth/validate-referral/?code=${code}`);
     return res.data;
   },
 
@@ -35,7 +51,6 @@ const AuthAPI = {
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
   }
-
 };
 
 export default AuthAPI;

@@ -1,8 +1,15 @@
+
+#backend/accounts/views.py
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate, login
 from django.core.exceptions import ObjectDoesNotExist
+
 from django.db import transaction
 from django.conf import settings
 from .models import User, Referral, WithdrawalRequest, OTPVerification
@@ -15,6 +22,50 @@ import random
 import requests
 from datetime import datetime, timedelta
 from decimal import Decimal
+
+@api_view(['DELETE'])
+@permission_classes([permissions.IsAdminUser])
+def admin_delete_user(request, user_id):
+    """
+    API endpoint for admin to delete users
+    """
+    try:
+        # Check if admin is trying to delete themselves
+        if request.user.id == user_id:
+            return Response(
+                {"error": "You cannot delete your own account"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user_to_delete = User.objects.get(id=user_id)
+        
+        # Prevent deleting superusers
+        if user_to_delete.is_superuser:
+            return Response(
+                {"error": "Cannot delete superusers"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Store user info for response
+        user_info = {
+            "username": user_to_delete.username,
+            "email": user_to_delete.email
+        }
+        
+        # Delete the user
+        user_to_delete.delete()
+        
+        return Response({
+            "message": "User deleted successfully",
+            "deleted_user": user_info
+        }, status=status.HTTP_200_OK)
+        
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -46,29 +97,78 @@ class RegisterView(generics.CreateAPIView):
             "verification_required": not (request.user.is_staff or user.created_by_admin)
         }, status=status.HTTP_201_CREATED)
 
+# class LoginView(APIView):
+#     def post(self, request):
+#         serializer = LoginSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.validated_data
+            
+#             # Skip verification check for admin and admin-created users
+#             if not (user.is_staff or user.created_by_admin or user.phone_verified):
+#                 return Response(
+#                     {"error": "Phone number not verified"},
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+            
+#             # Generate JWT tokens
+#             refresh = RefreshToken.for_user(user)
+            
+#             return Response({
+#                 "message": "Login successful",
+#                 "user": UserSerializer(user).data,
+#                 "access": str(refresh.access_token),
+#                 "refresh": str(refresh)
+#             })
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
 class LoginView(APIView):
     def post(self, request):
+        print(f"Login attempt received: {request.data}")
+        
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.validated_data
+            user = serializer.validated_data['user']
+            print(f"User {user.username} authenticated successfully")
             
             # Skip verification check for admin and admin-created users
-            if not (user.is_staff or user.created_by_admin or user.phone_verified):
+            if not (user.is_staff or getattr(user, 'created_by_admin', False) or getattr(user, 'phone_verified', False)):
+                print("Phone number not verified for regular user")
                 return Response(
                     {"error": "Phone number not verified"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            login(request, user)
-            token = "your-auth-token"  # Replace with actual token generation
+            # Check email verification
+            if not getattr(user, 'email_verified', False):
+                print("Email not verified")
+                return Response(
+                    {"error": "Email not verified"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
-            return Response({
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            
+            response_data = {
                 "message": "Login successful",
-                "user": UserSerializer(user).data,
-                "token": token
-            })
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "is_staff": user.is_staff,
+                },
+                "access": str(refresh.access_token),
+                "refresh": str(refresh)
+            }
+            
+            print(f"Login successful for user {user.username}")
+            return Response(response_data)
+        
+        print(f"Serializer errors: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    
 class VerifyOTPView(APIView):
     def post(self, request):
         serializer = OTPVerificationSerializer(data=request.data)
@@ -123,7 +223,8 @@ class ResendOTPView(APIView):
         return Response({"message": "OTP resent successfully"})
 
 class ReferralDashboardView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     
     def get(self, request):
         user = request.user
@@ -142,8 +243,41 @@ class ReferralDashboardView(APIView):
         })
         return Response(serializer.data)
 
+# class WithdrawalRequestView(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
+    
+#     @transaction.atomic
+#     def post(self, request):
+#         if request.user.wallet_balance < Decimal('500.00'):
+#             return Response(
+#                 {"error": "Minimum withdrawal amount is ₹500"},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+            
+#         serializer = WithdrawalRequestSerializer(data=request.data)
+#         if serializer.is_valid():
+#             # Create withdrawal request
+#             withdrawal = WithdrawalRequest.objects.create(
+#                 user=request.user,
+#                 amount=request.user.wallet_balance,
+#                 **serializer.validated_data
+#             )
+            
+#             # Deduct from wallet (admin will approve/reject)
+#             request.user.wallet_balance = Decimal('0.00')
+#             request.user.save()
+            
+#             # Notify admin (in production, send email/notification)
+            
+#             return Response(
+#                 {"message": "Withdrawal request submitted successfully"},
+#                 status=status.HTTP_201_CREATED
+#             )
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class WithdrawalRequestView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     
     @transaction.atomic
     def post(self, request):
@@ -163,15 +297,7 @@ class WithdrawalRequestView(APIView):
             )
             
             # Deduct from wallet (admin will approve/reject)
-            request.user.wallet_balance = Decimal('0.00')
-            request.user.save()
-            
-            # Notify admin (in production, send email/notification)
-            
-            return Response(
-                {"message": "Withdrawal request submitted successfully"},
-                status=status.HTTP_201_CREATED
-            )
+            return Response({"message": "Withdrawal request submitted"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ReferralCodeValidationView(APIView):

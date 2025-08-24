@@ -20,6 +20,8 @@ const CostEstimator = () => {
 
   const [estimate, setEstimate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [estimationId, setEstimationId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Helper to parse first number from rate string
   const parseRate = (rate) => {
@@ -80,6 +82,67 @@ const CostEstimator = () => {
     { id: 'steel-baskets', name: 'Stainless Steel Baskets', cost: 15000 }
   ];
 
+  // Function to get CSRF token
+  const getCSRFToken = () => {
+    const cookieValue = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1];
+    return cookieValue || '';
+  };
+
+  // Function to save estimation to Django backend
+  const saveEstimationToBackend = async (estimationData) => {
+    setIsSaving(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/quote/api/estimations/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({
+          project_type: formData.projectType,
+          kitchen_package: formData.kitchenPackage,
+          wall_paneling_package: formData.wallPanelingPackage,
+          false_ceiling_type: formData.falseCeilingType,
+          interior_package: formData.interiorPackage,
+          wardrobe_package: formData.wardrobePackage,
+          length: parseFloat(formData.length),
+          width: parseFloat(formData.width),
+          height: parseFloat(formData.height || 0),
+          contact_phone: formData.contact_phone,
+          area: estimationData.area,
+          base_price: estimationData.basePrice,
+          features_total: estimationData.featuresTotal,
+          subtotal: estimationData.subtotal,
+          gst: estimationData.gst,
+          final_cost: estimationData.finalCost,
+          include_gst: formData.includeGST,
+          additional_features: formData.additionalFeatures,
+          package_description: estimationData.packageDescription,
+          package_features: estimationData.packageFeatures,
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Estimation saved with ID:', data.id);
+        setEstimationId(data.id);
+        setIsSaving(false);
+        return data.id;
+      } else {
+        console.error('Failed to save estimation');
+        setIsSaving(false);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error saving estimation:', error);
+      setIsSaving(false);
+      return null;
+    }
+  };
+
   // Handlers
   const handleInputChange = (e) => {
     setFormData({
@@ -97,7 +160,7 @@ const CostEstimator = () => {
     });
   };
 
-  const calculateEstimate = (e) => {
+  const calculateEstimate = async (e) => {
     e.preventDefault();
     const projectType = projectTypes.find(p => p.id === formData.projectType);
     if (!projectType) return;
@@ -163,7 +226,7 @@ const CostEstimator = () => {
       finalCost += gst;
     }
 
-    setEstimate({
+    const newEstimate = {
       area,
       basePrice,
       selectedPackage,
@@ -174,7 +237,12 @@ const CostEstimator = () => {
       gst,
       finalCost,
       projectType: projectType.name,
-    });
+    };
+
+    setEstimate(newEstimate);
+    
+    // Save to backend
+    await saveEstimationToBackend(newEstimate);
   };
 
   const generatePDF = () => {
@@ -538,6 +606,22 @@ const CostEstimator = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number *
+                </label>
+                <input
+                  type="number"
+                  name="contact_phone"
+                  value={formData.contact_phone}
+                  onChange={handleInputChange}
+                  step="0.1"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="10"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Additional Features
                 </label>
                 <div className="space-y-2">
@@ -572,9 +656,10 @@ const CostEstimator = () => {
 
               <button
                 type="submit"
-                className="w-full bg-red-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-600 transition-colors"
+                disabled={isSaving}
+                className="w-full bg-red-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Calculate Estimate
+                {isSaving ? 'Saving Estimate...' : 'Calculate Estimate'}
               </button>
             </form>
           </div>
@@ -654,6 +739,9 @@ const CostEstimator = () => {
                         <li>• Final cost may vary based on site conditions</li>
                         <li>• Free consultation available for detailed quote</li>
                         <li>• Includes design, material, and installation</li>
+                        {estimationId && (
+                          <li className="font-bold mt-2">• Your estimate has been saved and will be available for 7 days</li>
+                        )}
                       </ul>
                     </div>
                   </div>
@@ -737,6 +825,7 @@ const CostEstimator = () => {
               <li>• Kitchen prices include standard accessories and hardware</li>
               <li>• Profile lights included in Premium & Luxury wardrobe packages</li>
               <li>• All estimates include material, labor, and installation</li>
+              <li>• All estimates are automatically saved for 7 days for your reference</li>
             </ul>
           </div>
         </div>
@@ -746,6 +835,7 @@ const CostEstimator = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Get a free design consultation"
+        estimationId={estimationId}
       />
     </div>
   );
