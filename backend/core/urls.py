@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/projects/', include('projects.urls')),
     path('api/chatbot/', include('chatbot.urls')),
     path('api/blog/', include('blog.urls')),
+    path('api/quote/', include('quote.urls')),
     
     
     # Documentation
