@@ -1,8 +1,9 @@
+// src/Pages/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Form, Input, Button, Checkbox, message, Card, Typography, Divider } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined, FacebookOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import AuthAPI from '../api/AuthAPI';
 import { goldenTheme } from '../Theme';
 import './AuthStyles.css';
 
@@ -15,13 +16,33 @@ const Login = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login/', values);
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      console.log('Attempting login with:', values);
+      
+      const response = await AuthAPI.login(values);
+      
+      console.log('Login response:', response);
+      
       message.success('Welcome back! Login successful.');
       navigate('/dashboard');
     } catch (error) {
-      message.error(error.response?.data?.message || 'Login failed. Please try again.');
+      console.error('Login error:', error);
+      
+      if (error.response?.status === 401 || error.response?.status === 400) {
+        const errorData = error.response?.data;
+        
+        if (errorData?.error === "Phone number not verified") {
+          message.error('Please verify your phone number before logging in.');
+          navigate('/verify-otp', { state: { phone: values.username } });
+        } else if (errorData?.error === "Email not verified") {
+          message.error('Please verify your email before logging in.');
+        } else if (errorData?.error === "Invalid credentials") {
+          message.error('Invalid username or password. Please try again.');
+        } else {
+          message.error(errorData?.detail || 'Authentication failed. Please check your credentials.');
+        }
+      } else {
+        message.error('Network error. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

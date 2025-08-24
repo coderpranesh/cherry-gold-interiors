@@ -8,7 +8,6 @@ from .models import (
     CaseStudy
 )
 
-# --- Inline Admins ---
 
 class PortfolioImageInline(admin.TabularInline):
     model = PortfolioImage

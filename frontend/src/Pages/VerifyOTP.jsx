@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Form, Input, Button, message, Card, Typography, Divider } from 'antd';
-import { KeyOutlined } from '@ant-design/icons';
-import axios from 'axios';
+// src/components/Auth/VerifyOTP.jsx
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Form, Input, Button, message, Card, Typography } from 'antd';
+import { PhoneOutlined } from '@ant-design/icons';
+import AuthAPI from '../api/AuthAPI';
+import { goldenTheme } from '../Theme';
 import './AuthStyles.css';
 
 const { Title, Text } = Typography;
@@ -10,90 +12,72 @@ const { Title, Text } = Typography;
 const VerifyOTP = () => {
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [countdown, setCountdown] = useState(60);
-  const location = useLocation();
   const navigate = useNavigate();
-  const { phone } = location.state || {};
-
-  useEffect(() => {
-    if (!phone) {
-      navigate('/register');
-      return;
-    }
-
-    const timer = countdown > 0 && setInterval(() => {
-      setCountdown(countdown - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown, phone, navigate]);
+  const location = useLocation();
+  const phone = location.state?.phone || '';
 
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/api/accounts/verify-otp/', {
-        phone,
+      const response = await AuthAPI.verifyOTP({
+        phone: phone,
         otp: values.otp
       });
-      message.success('Verification successful! You can now login.');
+      
+      message.success('Phone number verified successfully!');
       navigate('/login');
     } catch (error) {
-      if (error.response) {
-        message.error(error.response.data.message || 'Verification failed');
-      } else {
-        message.error('Network error. Please try again.');
-      }
+      console.error('OTP verification error:', error);
+      message.error(error.response?.data?.error || 'Invalid OTP. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const resendOTP = async () => {
+  const handleResendOTP = async () => {
     setResendLoading(true);
     try {
-      await axios.post('http://localhost:8000/api/accounts/resend-otp/', { phone });
+      await AuthAPI.resendOTP(phone);
       message.success('OTP resent successfully!');
-      setCountdown(60);
     } catch (error) {
-      if (error.response) {
-        message.error(error.response.data.message || 'Failed to resend OTP');
-      } else {
-        message.error('Network error. Please try again.');
-      }
+      console.error('Resend OTP error:', error);
+      message.error('Failed to resend OTP. Please try again.');
     } finally {
       setResendLoading(false);
     }
   };
 
   return (
-    <div className="auth-container light-premium-theme">
-      <Card className="auth-card" hoverable>
-        <div className="auth-header">
-          <Title level={3} className="premium-title">Verify OTP</Title>
-          <Text type="secondary" className="premium-subtext">
-            Enter the 6-digit code sent to +91 {phone}
-          </Text>
+    <div className="auth-container" style={{ background: 'linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%)' }}>
+      <Card 
+        className="auth-card"
+        style={{ 
+          maxWidth: 480,
+          border: '1px solid rgba(212, 175, 55, 0.3)',
+          boxShadow: '0 8px 24px rgba(212, 175, 55, 0.1)'
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <Title level={3} style={{ color: goldenTheme.token.colorPrimary }}>
+            Verify Phone Number
+          </Title>
+          <Text type="secondary">Enter the OTP sent to {phone}</Text>
         </div>
-        
-        <Divider className="premium-divider" />
-        
-        <Form
-          name="verify-otp"
-          onFinish={onFinish}
-          layout="vertical"
-        >
+
+        <Form name="verify-otp" onFinish={onFinish} layout="vertical">
           <Form.Item
             name="otp"
-            label="Verification Code"
+            label="OTP"
             rules={[
               { required: true, message: 'Please input the OTP!' },
-              { pattern: /^\d{6}$/, message: 'OTP must be 6 digits!' },
+              { len: 6, message: 'OTP must be 6 digits!' }
             ]}
           >
-            <Input 
-              prefix={<KeyOutlined className="premium-input-icon" />} 
-              placeholder="Enter 6-digit code" 
+            <Input
+              prefix={<PhoneOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
+              placeholder="Enter 6-digit OTP"
               maxLength={6}
-              className="premium-input"
+              size="large"
             />
           </Form.Item>
 
@@ -101,31 +85,29 @@ const VerifyOTP = () => {
             <Button 
               type="primary" 
               htmlType="submit" 
-              loading={loading}
-              className="auth-button premium-button"
+              loading={loading} 
               block
               size="large"
+              style={{ 
+                backgroundColor: goldenTheme.token.colorPrimary,
+                borderColor: goldenTheme.token.colorPrimary,
+                fontWeight: 500
+              }}
             >
-              Verify & Continue
+              Verify OTP
             </Button>
           </Form.Item>
         </Form>
 
-        <Divider className="premium-divider">or</Divider>
-
-        <div className="auth-footer">
-          {countdown > 0 ? (
-            <Text type="secondary">Resend code in {countdown} seconds</Text>
-          ) : (
-            <Button 
-              type="link" 
-              onClick={resendOTP} 
-              loading={resendLoading}
-              className="premium-link"
-            >
-              Resend OTP
-            </Button>
-          )}
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <Button 
+            type="link" 
+            loading={resendLoading}
+            onClick={handleResendOTP}
+            style={{ color: goldenTheme.token.colorPrimary }}
+          >
+            Didn't receive OTP? Resend
+          </Button>
         </div>
       </Card>
     </div>

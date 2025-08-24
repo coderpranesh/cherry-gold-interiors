@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, message, Typography, Divider, Steps, Form, Input, Modal, Badge } from 'antd';
 import { CopyOutlined, DollarOutlined, FormOutlined, GiftOutlined } from '@ant-design/icons';
-import api from '../../api/authAPI';
+import api from '../api/authAPI';
 import './DashboardStyles.css';
 
 const { Title, Text, Paragraph } = Typography;
@@ -37,7 +37,7 @@ const ReferAndEarn = () => {
   const handleWithdraw = async (values) => {
     setLoading(true);
     try {
-      await api.post('/referrals/request-withdrawal/', values);
+      await api.post('http://127.0.0.1:8000/referrals/request-withdrawal/', values);
       message.success('Withdrawal request submitted successfully!');
       setWithdrawModalVisible(false);
       fetchUserData();
@@ -51,7 +51,7 @@ const ReferAndEarn = () => {
   const handleReferSubmit = async (values) => {
     setLoading(true);
     try {
-      await api.post('/referrals/submit-referral/', values);
+      await api.post('http://127.0.0.1:8000/referrals/submit-referral/', values);
       message.success('Referral submitted successfully! We will verify and update your rewards.');
       setReferModalVisible(false);
       fetchUserData();

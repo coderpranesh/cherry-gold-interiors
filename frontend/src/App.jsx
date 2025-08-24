@@ -13,11 +13,12 @@ import BlogDetailPage from './Pages/BlogDetailPage';
 import ProjectTracking from './Pages/ProjectTracking';
 import CostEstimator from './Pages/CostEstimator';
 import FAQ from './Pages/FAQ';
+import VerifyOTP from './Pages/VerifyOTP.jsx';
 import Offers from './Pages/Offers.jsx';
 import KitchenDesigner from './Pages/KitchenDesigner';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
-import ReferAndEarn from './Pages/Dashboard/ReferAndEarn';
+import ReferAndEarn from './Pages/ReferralDashboard';
 import PrivateRoute from './Components/PrivateRoute';
 
 import Footer from './Components/Footer';
@@ -32,6 +33,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/about" element={<About />} />
         <Route path="/portfolio" element={<Portfolio />} />
