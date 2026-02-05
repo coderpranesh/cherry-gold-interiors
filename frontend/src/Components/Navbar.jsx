@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, ChevronDown, LogOut } from 'lucide-react';
 import lo from '../assets/logo.svg';
 
 const navItems = [
@@ -38,8 +38,13 @@ const navItems = [
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+
   const location = useLocation();
+  const navigate = useNavigate();
   const navRef = useRef(null);
+
+  // 🔐 Auth check
+  const isAuthenticated = !!localStorage.getItem('access_token');
 
   const isActive = useCallback(
     (path) => location.pathname === path,
@@ -57,6 +62,14 @@ const Navbar = () => {
     setActiveDropdown(null);
   };
 
+  // 🚪 Logout
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    handleLinkClick();
+    navigate('/login');
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -65,17 +78,15 @@ const Navbar = () => {
       }
     };
     document.addEventListener('click', handleClickOutside);
-
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  // Close dropdown on Escape key
+  // Close dropdown on Escape
   useEffect(() => {
     const keyHandler = (e) => {
       if (e.key === 'Escape') setActiveDropdown(null);
     };
     document.addEventListener('keydown', keyHandler);
-
     return () => document.removeEventListener('keydown', keyHandler);
   }, []);
 
@@ -85,22 +96,17 @@ const Navbar = () => {
       className="fixed top-0 left-0 w-full z-50 bg-[#f8f8ed] shadow-sm border-b border-gray-200"
     >
       <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
+        
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group" onClick={handleLinkClick}>
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#f8f8ed' }}
-          >
-            <img
-              src={lo}
-              alt="Cherry Gold Interiors Logo"
-              className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110"
-              loading="lazy"
-            />
-          </div>
+          <img
+            src={lo}
+            alt="Logo"
+            className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110"
+          />
         </Link>
 
-        {/* Desktop Navigation */}
+        {/* Desktop Nav */}
         <div className="hidden md:flex items-center space-x-6">
           {navItems.map((item, index) => (
             <div key={item.path} className="relative">
@@ -108,47 +114,36 @@ const Navbar = () => {
                 <>
                   <button
                     onClick={(e) => toggleDropdown(index, e)}
-                    aria-haspopup="true"
-                    aria-expanded={activeDropdown === index}
-                    className={`flex items-center space-x-1 px-3 py-2 text-lg font-serif transition-colors duration-200 rounded-lg ${
+                    className={`flex items-center gap-1 px-3 py-2 text-lg font-serif rounded-lg ${
                       isActive(item.path) || activeDropdown === index
-                        ? 'text-[#FFD700] font-semibold border-b-2 border-[#FFD700]'
-                        : 'text-[#3A2C0D] hover:text-[#FFD700] hover:border-b-2 hover:border-[#FFD700]'
+                        ? 'text-[#FFD700] border-b-2 border-[#FFD700]'
+                        : 'text-[#3A2C0D] hover:text-[#FFD700]'
                     }`}
                   >
-                    <span>{item.label}</span>
+                    {item.label}
                     <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-200 ${
+                      className={`w-4 h-4 transition-transform ${
                         activeDropdown === index ? 'rotate-180' : ''
                       }`}
                     />
                   </button>
 
                   {activeDropdown === index && (
-                    <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 max-h-96 overflow-y-auto">
-                      {item.dropdown.map((dropdownItem, dropIndex) =>
-                        dropdownItem.type === 'divider' ? (
-                          <div
-                            key={dropIndex}
-                            className="border-t border-gray-200 my-2"
-                          ></div>
-                        ) : (
-                          <Link
-                            key={dropdownItem.path}
-                            to={dropdownItem.path}
-                            className={`block px-4 py-2 text-sm transition-colors duration-200 ${
-                              dropdownItem.highlight
-                                ? 'text-[#FFD700] font-semibold hover:bg-orange-50'
-                                : dropdownItem.label.startsWith('→')
-                                ? 'text-gray-600 hover:bg-gray-50 pl-6'
-                                : 'text-gray-700 hover:bg-orange-50 hover:text-[#FFD700]'
-                            }`}
-                            onClick={handleLinkClick}
-                          >
-                            {dropdownItem.label}
-                          </Link>
-                        )
-                      )}
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border py-2">
+                      {item.dropdown.map((d) => (
+                        <Link
+                          key={d.path}
+                          to={d.path}
+                          onClick={handleLinkClick}
+                          className={`block px-4 py-2 text-sm ${
+                            d.highlight
+                              ? 'text-[#FFD700] font-semibold'
+                              : 'text-gray-700 hover:text-[#FFD700]'
+                          }`}
+                        >
+                          {d.label}
+                        </Link>
+                      ))}
                     </div>
                   )}
                 </>
@@ -156,10 +151,10 @@ const Navbar = () => {
                 <Link
                   to={item.path}
                   onClick={handleLinkClick}
-                  className={`px-3 py-2 text-lg font-serif transition-colors duration-200 rounded-lg ${
+                  className={`px-3 py-2 text-lg font-serif rounded-lg ${
                     isActive(item.path)
-                      ? 'text-[#FFD700] bg-orange-50'
-                      : 'text-gray-700 hover:text-[#FFD700] hover:bg-orange-50'
+                      ? 'text-[#FFD700]'
+                      : 'text-gray-700 hover:text-[#FFD700]'
                   }`}
                 >
                   {item.label}
@@ -169,115 +164,61 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* Auth Buttons */}
-        <div className="hidden md:flex items-center space-x-3">
-          <Link
-            to="/login"
-            className="text-gray-700 hover:text-red-600 font-medium transition-colors"
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors"
-          >
-            Sign Up
-          </Link>
+        {/* Desktop Auth */}
+        <div className="hidden md:flex items-center gap-4">
+          {!isAuthenticated ? (
+            <>
+              <Link to="/login" className="text-gray-700 hover:text-red-600">
+                Login
+              </Link>
+              <Link to="/register" className="bg-red-500 text-white px-4 py-2 rounded-lg">
+                Sign Up
+              </Link>
+            </>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-red-600 hover:text-red-700"
+            >
+              <LogOut size={18} />
+              Logout
+            </button>
+          )}
         </div>
 
-        {/* Mobile Menu Toggle */}
+        {/* Mobile Toggle */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden p-2 rounded-md text-gray-700 hover:text-[#FFD700]"
+          className="md:hidden"
         >
-          {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isMenuOpen ? <X /> : <Menu />}
         </button>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 py-4">
-          <div className="flex flex-col space-y-2">
-            {navItems.map((item, index) => (
-              <div key={item.path}>
-                {item.dropdown ? (
-                  <>
-                    <button
-                      onClick={(e) => toggleDropdown(index, e)}
-                      className={`flex items-center justify-between w-full text-left px-3 py-2 text-base font-medium transition-colors duration-200 rounded-lg ${
-                        isActive(item.path) || activeDropdown === index
-                          ? 'text-[#FFD700] bg-orange-50'
-                          : 'text-gray-700 hover:text-[#FFD700] hover:bg-orange-50'
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform duration-200 ${
-                          activeDropdown === index ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </button>
+        <div className="md:hidden border-t py-4 px-4 space-y-3">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-[#FFD700]"
+            >
+              {item.label}
+            </Link>
+          ))}
 
-                    {activeDropdown === index && (
-                      <div className="ml-4 mt-2 space-y-1">
-                        {item.dropdown.map((dropdownItem, dropIndex) =>
-                          dropdownItem.type === 'divider' ? (
-                            <div
-                              key={dropIndex}
-                              className="border-t border-gray-200 my-2"
-                            ></div>
-                          ) : (
-                            <Link
-                              key={dropdownItem.path}
-                              to={dropdownItem.path}
-                              onClick={handleLinkClick}
-                              className={`block px-3 py-2 text-sm transition-colors duration-200 rounded-lg ${
-                                dropdownItem.highlight
-                                  ? 'text-[#FFD700] font-semibold hover:bg-orange-50'
-                                  : dropdownItem.label.startsWith('→')
-                                  ? 'text-gray-600 hover:bg-gray-50 pl-6'
-                                  : 'text-gray-600 hover:text-[#FFD700] hover:bg-orange-50'
-                              }`}
-                            >
-                              {dropdownItem.label}
-                            </Link>
-                          )
-                        )}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <Link
-                    to={item.path}
-                    onClick={handleLinkClick}
-                    className={`block px-3 py-2 text-base font-medium transition-colors duration-200 rounded-lg ${
-                      isActive(item.path)
-                        ? 'text-[#FFD700] bg-orange-50'
-                        : 'text-gray-700 hover:text-[#FFD700] hover:bg-orange-50'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                )}
-              </div>
-            ))}
-
-            {/* Mobile Auth Buttons */}
-            <div className="flex items-center space-x-3 mt-4 px-3">
-              <Link
-                to="/login"
-                className="text-gray-700 hover:text-red-600 font-medium transition-colors"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors"
-              >
-                Sign Up
-              </Link>
-            </div>
-          </div>
+          {!isAuthenticated ? (
+            <>
+              <Link to="/login" onClick={handleLinkClick}>Login</Link>
+              <Link to="/register" onClick={handleLinkClick}>Sign Up</Link>
+            </>
+          ) : (
+            <button onClick={handleLogout} className="text-red-600">
+              Logout
+            </button>
+          )}
         </div>
       )}
     </nav>

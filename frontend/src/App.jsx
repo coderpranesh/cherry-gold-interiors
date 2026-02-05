@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import { Routes, Route } from 'react-router-dom'; // ✅ no BrowserRouter here
+import { Routes, Route } from 'react-router-dom'; 
 import Navbar from './Components/Navbar';
 import HomePage from './Pages/HomePage';
 import Services from './Pages/Services';
@@ -24,7 +24,7 @@ import PrivateRoute from './Components/PrivateRoute';
 import Footer from './Components/Footer';
 import Chatbot from './Components/Chatbot.jsx';
 import About from './Components/AboutSection.jsx';
-import './App.css'; // ✅ Import global styles
+import './App.css'; 
 function App() {
   return (
     <div className="min-h-screen bg-white">

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Verification Required</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  
+  <style>
+    /* FONTS */
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500&family=Space+Mono&display=swap');
+
+    /* RESET */
+    table, td, div, h1, p { font-family: 'Montserrat', Arial, sans-serif; }
+    .serif { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .mono { font-family: 'Space Mono', Courier New, monospace; }
+
+    /* LAYOUT */
+    body { margin: 0; padding: 0; background-color: #0b0d10; }
+    .outer-table { background-color: #0b0d10; }
+    .outer-td { padding: 40px 10px 0 10px; }
+    .email-wrapper { max-width: 600px; }
+    .sconce-col { padding-top: 20px; width: 60px; }
+    .center-col { padding: 0 10px; }
+    
+    /* SCONCES */
+    .sconce-arm { width: 6px; height: 120px; margin: 0 auto; border-radius: 3px; }
+    .sconce-arm-left { background: linear-gradient(to right, #222, #c5a059, #222); }
+    .sconce-arm-right { background: linear-gradient(to left, #222, #c5a059, #222); }
+    .sconce-shade { width: 30px; height: 50px; border: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; margin: 0 auto; position: relative; }
+    .sconce-shade-left { background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1)); }
+    .sconce-shade-right { background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); }
+    .sconce-glow { width: 20px; height: 20px; background: radial-gradient(circle, #f4dca5, transparent); border-radius: 50%; position: absolute; bottom: -10px; left: 5px; opacity: 0.6; filter: blur(2px); }
+    .wall-glow { width: 80px; height: 200px; background: radial-gradient(ellipse at center, rgba(197, 160, 89, 0.1) 0%, transparent 70%); margin-top: -20px; }
+    .wall-glow-left { margin-left: -25px; }
+    .wall-glow-right { margin-right: -25px; }
+
+    /* MAIN LAMP */
+    .canopy { width: 80px; height: 10px; background: linear-gradient(90deg, #222, #444, #222); margin: 0 auto; border-radius: 5px; }
+    .cord { width: 2px; height: 40px; background: #111; margin: 0 auto; }
+    .shade { width: 120px; height: 65px; background: linear-gradient(180deg, #1a1a1a, #000); border-radius: 60px 60px 0 0; margin: 0 auto; position: relative; border-top: 1px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
+    .gold-rim { position: absolute; top: 10px; left: 10px; width: 100px; height: 5px; background: #c5a059; border-radius: 50%; opacity: 0.8; }
+    .bulb { width: 50px; height: 50px; background: radial-gradient(circle, #fff, #f4dca5 40%, transparent 80%); border-radius: 50%; margin: -25px auto 0; position: relative; }
+    .bulb-glow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 80px 30px rgba(255, 250, 220, 0.4); }
+    .bright-beam { width: 100%; height: 220px; background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.4) 0%, rgba(197, 160, 89, 0.15) 40%, transparent 75%); margin-top: -10px; pointer-events: none; }
+
+    /* GLASS CARD */
+    .card { background-color: rgba(13, 17, 22, 0.95); border: 1px solid #c5a059; box-shadow: 0 20px 50px rgba(0,0,0,0.7); }
+    .card-content { border-left: 3px solid #c5a059; padding: 40px 35px 40px 32px; }
+    .card-title { margin: 0 0 10px 0; color: #f4dca5; font-size: 38px; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.9); }
+    .card-subtitle { margin: 0 0 30px 0; color: #7a8899; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; }
+    .card-text { margin: 0 0 25px 0; font-size: 15px; line-height: 1.8; color: #d0d0d0; text-align: center; }
+    .card-text-highlight { color: #f4dca5; }
+    .card-text-gold { color: #c5a059; }
+    
+    /* OTP SECTION */
+    .otp-frame { margin: 30px 0; border: 1px solid rgba(197, 160, 89, 0.4); background-color: rgba(0,0,0,0.5); }
+    .otp-label { display: block; font-size: 9px; color: #c5a059; letter-spacing: 2px; margin-bottom: 10px; text-transform: uppercase; }
+    .otp-text { font-size: 52px; color: #ffffff; letter-spacing: 8px; font-weight: 400; margin: 10px 0; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+    .otp-expires { font-size: 11px; color: #666; margin-top: 10px; font-style: italic; }
+
+    /* BUTTON */
+    .cta-button { display: inline-block; padding: 18px 0; width: 100%; background-color: transparent; border: 1px solid #c5a059; color: #c5a059; font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 3px; text-decoration: none; text-transform: uppercase; text-align: center; border-radius: 2px; }
+    .button-help { text-align: center; font-size: 11px; color: #666; margin-top: 15px; }
+
+    /* DIVIDER */
+    .card-divider { padding: 0 35px 20px 35px; }
+    .divider-line { width: 100%; height: 1px; background: linear-gradient(to right, transparent, #c5a059, transparent); opacity: 0.3; }
+
+    /* FOOTER */
+    .footer { margin-top: 40px; }
+    .footer-td { padding: 20px; color: #555555; font-size: 11px; }
+    .footer-title { margin: 0 0 5px 0; color: #c5a059; font-size: 18px; }
+    .footer-subtitle { margin: 0; letter-spacing: 1px; text-transform: uppercase; }
+    .footer-copyright { margin: 10px 0 0; font-size: 10px; color: #444; }
+
+    /* PREHEADER */
+    .preheader { display: none; max-height: 0; overflow: hidden; }
+
+    /* MOBILE RESPONSIVE */
+    @media screen and (max-width: 600px) {
+      .email-wrapper { width: 100% !important; }
+      .sconce-col { display: none !important; }
+      .otp-text { font-size: 36px !important; letter-spacing: 4px !important; }
+      .card-title { font-size: 28px !important; }
+    }
+  </style>
+</head>
+
+<!-- BACKGROUND -->
+<body style="margin: 0; padding: 0; background-color: #0b0d10;">
+
+  <!-- PREHEADER -->
+  <div style="display: none; max-height: 0; overflow: hidden;">
+    Verification code {{ otp }} for {{ site_name }}. Expires in 10 minutes.
+  </div>
+
+  <center>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0b0d10;">
+      <tr>
+        <td align="center" style="padding: 40px 10px 0 10px;">
+          
+          <!-- MAIN LAYOUT TABLE (3 Columns for Sconces) -->
+          <table class="email-wrapper" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width: 600px;">
+            <tr>
+              
+              <!-- 1. LEFT SMALL LAMP (DIM) -->
+              <td class="sconce-col" width="60" valign="top" style="padding-top: 20px;">
+                <!-- Sconce Arm -->
+                <div style="width: 6px; height: 120px; background: linear-gradient(to right, #222, #c5a059, #222); margin: 0 auto; border-radius: 3px;"></div>
+                <!-- Sconce Shade -->
+                <div style="width: 30px; height: 50px; background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1)); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; margin: 0 auto; position: relative;">
+                  <!-- Dim Light Glow -->
+                  <div style="width: 20px; height: 20px; background: radial-gradient(circle, #f4dca5, transparent); border-radius: 50%; position: absolute; bottom: -10px; left: 5px; opacity: 0.6; filter: blur(2px);"></div>
+                </div>
+                <!-- Wall Glow (Dim) -->
+                <div style="width: 80px; height: 200px; background: radial-gradient(ellipse at center, rgba(197, 160, 89, 0.1) 0%, transparent 70%); margin-left: -25px; margin-top: -20px;"></div>
+              </td>
+
+              <!-- 2. CENTER COLUMN (Main Lamp + Content) -->
+              <td valign="top" style="padding: 0 10px;">
+
+                <!-- A. BRIGHT MAIN LAMP -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td align="center" style="padding-bottom: 0;">
+                      <!-- Canopy -->
+                      <div style="width: 80px; height: 10px; background: linear-gradient(90deg, #222, #444, #222); margin: 0 auto; border-radius: 5px;"></div>
+                      <!-- Cord -->
+                      <div style="width: 2px; height: 40px; background: #111; margin: 0 auto;"></div>
+                      <!-- Shade -->
+                      <div style="width: 120px; height: 65px; background: linear-gradient(180deg, #1a1a1a, #000); border-radius: 60px 60px 0 0; margin: 0 auto; position: relative; border-top: 1px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.8);">
+                        <!-- Gold Rim -->
+                        <div style="position: absolute; top: 10px; left: 10px; width: 100px; height: 5px; background: #c5a059; border-radius: 50%; opacity: 0.8;"></div>
+                        <!-- Bulb -->
+                        <div style="width: 50px; height: 50px; background: radial-gradient(circle, #fff, #f4dca5 40%, transparent 80%); border-radius: 50%; margin: -25px auto 0; position: relative;">
+                          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 80px 30px rgba(255, 250, 220, 0.4);"></div>
+                        </div>
+                      </div>
+                      <!-- BRIGHT BEAM -->
+                      <!-- Higher opacity white center to simulate strong light -->
+                      <div style="width: 100%; height: 220px; background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.4) 0%, rgba(197, 160, 89, 0.15) 40%, transparent 75%); margin-top: -10px; pointer-events: none;"></div>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- B. THE GLASS CARD -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 100%; background-color: rgba(13, 17, 22, 0.95); border: 1px solid #c5a059; box-shadow: 0 20px 50px rgba(0,0,0,0.7);">
+                  <tr>
+                    <td style="border-left: 3px solid #c5a059; padding: 40px 35px 40px 32px;">
+                      
+                      <h1 class="serif" style="margin: 0 0 10px 0; color: #f4dca5; font-size: 38px; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.9);">
+                        Verification
+                      </h1>
+                      <p class="mono" style="margin: 0 0 30px 0; color: #7a8899; font-size: 11px; letter-spacing: 4px; text-transform: uppercase;">
+                        Secure Studio Entry
+                      </p>
+
+                      <p style="margin: 0 0 25px 0; font-size: 15px; line-height: 1.8; color: #d0d0d0; text-align: center;">
+                        Greetings <strong style="color: #f4dca5;">{{ first_name }}</strong>.<br>
+                        Your access request for the <strong style="color: #c5a059;">{{ site_name }}</strong> private collection is pending authorization.
+                      </p>
+
+                      <!-- OTP Frame -->
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 30px 0; border: 1px solid rgba(197, 160, 89, 0.4); background-color: rgba(0,0,0,0.5);">
+                        <tr>
+                          <td align="center" style="padding: 35px 20px;">
+                            <span class="mono" style="display: block; font-size: 9px; color: #c5a059; letter-spacing: 2px; margin-bottom: 10px; text-transform: uppercase;">
+                              Access Key
+                            </span>
+                            <div class="otp-text serif" style="font-size: 52px; color: #ffffff; letter-spacing: 8px; font-weight: 400; margin: 10px 0; text-shadow: 0 0 20px rgba(255,255,255,0.3);">
+                              {{ otp }}
+                            </div>
+                            <div style="font-size: 11px; color: #666; margin-top: 10px; font-style: italic;">
+                              Expires in 10 Minutes
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                          <td align="center">
+                            <a href="#" style="display: inline-block; padding: 18px 0; width: 100%; background-color: transparent; border: 1px solid #c5a059; color: #c5a059; font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 3px; text-decoration: none; text-transform: uppercase; text-align: center; border-radius: 2px;">
+                              Confirm Access
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <p style="text-align: center; font-size: 11px; color: #666; margin-top: 15px;">
+                        If the button does not work, please copy the code above.
+                      </p>
+
+                    </td>
+                  </tr>
+                  <!-- Divider -->
+                  <tr>
+                    <td style="padding: 0 35px 20px 35px;">
+                      <div style="width: 100%; height: 1px; background: linear-gradient(to right, transparent, #c5a059, transparent); opacity: 0.3;"></div>
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+
+              <!-- 3. RIGHT SMALL LAMP (DIM) -->
+              <td class="sconce-col" width="60" valign="top" style="padding-top: 20px;">
+                <!-- Sconce Arm -->
+                <div style="width: 6px; height: 120px; background: linear-gradient(to left, #222, #c5a059, #222); margin: 0 auto; border-radius: 3px;"></div>
+                <!-- Sconce Shade -->
+                <div style="width: 30px; height: 50px; background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px 15px 0 0; margin: 0 auto; position: relative;">
+                  <!-- Dim Light Glow -->
+                  <div style="width: 20px; height: 20px; background: radial-gradient(circle, #f4dca5, transparent); border-radius: 50%; position: absolute; bottom: -10px; left: 5px; opacity: 0.6; filter: blur(2px);"></div>
+                </div>
+                <!-- Wall Glow (Dim) -->
+                <div style="width: 80px; height: 200px; background: radial-gradient(ellipse at center, rgba(197, 160, 89, 0.1) 0%, transparent 70%); margin-right: -25px; margin-top: -20px;"></div>
+              </td>
+
+            </tr>
+          </table>
+          <!-- End Main Layout Table -->
+
+          <!-- FOOTER -->
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 40px;">
+            <tr>
+              <td align="center" style="padding: 20px; color: #555555; font-size: 11px;">
+                <p class="serif" style="margin: 0 0 5px 0; color: #c5a059; font-size: 18px;">
+                  {{ site_name }}
+                </p>
+                <p class="mono" style="margin: 0; letter-spacing: 1px; text-transform: uppercase;">
+                  Interior Architecture • Design • Art
+                </p>
+                <p style="margin: 10px 0 0; font-size: 10px; color: #444;">
+                  © {{ year }} All Rights Reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  </center>
+
+</body>
+</html>

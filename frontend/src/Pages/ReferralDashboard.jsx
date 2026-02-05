@@ -43,7 +43,7 @@ const ReferralDashboard = () => {
         return;
       }
       
-      const response = await axios.get('http://localhost:8000/api/auth/referrals/', {
+      const response = await axios.get('http://localhost:8000/api/auth/referrals/dashboard', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
