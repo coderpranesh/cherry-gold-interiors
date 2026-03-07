@@ -16,12 +16,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ========================
 # 1. CORE CONFIGURATION
 # ========================
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-fallback-key')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = False
-ALLOWED_HOSTS = ['cherrygoldinteriors.com', 'www.cherrygoldinteriors.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['cherrygoldinteriors.com', 'www.cherrygoldinteriors.com', '127.0.0.1', 'localhost', '72.61.253.185']
 ROOT_URLCONF = 'core.urls'
 WSGI_APPLICATION = 'core.wsgi.application'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 # ========================
 # 2. APPLICATION DEFINITION
@@ -65,17 +69,16 @@ INSTALLED_APPS = [
 # 3. MIDDLEWARE
 # ========================
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # For serving static files in production
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  # For translations
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
 ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -219,6 +222,15 @@ SPECTACULAR_SETTINGS = {
     'LICENSE': {'name': 'BSD License'},
 }
 
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+X_FRAME_OPTIONS = 'DENY'
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+# SECURE_SSL_REDIRECT = True
 # JWT Settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
@@ -226,14 +238,7 @@ SIMPLE_JWT = {
     # 'ROTATE_REFRESH_TOKENS': True,
 }
 
-# MSG91 Configuration
-MSG91_AUTH_KEY = 'your_msg91_auth_key'
-MSG91_TEMPLATE_ID = 'your_msg91_template_id'
 
-
-# Fast2SMS configuration
-FAST2SMS_API_KEY = 'E0YOB3sySeUKWDTf1428xhqr7CnNw9dQgMRijI5butPGXJLmzlV2kqnLKSsOPlEYI3FDt6hp07XQmUMj'
-FRONTEND_URL = 'http://localhost:5173'  # Update with your frontend URL
 
 # ========================
 # 9. CORS & SECURITY
@@ -259,30 +264,24 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 
-EMAIL_HOST_USER = 'praneshkr29@gmail.com'
-EMAIL_HOST_PASSWORD = 'slhgpigoehtpuxaa'
-DEFAULT_FROM_EMAIL = 'praneshkr29@gmail.com'
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Service specific settings
-ADMIN_EMAIL = 'admin@example.com'
+ADMIN_EMAIL = 'ankit@cherrygoldinteriors.com'
 CONTACT_PHONE = '+91 9433889668'
-CONTACT_EMAIL = 'contact@example.com'
+CONTACT_EMAIL = 'cherrygoldinteriors@gmail.com'
 COMPANY_NAME = 'Your Interior Design Company'
 SITE_NAME = 'Cherry Gold Interiors'
 
-# Twilio (WhatsApp)
-TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-TWILIO_WHATSAPP_NUMBER = 'whatsapp:+14155238886'
 
 # Zoho CRM
 ZOHO_CRM_API_KEY = os.getenv('ZOHO_CRM_API_KEY')
 ZOHO_CRM_ENDPOINT = "https://www.zohoapis.com/crm/v2/Leads"
 
-# Dialogflow (Chatbot)
-DIALOGFLOW_PROJECT_ID = os.getenv('DIALOGFLOW_PROJECT_ID')
-DIALOGFLOW_LANGUAGE_CODE = os.getenv('DIALOGFLOW_LANGUAGE_CODE', 'en')
+
 
 # ========================
 # 11. FRONTEND INTEGRATION
