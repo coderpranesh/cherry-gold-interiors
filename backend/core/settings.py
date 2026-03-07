@@ -218,7 +218,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Cherry Gold Interiors API',
     'DESCRIPTION': 'API documentation for Cherry Gold Interiors',
     'VERSION': '1.0.0',
-    'CONTACT': {'email': 'contact@cherrygoldinteriors.com'},
+    'CONTACT': {'email': 'ankit@cherrygoldinteriors.com'},
     'LICENSE': {'name': 'BSD License'},
 }
 
@@ -230,6 +230,8 @@ X_FRAME_OPTIONS = 'DENY'
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # SECURE_SSL_REDIRECT = True
 # JWT Settings
 SIMPLE_JWT = {
@@ -247,25 +249,31 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:8000",
     "http://localhost:3000",
+    "http://72.61.253.185",
     "https://cherrygoldinteriors.com",
     "https://www.cherrygoldinteriors.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
+CSRF_TRUSTED_ORIGINS = [
+    "http://72.61.253.185",
+    "http://cherrygoldinteriors.com",
+    "http://www.cherrygoldinteriors.com",
+    "https://cherrygoldinteriors.com",
+    "https://www.cherrygoldinteriors.com",
+]
 
 # ========================
 # 10. THIRD-PARTY INTEGRATIONS
 # ========================
 # Email (SMTP)
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL") == "True"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 

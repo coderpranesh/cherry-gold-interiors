@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Form, Input, Button, message, Card, Typography } from 'antd';
 import { PhoneOutlined } from '@ant-design/icons';
-import AuthAPI from '../api/AuthAPI';
+import AuthAPI from '../api/authAPI';
 import { goldenTheme } from '../Theme';
 import './AuthStyles.css';
 
