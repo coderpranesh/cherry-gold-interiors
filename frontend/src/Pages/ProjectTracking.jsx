@@ -48,7 +48,7 @@ const ProjectTracking = () => {
     
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/projects/track/${serviceNumber.trim()}/`
+        `/api/projects/track/${serviceNumber.trim()}/`
       );
       
       if (!response.data || !response.data.stages) {

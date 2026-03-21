@@ -153,7 +153,7 @@ const Services = () => {
       console.log('Submitting:', submissionData); // Debug log
 
       const response = await axios.post(
-        'http://127.0.0.1:8000/api/services/requests/',
+        '/api/services/requests/',
         submissionData,
         {
           headers: {

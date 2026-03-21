@@ -95,7 +95,7 @@ const CostEstimator = () => {
   const saveEstimationToBackend = async (estimationData) => {
     setIsSaving(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/quote/api/estimations/', {
+      const response = await fetch('/api/quote/api/estimations/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
