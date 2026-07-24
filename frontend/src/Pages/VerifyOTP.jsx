@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Form, Input, Button, message, Card, Typography } from 'antd';
 import { PhoneOutlined } from '@ant-design/icons';
 import AuthAPI from '../api/authAPI';
-import { goldenTheme } from '../Theme';
+import { goldenTheme } from '../theme';
 import './AuthStyles.css';
 
 const { Title, Text } = Typography;

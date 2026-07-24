@@ -9,8 +9,8 @@ import {
   GiftOutlined, TeamOutlined, CheckOutlined, CloseOutlined,
   SafetyCertificateOutlined, VerifiedOutlined
 } from '@ant-design/icons';
-import AuthAPI from '../api/AuthAPI';
-import { goldenTheme } from '../Theme';
+import AuthAPI from '../api/authAPI';
+import { goldenTheme } from '../theme';
 import './AuthStyles.css';
 
 const { Title, Text, Paragraph } = Typography;

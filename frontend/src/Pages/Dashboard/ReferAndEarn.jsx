@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // ADD THIS IMPORT
 import { Card, Button, message, Typography, Divider, Steps, Form, Input, Modal, Badge, Spin } from 'antd';
 import { CopyOutlined, DollarOutlined, FormOutlined, GiftOutlined, LogoutOutlined } from '@ant-design/icons';
-import AuthAPI from '../api/AuthAPI';
+import AuthAPI from '../api/authAPI';
 import './DashboardStyles.css';
 
 const { Title, Text, Paragraph } = Typography;

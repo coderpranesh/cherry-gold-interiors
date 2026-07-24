@@ -9,7 +9,7 @@ import {
   TeamOutlined, BankOutlined, TrophyOutlined, InfoCircleOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
-import AuthAPI from '../api/AuthAPI';
+import AuthAPI from '../api/authAPI';
 import copy from 'copy-to-clipboard';
 
 const { Title, Text, Paragraph } = Typography;

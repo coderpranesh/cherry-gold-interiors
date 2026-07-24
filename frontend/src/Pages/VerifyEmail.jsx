@@ -8,8 +8,8 @@ import {
   MailOutlined, SafetyCertificateOutlined, VerifiedOutlined,
   ArrowLeftOutlined, ReloadOutlined 
 } from '@ant-design/icons';
-import AuthAPI from '../api/AuthAPI';
-import { goldenTheme } from '../Theme';
+import AuthAPI from '../api/authAPI';
+import { goldenTheme } from '../theme';
 
 const { Title, Text } = Typography;
 
