@@ -90,6 +90,13 @@ const Navbar = () => {
     return () => document.removeEventListener('keydown', keyHandler);
   }, []);
 
+  // Close the mobile menu & any open dropdown whenever the route changes
+  // (e.g. browser back/forward, or a navigate() call fired elsewhere)
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setActiveDropdown(null);
+  }, [location.pathname, location.search]);
+
   return (
     <nav
       ref={navRef}
@@ -102,7 +109,7 @@ const Navbar = () => {
           <img
             src={lo}
             alt="Logo"
-            className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110"
+            className="w-12 h-12 md:w-16 md:h-16 object-contain transition-transform duration-300 group-hover:scale-110"
           />
         </Link>
 
@@ -114,6 +121,7 @@ const Navbar = () => {
                 <>
                   <button
                     onClick={(e) => toggleDropdown(index, e)}
+                    aria-expanded={activeDropdown === index}
                     className={`flex items-center gap-1 px-3 py-2 text-lg font-serif rounded-lg ${
                       isActive(item.path) || activeDropdown === index
                         ? 'text-[#FFD700] border-b-2 border-[#FFD700]'
@@ -189,7 +197,9 @@ const Navbar = () => {
         {/* Mobile Toggle */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden"
+          aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMenuOpen}
+          className="md:hidden p-2 -mr-2 text-[#3A2C0D]"
         >
           {isMenuOpen ? <X /> : <Menu />}
         </button>
@@ -197,28 +207,84 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden border-t py-4 px-4 space-y-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={handleLinkClick}
-              className="block text-gray-700 hover:text-[#FFD700]"
-            >
-              {item.label}
-            </Link>
-          ))}
+        <div className="md:hidden border-t py-2 px-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          {navItems.map((item, index) =>
+            item.dropdown ? (
+              <div key={item.path} className="border-b border-gray-100 last:border-b-0">
+                <button
+                  onClick={(e) => toggleDropdown(index, e)}
+                  aria-expanded={activeDropdown === index}
+                  className={`w-full flex items-center justify-between py-3 text-left text-base font-serif ${
+                    isActive(item.path) || activeDropdown === index
+                      ? 'text-[#FFD700]'
+                      : 'text-gray-700'
+                  }`}
+                >
+                  {item.label}
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${
+                      activeDropdown === index ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
 
-          {!isAuthenticated ? (
-            <>
-              <Link to="/login" onClick={handleLinkClick}>Login</Link>
-              <Link to="/register" onClick={handleLinkClick}>Sign Up</Link>
-            </>
-          ) : (
-            <button onClick={handleLogout} className="text-red-600">
-              Logout
-            </button>
+                {activeDropdown === index && (
+                  <div className="pb-2 pl-3 space-y-1">
+                    {item.dropdown.map((d) => (
+                      <Link
+                        key={d.path}
+                        to={d.path}
+                        onClick={handleLinkClick}
+                        className={`block py-2.5 text-sm ${
+                          d.highlight
+                            ? 'text-[#FFD700] font-semibold'
+                            : 'text-gray-600 hover:text-[#FFD700]'
+                        }`}
+                      >
+                        {d.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={handleLinkClick}
+                className={`block py-3 text-base font-serif border-b border-gray-100 last:border-b-0 ${
+                  isActive(item.path) ? 'text-[#FFD700]' : 'text-gray-700'
+                }`}
+              >
+                {item.label}
+              </Link>
+            )
           )}
+
+          <div className="pt-3 mt-1 space-y-1">
+            {!isAuthenticated ? (
+              <>
+                <Link to="/login" 
+                onClick={handleLinkClick} 
+                className="block text-center bg-green-500 text-white py-3 rounded-lg font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={handleLinkClick}
+                  className="block text-center bg-red-500 text-white py-3 rounded-lg font-medium"
+                >
+                  Sign Up
+                </Link>
+              </>
+            ) : (
+              <button onClick={handleLogout} className="flex items-center gap-2 py-3 text-red-600">
+                <LogOut size={18} />
+                Logout
+              </button>
+            )}
+          </div>
         </div>
       )}
     </nav>

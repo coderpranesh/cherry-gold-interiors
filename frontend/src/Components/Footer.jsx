@@ -1,4 +1,5 @@
 import React from 'react';
+import lo from '../assets/logo_foot.png';
 import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Youtube, Shield, FileText, Users, Clock } from 'lucide-react';
 
 const Footer = () => {
@@ -18,9 +19,7 @@ const Footer = () => {
           <div>
             
             <div className="flex items-center space-x-2 mb-6">
-              <div className="bg-[#FFD700] text-[#3A2C0D] p-2 rounded-lg">
-                <span className="font-bold text-lg">CG</span>
-              </div>
+              <img src={lo} alt="Cherry Gold Interiors Logo" className="w-12 h-12" />
               <span className="font-bold text-xl">Cherry Gold Interiors</span>
             </div>
             <p className="text-[#F5F5F5] mb-6 leading-relaxed">
