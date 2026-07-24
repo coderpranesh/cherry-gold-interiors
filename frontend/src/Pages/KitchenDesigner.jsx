@@ -32,79 +32,76 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
-// import k from '../assets/k.png'; // Import for the 'teal-dark' color
 
-// L-shaped kitchen images mapping to your local files
+// L-shaped kitchen images – paths are relative to the public folder
+// Ensure the 'Lshape' folder is placed inside your 'public' directory.
 const lShapeImageMap = {
   // Lacquered Glass colors
-  'teal-dark': '/src/Lshape/teal dark.png',
-  'charcoal-grey': '/src/Lshape/charcoal grey.png',
-  'navy-blue': '/src/Lshape/navy blue.png',
-  'black-pearl': '/src/Lshape/black pearl.png',
-  'cream-white': '/src/Lshape/cream white.png',
-  'wine-red': '/src/Lshape/wine red.png',
-  'forest-green': '/src/Lshape/forest green.png',
-  'lavender-grey': '/src/Lshape/lavender grey.png',
-  'golden-beige': '/src/Lshape/golden beige.png',
-  'aquamarine': '/src/Lshape/aquamarine glossy.png',
+  'teal-dark': '/Lshape/teal dark.png',
+  'charcoal-grey': '/Lshape/charcoal grey.png',
+  'navy-blue': '/Lshape/navy blue.png',
+  'black-pearl': '/Lshape/black pearl.png',
+  'cream-white': '/Lshape/cream white.png',
+  'wine-red': '/Lshape/wine red.png',
+  'forest-green': '/Lshape/forest green.png',
+  'lavender-grey': '/Lshape/lavender grey.png',
+  'golden-beige': '/Lshape/golden beige.png',
+  'aquamarine': '/Lshape/aquamarine glossy.png',
 
   // Acrylics colors
-  'burgundy-red': '/src/Lshape/burgundy red.png',
-  'teal-blue': '/src/Lshape/teal blue.png',
-  'charcoal-black': '/src/Lshape/charcoal black.png',
-  'slate-black': '/src/Lshape/slate black.png',
-  'sand-beige': '/src/Lshape/sand beige.png',
-  'silver-grey': '/src/Lshape/silver grey.png',
-  'midnight-blue': '/src/Lshape/midnight blue.png',
-  'pearl-white': '/src/Lshape/pearl white.png',
-  'cream-ivory': '/src/Lshape/cream ivory.png',
-  'warm-grey': '/src/Lshape/warm grey.png',
+  'burgundy-red': '/Lshape/burgundy red.png',
+  'teal-blue': '/Lshape/teal blue.png',
+  'charcoal-black': '/Lshape/charcoal black.png',
+  'slate-black': '/Lshape/slate black.png',
+  'sand-beige': '/Lshape/sand beige.png',
+  'silver-grey': '/Lshape/silver grey.png',
+  'midnight-blue': '/Lshape/midnight blue.png',
+  'pearl-white': '/Lshape/pearl white.png',
+  'cream-ivory': '/Lshape/cream ivory.png',
+  'warm-grey': '/Lshape/warm grey.png',
 
   // Veneers colors
-  'walnut-brown': '/src/Lshape/walnut brown wood.png',
-  'light-oak': '/src/Lshape/light oak wood.png',
-  'teak-brown': '/src/Lshape/teak brown wood.png',
-  'dark-walnut': '/src/Lshape/dark walnut wood.png',
-  'cherry-wood': '/src/Lshape/cherry wood wood.png',
-  'mahogany-dark': '/src/Lshape/mahogany dark wood.png',
-  'maple-light': '/src/Lshape/maple light wood.png',
-  'ebony-black': '/src/Lshape/ebony black wood.png',
-  'pine-natural': '/src/Lshape/pine natural wood.png',
-  'rosewood': '/src/Lshape/rosewood wood.png',
+  'walnut-brown': '/Lshape/walnut brown wood.png',
+  'light-oak': '/Lshape/light oak wood.png',
+  'teak-brown': '/Lshape/teak brown wood.png',
+  'dark-walnut': '/Lshape/dark walnut wood.png',
+  'cherry-wood': '/Lshape/cherry wood wood.png',
+  'mahogany-dark': '/Lshape/mahogany dark wood.png',
+  'maple-light': '/Lshape/maple light wood.png',
+  'ebony-black': '/Lshape/ebony black wood.png',
+  'pine-natural': '/Lshape/pine natural wood.png',
+  'rosewood': '/Lshape/rosewood wood.png',
 
-  // Standard Laminates colors - Now with proper unique mappings
-  'dark-brown': '/src/Lshape/dark brown.png',
-  'teal-green': '/src/Lshape/teal green.png',
-  'beige-sand': '/src/Lshape/sand beige.png',
-  'grey-stone': '/src/Lshape/grey stone.png',
-  'coffee-brown': '/src/Lshape/coffee brown.png',
-  'mint-green': '/src/Lshape/mint green.png',
-  'slate-blue': '/src/Lshape/slate blue.png',
-  'warm-white': '/src/Lshape/warm white.png',
-  'charcoal-grey': '/src/Lshape/charcoal grey.png', // This will override the lacquered glass one for laminates
-  'horizontal-zircote': '/src/Lshape/horizontal zircote wood.png',
+  // Standard Laminates colors
+  'dark-brown': '/Lshape/dark brown.png',
+  'teal-green': '/Lshape/teal green.png',
+  'beige-sand': '/Lshape/sand beige.png',
+  'grey-stone': '/Lshape/grey stone.png',
+  'coffee-brown': '/Lshape/coffee brown.png',
+  'mint-green': '/Lshape/mint green.png',
+  'slate-blue': '/Lshape/slate blue.png',
+  'warm-white': '/Lshape/warm white.png',
+  'charcoal-grey': '/Lshape/charcoal grey.png', // Overrides lacquered glass for laminates
+  'horizontal-zircote': '/Lshape/horizontal zircote wood.png',
 
-  // Premium Laminates colors - Now with proper matte finish mappings
-  'espresso-brown': '/src/Lshape/espresso brown matte.png',
-  'sage-green': '/src/Lshape/sage green matte.png',
-  'pearl-grey': '/src/Lshape/pearl grey matte.png',
-  'charcoal-black': '/src/Lshape/charcoal black matte.png', // This will override the acrylics one for premium laminates
-  'champagne-gold': '/src/Lshape/champagne gold matte.png',
-  'steel-grey': '/src/Lshape/steel grey matte.png',
-  'midnight-black': '/src/Lshape/midnight black matte.png',
-  'ivory-cream': '/src/Lshape/ivory cream matte.png',
-  'bronze-brown': '/src/Lshape/bronze brown matte.png',
-  'platinum-silver': '/src/Lshape/platinum silver matte.png'
+  // Premium Laminates colors
+  'espresso-brown': '/Lshape/espresso brown matte.png',
+  'sage-green': '/Lshape/sage green matte.png',
+  'pearl-grey': '/Lshape/pearl grey matte.png',
+  'charcoal-black': '/Lshape/charcoal black matte.png', // Overrides acrylics for premium laminates
+  'champagne-gold': '/Lshape/champagne gold matte.png',
+  'steel-grey': '/Lshape/steel grey matte.png',
+  'midnight-black': '/Lshape/midnight black matte.png',
+  'ivory-cream': '/Lshape/ivory cream matte.png',
+  'bronze-brown': '/Lshape/bronze brown matte.png',
+  'platinum-silver': '/Lshape/platinum silver matte.png'
 };
 
-// Enhanced image system with local L-shaped images
+// Fallback images for other layouts (Unsplash) – unchanged
 const generateKitchenImage = (color, view, layout) => {
-  // If it's L-shaped layout and we have a local image, use it
   if (layout === 'L-shaped' && lShapeImageMap[color]) {
     return lShapeImageMap[color];
   }
-
-  // Fallback to Unsplash for other layouts
   const baseImages = {
     'front': {
       'L-shaped': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop',
@@ -131,32 +128,31 @@ const generateKitchenImage = (color, view, layout) => {
       'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance'
     }
   };
-
   return baseImages[view]?.[layout] || baseImages['front']['L-shaped'];
 };
 
-// Kitchen layout images for different views - now using local L-shaped images
+// Kitchen view images – L‑shaped uses a function that returns the local image path
 const kitchenViewImages = {
   'front': {
-    'L-shaped': (color) => lShapeImageMap[color] || '/src/Lshape/wine red.png',
+    'L-shaped': (color) => lShapeImageMap[color] || '/Lshape/wine red.png',
     'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop',
     'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop',
     'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop'
   },
   'side': {
-    'L-shaped': (color) => lShapeImageMap[color] || '/src/Lshape/wine red.png',
+    'L-shaped': (color) => lShapeImageMap[color] || '/Lshape/wine red.png',
     'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop&crop=entropy',
     'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop&crop=entropy',
     'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&crop=entropy'
   },
   'top': {
-    'L-shaped': (color) => lShapeImageMap[color] || '/src/Lshape/wine red.png',
+    'L-shaped': (color) => lShapeImageMap[color] || '/Lshape/wine red.png',
     'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop&crop=top',
     'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop&crop=top',
     'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&crop=top'
   },
   '3d': {
-    'L-shaped': (color) => lShapeImageMap[color] || '/src/Lshape/wine red.png',
+    'L-shaped': (color) => lShapeImageMap[color] || '/Lshape/wine red.png',
     'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance',
     'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance',
     'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance'
@@ -168,10 +164,10 @@ const KitchenDesigner = () => {
   const [selectedColor, setSelectedColor] = useState('wine-red');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [savedDesigns, setSavedDesigns] = useState([]);
-  const [currentView, setCurrentView] = useState('front'); // front, side, top, 3d
+  const [currentView, setCurrentView] = useState('front');
   const [isAutoRotate, setIsAutoRotate] = useState(false);
-  const [lighting, setLighting] = useState('natural'); // natural, warm, cool
-  const [kitchenLayout, setKitchenLayout] = useState('L-shaped'); // L-shaped, U-shaped, straight, island
+  const [lighting, setLighting] = useState('natural');
+  const [kitchenLayout, setKitchenLayout] = useState('L-shaped');
   const [showMeasurements, setShowMeasurements] = useState(false);
   const [isComparing, setIsComparing] = useState(false);
   const [compareDesigns, setCompareDesigns] = useState([]);
@@ -272,7 +268,7 @@ const KitchenDesigner = () => {
   const currentFinish = finishes[selectedFinish];
   const currentColor = currentFinish.colors[selectedColor];
 
-  // Helper function to convert hex to RGB
+  // Helper: convert hex to RGB
   const hexToRgb = (hex) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? 
@@ -285,7 +281,6 @@ const KitchenDesigner = () => {
       backgroundColor: color.hex,
       transition: 'all 0.3s ease'
     };
-
     switch (texture) {
       case 'glossy':
         return {
@@ -335,17 +330,16 @@ const KitchenDesigner = () => {
     }
   };
 
-  // Enhanced functionality
+  // Load saved designs
   useEffect(() => {
-    // Load saved designs from localStorage
     const saved = localStorage.getItem('savedKitchenDesigns');
     if (saved) {
       setSavedDesigns(JSON.parse(saved));
     }
   }, []);
 
+  // Auto-rotate
   useEffect(() => {
-    // Auto-rotate functionality
     let interval;
     if (isAutoRotate) {
       interval = setInterval(() => {
@@ -380,12 +374,9 @@ const KitchenDesigner = () => {
       timestamp: new Date().toISOString(),
       estimatedCost: calculateEstimatedCost()
     };
-
     const updatedDesigns = [...savedDesigns, design];
     setSavedDesigns(updatedDesigns);
     localStorage.setItem('savedKitchenDesigns', JSON.stringify(updatedDesigns));
-
-    // Show success notification
     alert('Design saved successfully! 🎉');
   };
 
@@ -397,18 +388,15 @@ const KitchenDesigner = () => {
       'standard-laminates': 1500,
       'premium-laminates': 2000
     };
-
     const layoutMultiplier = {
       'L-shaped': 1.0,
       'U-shaped': 1.3,
       'straight': 0.8,
       'island': 1.5
     };
-
     const basePrice = baseCost[selectedFinish] || 2000;
     const multiplier = layoutMultiplier[kitchenLayout] || 1.0;
-    const sqft = 120; // Default kitchen size
-
+    const sqft = 120;
     return Math.round(basePrice * multiplier * sqft);
   };
 
@@ -424,32 +412,24 @@ const KitchenDesigner = () => {
         console.log('Error sharing:', error);
       }
     } else {
-      // Fallback for browsers that don't support Web Share API
       navigator.clipboard.writeText(window.location.href);
       alert('Design link copied to clipboard! 📋');
     }
   };
 
   const downloadDesign = () => {
-    // Create a canvas and draw the current design
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 800;
     canvas.height = 600;
-
-    // Fill with background color
     ctx.fillStyle = currentColor.hex;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Add text overlay
     ctx.fillStyle = '#ffffff';
     ctx.font = '24px Arial';
     ctx.fillText(`${currentFinish.name} - ${currentColor.name}`, 20, 40);
     ctx.font = '16px Arial';
     ctx.fillText(`Layout: ${kitchenLayout}`, 20, 70);
     ctx.fillText(`Estimated Cost: ₹${calculateEstimatedCost().toLocaleString()}`, 20, 95);
-
-    // Download the canvas as image
     const link = document.createElement('a');
     link.download = `kitchen-design-${Date.now()}.png`;
     link.href = canvas.toDataURL();
@@ -472,40 +452,35 @@ const KitchenDesigner = () => {
     }
   };
 
-  // Get correct image source based on view, layout, and color
+  // Get the correct image source – encode local paths to handle spaces
   const getImageSrc = () => {
     const viewImages = kitchenViewImages[currentView];
-    if (!viewImages) return '/src/Lshape/wine red.png';
+    if (!viewImages) return '/Lshape/wine red.png';
 
     const layoutImage = viewImages[kitchenLayout];
 
-    // If it's L-shaped and we have a function (for local images)
     if (kitchenLayout === 'L-shaped' && typeof layoutImage === 'function') {
-      return layoutImage(selectedColor);
+      const rawPath = layoutImage(selectedColor);
+      // Encode the path to handle spaces in filenames
+      return encodeURI(rawPath);
     }
 
-    // For other layouts, return the URL directly
     if (typeof layoutImage === 'string') {
-      // Add color and finish parameters to the URL for variety
       const colorParam = encodeURIComponent(currentColor.hex.replace('#', ''));
       const finishParam = encodeURIComponent(selectedFinish);
       return `${layoutImage}&color=${colorParam}&finish=${finishParam}&t=${Date.now()}`;
     }
 
-    // Fallback
-    return '/src/Lshape/wine red.png';
+    return '/Lshape/wine red.png';
   };
 
   const imageSrc = getImageSrc();
 
-  // Create a visual representation of the kitchen with color overlay
   const getKitchenStyle = () => {
     const baseStyle = {
       transition: 'all 0.5s ease-in-out',
       position: 'relative'
     };
-
-    // Add different effects based on view
     switch (currentView) {
       case '3d':
         return {
@@ -550,7 +525,7 @@ const KitchenDesigner = () => {
   return (
     <div className="py-16 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Enhanced Header */}
+        {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
             <Sparkles className="w-8 h-8 text-yellow-500 mr-3" />
@@ -562,8 +537,6 @@ const KitchenDesigner = () => {
           <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-6">
             Design your dream kitchen with our advanced 3D visualizer. Choose from premium finishes, see real-time changes, and get instant cost estimates.
           </p>
-
-          {/* Quick Stats */}
           <div className="flex flex-wrap justify-center gap-6 mb-8">
             <div className="flex items-center bg-white px-4 py-2 rounded-full shadow-md">
               <Star className="w-5 h-5 text-yellow-500 mr-2" />
@@ -578,8 +551,6 @@ const KitchenDesigner = () => {
               <span className="text-sm font-medium">Real-time 3D Preview</span>
             </div>
           </div>
-
-          {/* Tutorial Button */}
           <button
             onClick={() => setShowTutorial(true)}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-full font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
@@ -590,7 +561,7 @@ const KitchenDesigner = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Enhanced Kitchen Preview */}
+          {/* Preview Panel */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
               {/* Preview Controls */}
@@ -614,10 +585,11 @@ const KitchenDesigner = () => {
                               setIsLoading(false);
                             }, 300);
                           }}
-                          className={`px-4 py-2 rounded-full text-xs font-medium transition-all transform hover:scale-105 ${currentView === view.key
-                            ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                            }`}
+                          className={`px-4 py-2 rounded-full text-xs font-medium transition-all transform hover:scale-105 ${
+                            currentView === view.key
+                              ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg'
+                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          }`}
                           title={view.label}
                         >
                           <span className="mr-1">{view.icon}</span>
@@ -626,26 +598,25 @@ const KitchenDesigner = () => {
                       ))}
                     </div>
                   </div>
-
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => setIsAutoRotate(!isAutoRotate)}
-                      className={`p-2 rounded-lg transition-all ${isAutoRotate ? 'bg-red-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        }`}
+                      className={`p-2 rounded-lg transition-all ${
+                        isAutoRotate ? 'bg-red-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
                       title="Auto Rotate"
                     >
                       {isAutoRotate ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                     </button>
-
                     <button
                       onClick={() => setShowMeasurements(!showMeasurements)}
-                      className={`p-2 rounded-lg transition-all ${showMeasurements ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        }`}
+                      className={`p-2 rounded-lg transition-all ${
+                        showMeasurements ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
                       title="Show Measurements"
                     >
                       <Ruler className="w-4 h-4" />
                     </button>
-
                     <button
                       onClick={toggleFullscreen}
                       className="p-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-all"
@@ -658,19 +629,18 @@ const KitchenDesigner = () => {
               </div>
 
               {/* Main Preview Area */}
-              <div className={`relative bg-gray-100 flex items-center justify-center ${isFullscreen ? 'h-screen' : 'h-96 lg:h-[500px]'
-                }`}>
+              <div className={`relative bg-gray-100 flex items-center justify-center ${
+                isFullscreen ? 'h-screen' : 'h-96 lg:h-[500px]'
+              }`}>
                 {isLoading && (
                   <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
                   </div>
                 )}
-
                 <div
                   className="relative w-full h-full overflow-hidden kitchen-view-transition"
                   style={getKitchenStyle()}
                 >
-                  {/* Base Kitchen Image */}
                   <img
                     ref={canvasRef}
                     src={imageSrc}
@@ -679,11 +649,8 @@ const KitchenDesigner = () => {
                     onLoad={() => setIsLoading(false)}
                     onError={() => setIsLoading(false)}
                   />
-
-                  {/* Only add overlays for non-L-shaped layouts or when using Unsplash images */}
                   {(kitchenLayout !== 'L-shaped' || !lShapeImageMap[selectedColor]) && (
                     <>
-                      {/* Color Overlay for Cabinet Doors */}
                       <div
                         className="absolute inset-0 opacity-60 mix-blend-multiply transition-all duration-500"
                         style={{
@@ -691,8 +658,6 @@ const KitchenDesigner = () => {
                           maskImage: 'linear-gradient(to bottom, transparent 20%, black 40%, black 80%, transparent 100%)'
                         }}
                       />
-
-                      {/* Texture Overlay based on finish type */}
                       {currentColor.texture === 'glossy' && (
                         <div
                           className="absolute inset-0 opacity-20 mix-blend-overlay transition-all duration-500"
@@ -702,7 +667,6 @@ const KitchenDesigner = () => {
                           }}
                         />
                       )}
-
                       {currentColor.texture === 'wood' && (
                         <div
                           className="absolute inset-0 opacity-30 mix-blend-multiply transition-all duration-500"
@@ -718,8 +682,6 @@ const KitchenDesigner = () => {
                       )}
                     </>
                   )}
-
-                  {/* Subtle enhancement overlay for L-shaped local images */}
                   {kitchenLayout === 'L-shaped' && lShapeImageMap[selectedColor] && (
                     <div
                       className="absolute inset-0 opacity-10 mix-blend-overlay transition-all duration-500"
@@ -728,8 +690,6 @@ const KitchenDesigner = () => {
                       }}
                     />
                   )}
-
-                  {/* Measurements Overlay */}
                   {showMeasurements && (
                     <div className="absolute inset-0 pointer-events-none">
                       <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
@@ -743,13 +703,9 @@ const KitchenDesigner = () => {
                       </div>
                     </div>
                   )}
-
-                  {/* View Indicator */}
                   <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-2 rounded-xl text-sm font-medium">
                     {currentView.charAt(0).toUpperCase() + currentView.slice(1)} View
                   </div>
-
-                  {/* Design Info Overlay */}
                   <div className="absolute bottom-4 right-4 bg-white bg-opacity-95 backdrop-blur-sm px-4 py-3 rounded-xl shadow-lg border">
                     <p className="text-sm font-semibold text-gray-800">
                       {currentFinish.name}
@@ -769,8 +725,6 @@ const KitchenDesigner = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Zoom Controls */}
                 <div className="absolute bottom-4 left-4 flex flex-col space-y-2">
                   <button
                     onClick={() => setZoom(Math.min(zoom + 0.1, 2))}
@@ -786,7 +740,8 @@ const KitchenDesigner = () => {
                   </button>
                 </div>
               </div>
-              {/* Enhanced Action Bar */}
+
+              {/* Action Bar */}
               <div className="p-6 bg-gradient-to-r from-gray-50 to-white border-t">
                 <div className="flex flex-wrap gap-3 justify-between">
                   <div className="flex flex-wrap gap-3">
@@ -797,7 +752,6 @@ const KitchenDesigner = () => {
                       <RotateCcw className="w-4 h-4" />
                       <span>Reset</span>
                     </button>
-
                     <button
                       onClick={saveDesign}
                       className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-md"
@@ -805,7 +759,6 @@ const KitchenDesigner = () => {
                       <Save className="w-4 h-4" />
                       <span>Save Design</span>
                     </button>
-
                     <button
                       onClick={shareDesign}
                       className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-md"
@@ -813,7 +766,6 @@ const KitchenDesigner = () => {
                       <Share2 className="w-4 h-4" />
                       <span>Share</span>
                     </button>
-
                     <button
                       onClick={downloadDesign}
                       className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-md"
@@ -822,7 +774,6 @@ const KitchenDesigner = () => {
                       <span>Download</span>
                     </button>
                   </div>
-
                   <div className="flex gap-3">
                     <button
                       onClick={addToCompare}
@@ -832,7 +783,6 @@ const KitchenDesigner = () => {
                       <Layers className="w-4 h-4" />
                       <span>Compare ({compareDesigns.length}/3)</span>
                     </button>
-
                     <button
                       onClick={() => setShowPriceBreakdown(!showPriceBreakdown)}
                       className="flex items-center space-x-2 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-xl hover:bg-yellow-200 transition-all"
@@ -846,9 +796,9 @@ const KitchenDesigner = () => {
             </div>
           </div>
 
-          {/* Enhanced Controls Panel */}
+          {/* Controls Panel */}
           <div className="space-y-6">
-            {/* Kitchen Layout Selection */}
+            {/* Kitchen Layout */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Grid3X3 className="w-5 h-5 mr-2 text-blue-600" />
@@ -859,10 +809,11 @@ const KitchenDesigner = () => {
                   <button
                     key={key}
                     onClick={() => setKitchenLayout(key)}
-                    className={`p-3 rounded-xl border-2 transition-all text-sm ${kitchenLayout === key
-                      ? 'border-blue-500 bg-blue-50 text-blue-800'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                      }`}
+                    className={`p-3 rounded-xl border-2 transition-all text-sm ${
+                      kitchenLayout === key
+                        ? 'border-blue-500 bg-blue-50 text-blue-800'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
                   >
                     <div className="font-medium">{layout.name}</div>
                     <div className="text-xs opacity-75 mt-1">{layout.description}</div>
@@ -871,7 +822,7 @@ const KitchenDesigner = () => {
               </div>
             </div>
 
-            {/* Lighting Options */}
+            {/* Lighting */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Sun className="w-5 h-5 mr-2 text-yellow-600" />
@@ -882,10 +833,11 @@ const KitchenDesigner = () => {
                   <button
                     key={key}
                     onClick={() => setLighting(key)}
-                    className={`flex-1 p-3 rounded-xl border-2 transition-all text-sm ${lighting === key
-                      ? 'border-yellow-500 bg-yellow-50 text-yellow-800'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                      }`}
+                    className={`flex-1 p-3 rounded-xl border-2 transition-all text-sm ${
+                      lighting === key
+                        ? 'border-yellow-500 bg-yellow-50 text-yellow-800'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
                   >
                     <option.icon className="w-4 h-4 mx-auto mb-1" />
                     <div className="font-medium text-xs">{option.name}</div>
@@ -894,7 +846,7 @@ const KitchenDesigner = () => {
               </div>
             </div>
 
-            {/* Enhanced Finish Selection */}
+            {/* Finish Selection */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <PaintBucket className="w-5 h-5 mr-2 text-purple-600" />
@@ -912,10 +864,11 @@ const KitchenDesigner = () => {
                         setIsLoading(false);
                       }, 500);
                     }}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${selectedFinish === key
-                      ? 'border-red-500 bg-gradient-to-r from-red-50 to-orange-50 text-red-800 shadow-md'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-md'
-                      }`}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                      selectedFinish === key
+                        ? 'border-red-500 bg-gradient-to-r from-red-50 to-orange-50 text-red-800 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-md'
+                    }`}
                   >
                     <div className="font-semibold">{finish.name}</div>
                     <div className="text-xs opacity-75 mt-1">{finish.description}</div>
@@ -938,7 +891,7 @@ const KitchenDesigner = () => {
               </div>
             </div>
 
-            {/* Enhanced Color Palette */}
+            {/* Color Palette */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Palette className="w-5 h-5 mr-2 text-pink-600" />
@@ -955,10 +908,11 @@ const KitchenDesigner = () => {
                         setIsLoading(false);
                       }, 300);
                     }}
-                    className={`relative aspect-square rounded-xl border-3 transition-all hover:scale-110 transform ${selectedColor === key
-                      ? 'border-red-500 ring-4 ring-red-200 shadow-lg'
-                      : 'border-gray-200 hover:border-gray-400 shadow-md hover:shadow-lg'
-                      }`}
+                    className={`relative aspect-square rounded-xl border-3 transition-all hover:scale-110 transform ${
+                      selectedColor === key
+                        ? 'border-red-500 ring-4 ring-red-200 shadow-lg'
+                        : 'border-gray-200 hover:border-gray-400 shadow-md hover:shadow-lg'
+                    }`}
                     title={color.name}
                   >
                     <div
@@ -968,7 +922,6 @@ const KitchenDesigner = () => {
                         minHeight: '60px'
                       }}
                     >
-                      {/* Enhanced texture indicators with better visibility */}
                       {color.texture === 'glossy' && (
                         <div
                           className="absolute inset-0 opacity-25"
@@ -1019,8 +972,6 @@ const KitchenDesigner = () => {
                           }}
                         />
                       )}
-                      
-                      {/* Color name overlay for better identification */}
                       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs px-2 py-1 opacity-0 hover:opacity-100 transition-opacity duration-200">
                         {color.name}
                       </div>
@@ -1035,8 +986,6 @@ const KitchenDesigner = () => {
                   </button>
                 ))}
               </div>
-
-              {/* Color Info */}
               <div className="mt-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1045,12 +994,10 @@ const KitchenDesigner = () => {
                     <p className="text-xs text-gray-500 mt-1">Texture: {currentColor.texture}</p>
                   </div>
                   <div className="flex items-center space-x-4">
-                    {/* Large color preview */}
                     <div
                       className="w-16 h-16 rounded-xl border-3 border-white shadow-lg relative overflow-hidden"
                       style={{ backgroundColor: currentColor.hex }}
                     >
-                      {/* Enhanced texture preview */}
                       {currentColor.texture === 'glossy' && (
                         <div
                           className="absolute inset-0 opacity-35"
@@ -1086,8 +1033,6 @@ const KitchenDesigner = () => {
                         />
                       )}
                     </div>
-                    
-                    {/* Color details */}
                     <div className="text-right">
                       <div className="text-sm font-bold text-gray-800">{currentColor.hex}</div>
                       <div className="text-xs text-gray-500 capitalize font-medium">{currentColor.texture} finish</div>
@@ -1129,7 +1074,7 @@ const KitchenDesigner = () => {
               </div>
             )}
 
-            {/* Enhanced Quick Actions */}
+            {/* Quick Actions */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Zap className="w-5 h-5 mr-2 text-green-600" />
@@ -1140,12 +1085,10 @@ const KitchenDesigner = () => {
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Get Quote for This Design
                 </button>
-
                 <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
                   <Move3D className="w-5 h-5 mr-2" />
                   Book 3D Consultation
                 </button>
-
                 <div className="grid grid-cols-2 gap-3">
                   <button className="bg-green-100 text-green-700 py-2 px-3 rounded-xl font-medium hover:bg-green-200 transition-all flex items-center justify-center">
                     <Phone className="w-4 h-4 mr-1" />
@@ -1156,7 +1099,6 @@ const KitchenDesigner = () => {
                     Chat
                   </button>
                 </div>
-
                 <button className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all flex items-center justify-center">
                   <Heart className="w-4 h-4 mr-2" />
                   Add to Wishlist
@@ -1164,23 +1106,20 @@ const KitchenDesigner = () => {
               </div>
             </div>
 
-            {/* Enhanced Price Estimate */}
+            {/* Price Estimate */}
             <div className="bg-gradient-to-br from-red-500 via-red-600 to-yellow-600 rounded-2xl p-6 text-white shadow-xl">
               <h3 className="text-lg font-semibold mb-3 flex items-center">
                 <Calculator className="w-5 h-5 mr-2" />
                 Smart Cost Estimate
               </h3>
-
               <div className="text-3xl font-bold mb-2">
                 ₹{calculateEstimatedCost().toLocaleString()}
               </div>
-
               <div className="text-sm opacity-90 mb-4">
                 {kitchenLayouts[kitchenLayout].name} kitchen (120 sq ft)
                 <br />
                 {currentFinish.name} finish in {currentColor.name}
               </div>
-
               {showPriceBreakdown && (
                 <div className="bg-white bg-opacity-20 rounded-lg p-3 mb-4 text-sm">
                   <div className="flex justify-between mb-1">
@@ -1197,7 +1136,6 @@ const KitchenDesigner = () => {
                   </div>
                 </div>
               )}
-
               <div className="flex gap-2">
                 <button className="flex-1 bg-white text-red-600 px-4 py-2 rounded-xl font-medium hover:bg-gray-100 transition-all">
                   Get Detailed Quote
@@ -1213,7 +1151,7 @@ const KitchenDesigner = () => {
           </div>
         </div>
 
-        {/* Design Comparison Tool */}
+        {/* Design Comparison */}
         {compareDesigns.length > 0 && (
           <div className="mt-12 bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
             <div className="flex items-center justify-between mb-6">
@@ -1228,7 +1166,6 @@ const KitchenDesigner = () => {
                 Clear All
               </button>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {compareDesigns.map((design, index) => (
                 <div key={index} className="border border-gray-200 rounded-xl p-4">
@@ -1248,7 +1185,7 @@ const KitchenDesigner = () => {
           </div>
         )}
 
-        {/* Enhanced Features Section */}
+        {/* Features Section */}
         <div className="mt-16 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl p-8 border border-gray-200">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
@@ -1258,7 +1195,6 @@ const KitchenDesigner = () => {
               Experience the future of kitchen design with our cutting-edge technology and premium materials
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center group">
               <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -1269,7 +1205,6 @@ const KitchenDesigner = () => {
                 See instant changes with our advanced 3D rendering engine. Multiple viewing angles and lighting options.
               </p>
             </div>
-
             <div className="text-center group">
               <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Palette className="w-10 h-10 text-blue-600" />
@@ -1279,7 +1214,6 @@ const KitchenDesigner = () => {
                 Choose from lacquered glass, acrylics, veneers, and premium laminates with authentic textures.
               </p>
             </div>
-
             <div className="text-center group">
               <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Calculator className="w-10 h-10 text-green-600" />
@@ -1289,7 +1223,6 @@ const KitchenDesigner = () => {
                 Get instant, accurate cost estimates based on your selections with detailed price breakdowns.
               </p>
             </div>
-
             <div className="text-center group">
               <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Star className="w-10 h-10 text-purple-600" />
@@ -1300,8 +1233,6 @@ const KitchenDesigner = () => {
               </p>
             </div>
           </div>
-
-          {/* Additional Features */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
               <div className="flex items-center mb-3">
@@ -1310,7 +1241,6 @@ const KitchenDesigner = () => {
               </div>
               <p className="text-gray-600 text-sm">Save unlimited designs and share with family for feedback</p>
             </div>
-
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
               <div className="flex items-center mb-3">
                 <Move3D className="w-5 h-5 text-green-600 mr-2" />
@@ -1318,7 +1248,6 @@ const KitchenDesigner = () => {
               </div>
               <p className="text-gray-600 text-sm">See your kitchen design in your actual space using AR technology</p>
             </div>
-
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
               <div className="flex items-center mb-3">
                 <Settings className="w-5 h-5 text-purple-600 mr-2" />
@@ -1329,7 +1258,7 @@ const KitchenDesigner = () => {
           </div>
         </div>
 
-        {/* Call to Action */}
+        {/* CTA */}
         <div className="mt-12 bg-gradient-to-r from-red-600 to-yellow-600 rounded-2xl p-8 text-white text-center shadow-xl">
           <h3 className="text-2xl font-bold mb-4">Ready to Transform Your Kitchen?</h3>
           <p className="text-lg opacity-90 mb-6">Get a free consultation and 3D design for your dream kitchen</p>
@@ -1349,23 +1278,20 @@ const KitchenDesigner = () => {
 
 export default KitchenDesigner;
 
-// Add CSS animations
+// CSS animations
 const styles = `
   @keyframes shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
   }
-  
   .kitchen-view-transition {
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
   .kitchen-color-overlay {
     transition: background-color 0.5s ease-in-out;
   }
 `;
 
-// Inject styles
 if (typeof document !== 'undefined') {
   const styleSheet = document.createElement('style');
   styleSheet.textContent = styles;
