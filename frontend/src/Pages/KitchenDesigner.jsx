@@ -33,6 +33,64 @@ import {
   Moon
 } from 'lucide-react';
 
+// U-shaped kitchen images – paths are relative to the public folder
+const uShapeImageMap = {
+  // Lacquered Glass
+  'teal-dark': '/Ushape/glossy teal dark.png',
+  'charcoal-grey': '/Ushape/glossy charcoal grey.png',
+  'navy-blue': '/Ushape/glossy navy blue.png',
+  'black-pearl': '/Ushape/glossy black pearl.png',
+  'cream-white': '/Ushape/glossy cream white.png',
+  'wine-red': '/Ushape/glossy wine red.png',
+  'forest-green': '/Ushape/glossy forest green.png',
+  'lavender-grey': '/Ushape/glossy lavender grey.png',
+  'golden-beige': '/Ushape/glossy golden beige.png',
+  'aquamarine': '/Ushape/glossy aquamarine.png',
+  // Acrylics
+  'burgundy-red': '/Ushape/smooth burgundy red.png',
+  'teal-blue': '/Ushape/smooth teal blue.png',
+  'charcoal-black': '/Ushape/smooth charcoal black.png',
+  'slate-black': '/Ushape/smooth slate black.png',
+  'sand-beige': '/Ushape/smooth sand beige.png',
+  'silver-grey': '/Ushape/smooth silver grey.png',
+  'midnight-blue': '/Ushape/smooth midnight blue.png',
+  'pearl-white': '/Ushape/smooth pearl white.png',
+  'cream-ivory': '/Ushape/smooth cream ivory.png',
+  'warm-grey': '/Ushape/smooth warm grey.png',
+  // Veneers
+  'walnut-brown': '/Ushape/walnut brown wood.png',
+  'light-oak': '/Ushape/light oak wood.png',
+  'teak-brown': '/Ushape/teak brown wood.png',
+  'dark-walnut': '/Ushape/dark walnut wood.png',
+  'cherry-wood': '/Ushape/cherry wood.png',
+  'mahogany-dark': '/Ushape/mahogany dark wood.png',
+  'maple-light': '/Ushape/maple light wood.png',
+  'ebony-black': '/Ushape/ebony black wood.png',
+  'pine-natural': '/Ushape/pine natural wood.png',
+  'rosewood': '/Ushape/rosewood wood.png',
+  // Standard Laminates
+  'dark-brown': '/Ushape/matte dark brown.png',
+  'teal-green': '/Ushape/matte teal green.png',
+  'beige-sand': '/Ushape/matte beige sand.png',
+  'grey-stone': '/Ushape/matte grey.png',
+  'coffee-brown': '/Ushape/matte coffee brown.png',
+  'mint-green': '/Ushape/matte mint green.png',
+  'slate-blue': '/Ushape/matte slate blue.png',
+  'warm-white': '/Ushape/matte warm white.png',
+  'horizontal-zircote': '/Ushape/horizontal zircote wood.png',
+  // Premium Laminates
+  'espresso-brown': '/Ushape/matte espresso brown.png',
+  'sage-green': '/Ushape/matte sage green.png',
+  'pearl-grey': '/Ushape/matte pearl grey.png',
+  'charcoal-black': '/Ushape/matte charcoal black.png',
+  'champagne-gold': '/Ushape/matte champagne gold.png',
+  'steel-grey': '/Ushape/matte steel grey.png',
+  'midnight-black': '/Ushape/matte midnight black.png',
+  'ivory-cream': '/Ushape/matte ivory cream.png',
+  'bronze-brown': '/Ushape/matte bronze brown.png',
+  'platinum-silver': '/Ushape/matte platinum silve.png',
+};
+
 // L-shaped kitchen images – paths are relative to the public folder
 // Ensure the 'Lshape' folder is placed inside your 'public' directory.
 const lShapeImageMap = {
@@ -97,65 +155,32 @@ const lShapeImageMap = {
   'platinum-silver': '/Lshape/platinum silver matte.png'
 };
 
-// Fallback images for other layouts (Unsplash) – unchanged
 const generateKitchenImage = (color, view, layout) => {
   if (layout === 'L-shaped' && lShapeImageMap[color]) {
     return lShapeImageMap[color];
   }
-  const baseImages = {
-    'front': {
-      'L-shaped': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop',
-      'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop',
-      'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop',
-      'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop'
-    },
-    'side': {
-      'L-shaped': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop&crop=left',
-      'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop&crop=left',
-      'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop&crop=left',
-      'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&crop=left'
-    },
-    'top': {
-      'L-shaped': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop&crop=top',
-      'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop&crop=top',
-      'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop&crop=top',
-      'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&crop=top'
-    },
-    '3d': {
-      'L-shaped': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop&auto=enhance',
-      'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance',
-      'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance',
-      'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance'
-    }
-  };
-  return baseImages[view]?.[layout] || baseImages['front']['L-shaped'];
+  if (layout === 'U-shaped' && uShapeImageMap[color]) {
+    return uShapeImageMap[color];
+  }
+  return '/Lshape/wine red.png';
 };
 
-// Kitchen view images – L‑shaped uses a function that returns the local image path
 const kitchenViewImages = {
   'front': {
     'L-shaped': (color) => lShapeImageMap[color] || '/Lshape/wine red.png',
-    'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop',
-    'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop',
-    'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop'
+    'U-shaped': (color) => uShapeImageMap[color] || '/Ushape/glossy wine red.png',
   },
   'side': {
     'L-shaped': (color) => lShapeImageMap[color] || '/Lshape/wine red.png',
-    'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop&crop=entropy',
-    'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop&crop=entropy',
-    'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&crop=entropy'
+    'U-shaped': (color) => uShapeImageMap[color] || '/Ushape/glossy wine red.png',
   },
   'top': {
     'L-shaped': (color) => lShapeImageMap[color] || '/Lshape/wine red.png',
-    'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop&crop=top',
-    'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop&crop=top',
-    'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&crop=top'
+    'U-shaped': (color) => uShapeImageMap[color] || '/Ushape/glossy wine red.png',
   },
   '3d': {
     'L-shaped': (color) => lShapeImageMap[color] || '/Lshape/wine red.png',
-    'U-shaped': 'https://images.unsplash.com/photo-1556909045-f7c5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance',
-    'straight': 'https://images.unsplash.com/photo-1556909045-4d5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance',
-    'island': 'https://images.unsplash.com/photo-1556909045-5d5c2b4b2b2?w=800&h=600&fit=crop&auto=enhance'
+    'U-shaped': (color) => uShapeImageMap[color] || '/Ushape/glossy wine red.png',
   }
 };
 
@@ -391,8 +416,6 @@ const KitchenDesigner = () => {
     const layoutMultiplier = {
       'L-shaped': 1.0,
       'U-shaped': 1.3,
-      'straight': 0.8,
-      'island': 1.5
     };
     const basePrice = baseCost[selectedFinish] || 2000;
     const multiplier = layoutMultiplier[kitchenLayout] || 1.0;
@@ -455,23 +478,20 @@ const KitchenDesigner = () => {
   // Get the correct image source – encode local paths to handle spaces
   const getImageSrc = () => {
     const viewImages = kitchenViewImages[currentView];
-    if (!viewImages) return '/Lshape/wine red.png';
+    if (!viewImages) return '/Ushape/glossy wine red.png';
 
     const layoutImage = viewImages[kitchenLayout];
 
-    if (kitchenLayout === 'L-shaped' && typeof layoutImage === 'function') {
-      const rawPath = layoutImage(selectedColor);
-      // Encode the path to handle spaces in filenames
-      return encodeURI(rawPath);
+    if (typeof layoutImage === 'function') {
+      const path = layoutImage(selectedColor);
+      return encodeURI(path);
     }
 
     if (typeof layoutImage === 'string') {
-      const colorParam = encodeURIComponent(currentColor.hex.replace('#', ''));
-      const finishParam = encodeURIComponent(selectedFinish);
-      return `${layoutImage}&color=${colorParam}&finish=${finishParam}&t=${Date.now()}`;
+      return layoutImage;
     }
 
-    return '/Lshape/wine red.png';
+    return '/Ushape/glossy wine red.png';
   };
 
   const imageSrc = getImageSrc();
@@ -512,8 +532,6 @@ const KitchenDesigner = () => {
   const kitchenLayouts = {
     'L-shaped': { name: 'L-Shaped', description: 'Perfect for corner spaces', multiplier: 1.0 },
     'U-shaped': { name: 'U-Shaped', description: 'Maximum storage & counter space', multiplier: 1.3 },
-    'straight': { name: 'Straight', description: 'Ideal for narrow spaces', multiplier: 0.8 },
-    'island': { name: 'Island', description: 'Spacious with central workspace', multiplier: 1.5 }
   };
 
   const lightingOptions = {
@@ -643,13 +661,16 @@ const KitchenDesigner = () => {
                 >
                   <img
                     ref={canvasRef}
+                    key={imageSrc}
                     src={imageSrc}
                     alt={`${currentColor.name} kitchen in ${currentView} view`}
                     className="object-cover w-full h-full transition-all duration-500"
                     onLoad={() => setIsLoading(false)}
-                    onError={() => setIsLoading(false)}
+                    onError={(e) => { console.error('Image failed to load:', imageSrc); setIsLoading(false); }}
                   />
-                  {(kitchenLayout !== 'L-shaped' || !lShapeImageMap[selectedColor]) && (
+                  {(kitchenLayout !== 'L-shaped' && kitchenLayout !== 'U-shaped') ||
+                   (kitchenLayout === 'L-shaped' && !lShapeImageMap[selectedColor]) ||
+                   (kitchenLayout === 'U-shaped' && !uShapeImageMap[selectedColor]) ? (
                     <>
                       <div
                         className="absolute inset-0 opacity-60 mix-blend-multiply transition-all duration-500"
@@ -681,15 +702,16 @@ const KitchenDesigner = () => {
                         />
                       )}
                     </>
-                  )}
-                  {kitchenLayout === 'L-shaped' && lShapeImageMap[selectedColor] && (
+                  ) : null}
+                  {(kitchenLayout === 'L-shaped' && lShapeImageMap[selectedColor]) ||
+                   (kitchenLayout === 'U-shaped' && uShapeImageMap[selectedColor]) ? (
                     <div
                       className="absolute inset-0 opacity-10 mix-blend-overlay transition-all duration-500"
                       style={{
                         background: `linear-gradient(135deg, ${currentColor.hex}22 0%, transparent 50%, ${currentColor.hex}22 100%)`
                       }}
                     />
-                  )}
+                  ) : null}
                   {showMeasurements && (
                     <div className="absolute inset-0 pointer-events-none">
                       <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
@@ -1074,80 +1096,7 @@ const KitchenDesigner = () => {
               </div>
             )}
 
-            {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Zap className="w-5 h-5 mr-2 text-green-600" />
-                Quick Actions
-              </h3>
-              <div className="space-y-3">
-                <button className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4 rounded-xl font-medium hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                  Get Quote for This Design
-                </button>
-                <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-md flex items-center justify-center">
-                  <Move3D className="w-5 h-5 mr-2" />
-                  Book 3D Consultation
-                </button>
-                <div className="grid grid-cols-2 gap-3">
-                  <button className="bg-green-100 text-green-700 py-2 px-3 rounded-xl font-medium hover:bg-green-200 transition-all flex items-center justify-center">
-                    <Phone className="w-4 h-4 mr-1" />
-                    Call
-                  </button>
-                  <button className="bg-purple-100 text-purple-700 py-2 px-3 rounded-xl font-medium hover:bg-purple-200 transition-all flex items-center justify-center">
-                    <MessageCircle className="w-4 h-4 mr-1" />
-                    Chat
-                  </button>
-                </div>
-                <button className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all flex items-center justify-center">
-                  <Heart className="w-4 h-4 mr-2" />
-                  Add to Wishlist
-                </button>
-              </div>
-            </div>
 
-            {/* Price Estimate */}
-            <div className="bg-gradient-to-br from-red-500 via-red-600 to-yellow-600 rounded-2xl p-6 text-white shadow-xl">
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
-                <Calculator className="w-5 h-5 mr-2" />
-                Smart Cost Estimate
-              </h3>
-              <div className="text-3xl font-bold mb-2">
-                ₹{calculateEstimatedCost().toLocaleString()}
-              </div>
-              <div className="text-sm opacity-90 mb-4">
-                {kitchenLayouts[kitchenLayout].name} kitchen (120 sq ft)
-                <br />
-                {currentFinish.name} finish in {currentColor.name}
-              </div>
-              {showPriceBreakdown && (
-                <div className="bg-white bg-opacity-20 rounded-lg p-3 mb-4 text-sm">
-                  <div className="flex justify-between mb-1">
-                    <span>Base Cost:</span>
-                    <span>₹{Math.round(calculateEstimatedCost() * 0.6).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span>Installation:</span>
-                    <span>₹{Math.round(calculateEstimatedCost() * 0.25).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Accessories:</span>
-                    <span>₹{Math.round(calculateEstimatedCost() * 0.15).toLocaleString()}</span>
-                  </div>
-                </div>
-              )}
-              <div className="flex gap-2">
-                <button className="flex-1 bg-white text-red-600 px-4 py-2 rounded-xl font-medium hover:bg-gray-100 transition-all">
-                  Get Detailed Quote
-                </button>
-                <button
-                  onClick={() => setShowPriceBreakdown(!showPriceBreakdown)}
-                  className="bg-white bg-opacity-20 text-white px-3 py-2 rounded-xl hover:bg-opacity-30 transition-all"
-                >
-                  {showPriceBreakdown ? '−' : '+'}
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 
