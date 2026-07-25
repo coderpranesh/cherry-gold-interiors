@@ -61,7 +61,7 @@ const HeroSection = () => {
       </span>
       <span className="mt-4 text-xs sm:text-sm md:text-base font-medium text-gray-900 text-center">
         Offer ends on{" "}
-        <span className="text-red-600 font-bold animate-blink">15th August, 2025</span>
+        <span className="text-red-600 font-bold animate-blink">15th August, 2026</span>
       </span>
     </div>
   );

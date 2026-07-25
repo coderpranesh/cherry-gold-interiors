@@ -100,7 +100,7 @@ const Navbar = () => {
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 left-0 w-full z-50 bg-[#f8f8ed] shadow-sm border-b border-gray-200"
+      className="sticky top-0 z-50 bg-[#f8f8ed] shadow-sm border-b border-gray-200"
     >
       <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
         
@@ -286,6 +286,7 @@ const Navbar = () => {
             )}
           </div>
         </div>
+        
       )}
     </nav>
   );

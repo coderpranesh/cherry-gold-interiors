@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Gift, Refrigerator, Tv, Wind, Zap, CheckCircle, Clock, Star, AlertTriangle, Calendar, ChevronDown, X, Phone, Mail, User } from 'lucide-react';
 
 const Offers = () => {
-  const [selectedMonth, setSelectedMonth] = useState('August 2025');
+  const [selectedMonth, setSelectedMonth] = useState('August 2026');
   const [showPopup, setShowPopup] = useState(false);
   const [formData, setFormData] = useState({ name: '', phone: '', otp: '' });
   const [showOtpField, setShowOtpField] = useState(false);
@@ -16,7 +16,7 @@ const Offers = () => {
   }, []);
 
   const monthlyOffers = {
-    'August 2025': {
+    'August 2026': {
       theme: 'Independence Day Special',
       rewards: [
         {
@@ -49,7 +49,7 @@ const Offers = () => {
         }
       ]
     },
-    'September 2025': {
+    'September 2026': {
       theme: 'Festive Season Bonanza',
       rewards: [
         {
@@ -61,7 +61,7 @@ const Offers = () => {
         }
       ]
     },
-    'October 2025': {
+    'October 2026': {
       theme: 'Diwali Dhamaka Offer',
       rewards: [
         {
@@ -75,7 +75,7 @@ const Offers = () => {
     }
   };
 
-  const currentOffers = monthlyOffers[selectedMonth] || monthlyOffers['August 2025'];
+  const currentOffers = monthlyOffers[selectedMonth] || monthlyOffers['August 2026'];
 
   const terms = [
     {
