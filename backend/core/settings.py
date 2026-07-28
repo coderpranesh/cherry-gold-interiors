@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ========================
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = False
-ALLOWED_HOSTS = ['cherrygoldinteriors.com', 'www.cherrygoldinteriors.com', '127.0.0.1', 'localhost', '72.61.253.185']
+ALLOWED_HOSTS = ['cherrygoldinteriors.space', 'www.cherrygoldinteriors.space', '127.0.0.1', 'localhost', '72.61.253.185']
 ROOT_URLCONF = 'core.urls'
 WSGI_APPLICATION = 'core.wsgi.application'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -218,7 +218,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Cherry Gold Interiors API',
     'DESCRIPTION': 'API documentation for Cherry Gold Interiors',
     'VERSION': '1.0.0',
-    'CONTACT': {'email': 'ankit@cherrygoldinteriors.com'},
+    'CONTACT': {'email': 'ankit@cherrygoldinteriors.space'},
     'LICENSE': {'name': 'BSD License'},
 }
 
@@ -251,17 +251,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:3000",
     "http://72.61.253.185",
-    "https://cherrygoldinteriors.com",
-    "https://www.cherrygoldinteriors.com",
+    "https://cherrygoldinteriors.space",
+    "https://www.cherrygoldinteriors.space",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://72.61.253.185",
-    "http://cherrygoldinteriors.com",
-    "http://www.cherrygoldinteriors.com",
-    "https://cherrygoldinteriors.com",
-    "https://www.cherrygoldinteriors.com",
+    "http://cherrygoldinteriors.space",
+    "http://www.cherrygoldinteriors.space",
+    "https://cherrygoldinteriors.space",
+    "https://www.cherrygoldinteriors.space",
 ]
 
 # ========================
@@ -282,7 +282,7 @@ EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Service specific settings
-ADMIN_EMAIL = 'ankit@cherrygoldinteriors.com'
+ADMIN_EMAIL = 'ankit@cherrygoldinteriors.space'
 CONTACT_PHONE = '+91 9433889668'
 CONTACT_EMAIL = 'cherrygoldinteriors@gmail.com'
 COMPANY_NAME = 'Your Interior Design Company'

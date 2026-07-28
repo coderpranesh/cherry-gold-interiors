@@ -91,7 +91,7 @@ const Catalogue = () => {
               </div>
               <div className="text-left">
                 <h3 className="font-semibold text-gray-900 mb-2">Or visit directly:</h3>
-                <p className="text-red-500 font-medium">www.cherrygoldinteriors.com/catalogue</p>
+                <p className="text-red-500 font-medium">www.cherrygoldinteriors.space/catalogue</p>
                 <p className="text-sm text-gray-500 mt-2">
                   Add this QR code to your visiting card for easy access
                 </p>
