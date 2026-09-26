@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="130" height="130">
+  <!-- Outer double ring -->
+  <circle cx="100" cy="100" r="92" fill="none" stroke="#2563eb" stroke-width="2.5" opacity="0.85" />
+  <circle cx="100" cy="100" r="86" fill="none" stroke="#2563eb" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.75" />
+  
+  <!-- Curved text top and bottom -->
+  <defs>
+    <path id="circlePathTop" d="M 22,100 A 78,78 0 1,1 178,100" />
+    <path id="circlePathBottom" d="M 178,100 A 78,78 0 0,1 22,100" />
+  </defs>
+
+  <text font-family="'Times New Roman', serif" font-size="12.5" font-weight="bold" fill="#2563eb" opacity="0.88" letter-spacing="2">
+    <textPath href="#circlePathTop" startOffset="50%" text-anchor="middle">
+      CHERRY GOLD INTERIORS
+    </textPath>
+  </text>
+
+  <text font-family="'Times New Roman', serif" font-size="11.5" font-weight="bold" fill="#2563eb" opacity="0.88" letter-spacing="2.5">
+    <textPath href="#circlePathBottom" startOffset="50%" text-anchor="middle">
+      ★ PVT. LTD. — KOLKATA ★
+    </textPath>
+  </text>
+
+  <!-- Inner ring -->
+  <circle cx="100" cy="100" r="54" fill="none" stroke="#2563eb" stroke-width="1.8" opacity="0.8" />
+  
+  <!-- Inner text / icon -->
+  <circle cx="100" cy="100" r="48" fill="rgba(37, 99, 235, 0.04)" />
+  <polygon points="100,68 104,78 114,80 107,87 109,97 100,92 91,97 93,87 86,80 96,78" fill="#2563eb" opacity="0.7" />
+  <text x="100" y="112" font-family="'Inter', sans-serif" font-size="8" font-weight="700" fill="#2563eb" text-anchor="middle" letter-spacing="1.5" opacity="0.85">AUTHORIZED</text>
+  <text x="100" y="123" font-family="'Inter', sans-serif" font-size="8" font-weight="700" fill="#2563eb" text-anchor="middle" letter-spacing="1.5" opacity="0.85">SIGNATORY</text>
+</svg>

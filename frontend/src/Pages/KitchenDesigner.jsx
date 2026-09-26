@@ -547,35 +547,35 @@ const KitchenDesigner = () => {
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
             <Sparkles className="w-8 h-8 text-yellow-500 mr-3" />
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-600 to-yellow-600 bg-clip-text text-transparent">
+            {/* <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-600 to-yellow-600 bg-clip-text text-transparent">
               AI-Powered Kitchen Designer
-            </h1>
+            </h1> */}
             <Sparkles className="w-8 h-8 text-yellow-500 ml-3" />
           </div>
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-6">
+          {/* <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-6">
             Design your dream kitchen with our advanced 3D visualizer. Choose from premium finishes, see real-time changes, and get instant cost estimates.
-          </p>
+          </p> */}
           <div className="flex flex-wrap justify-center gap-6 mb-8">
             <div className="flex items-center bg-white px-4 py-2 rounded-full shadow-md">
-              <Star className="w-5 h-5 text-yellow-500 mr-2" />
-              <span className="text-sm font-medium">10,000+ Happy Customers</span>
+              {/* <Star className="w-5 h-5 text-yellow-500 mr-2" /> */}
+              {/* <span className="text-sm font-medium">10,000+ Happy Customers</span> */}
             </div>
-            <div className="flex items-center bg-white px-4 py-2 rounded-full shadow-md">
+            {/* <div className="flex items-center bg-white px-4 py-2 rounded-full shadow-md">
               <Palette className="w-5 h-5 text-blue-500 mr-2" />
               <span className="text-sm font-medium">50+ Premium Finishes</span>
-            </div>
+            </div> */}
             <div className="flex items-center bg-white px-4 py-2 rounded-full shadow-md">
-              <Zap className="w-5 h-5 text-green-500 mr-2" />
-              <span className="text-sm font-medium">Real-time 3D Preview</span>
+              {/* <Zap className="w-5 h-5 text-green-500 mr-2" /> */}
+              {/* <span className="text-sm font-medium">Real-time 3D Preview</span> */}
             </div>
           </div>
-          <button
+          {/* <button
             onClick={() => setShowTutorial(true)}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-full font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
             <Play className="w-5 h-5 inline mr-2" />
             Watch Tutorial
-          </button>
+          </button> */}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

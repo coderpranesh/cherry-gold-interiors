@@ -16,3 +16,60 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ========================================================= */
+/* STRICT PRINT STYLES FOR OFFICIAL 2-PAGE LETTERHEAD QUOTE */
+/* ========================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 12mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide navigation, header, footer, background elements, modals, and screen wrappers */
+  header, nav, footer, .no-print, [role="dialog"], .ant-modal, .fixed {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Only show the official letterhead print container if window.print is called directly */
+  #official-letterhead-print {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #official-letterhead-print * {
+    visibility: visible !important;
+  }
+
+  .quotation-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 275mm !important;
+    box-sizing: border-box !important;
+    padding: 6mm 8mm !important;
+    margin: 0 0 10mm 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .quotation-page.page-break-after {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+}
+
