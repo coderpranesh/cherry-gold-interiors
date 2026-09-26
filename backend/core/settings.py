@@ -16,16 +16,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ========================
 # 1. CORE CONFIGURATION
 # ========================
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-DEBUG = False
-ALLOWED_HOSTS = ['cherrygoldinteriors.space', 'www.cherrygoldinteriors.space', '127.0.0.1', 'localhost', '72.61.253.185']
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-cherry-gold-development-key-default')
+DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1')
+ALLOWED_HOSTS = ['cherrygoldinteriors.com', 'www.cherrygoldinteriors.com', '127.0.0.1', 'localhost', '72.61.253.185', '*']
 ROOT_URLCONF = 'core.urls'
 WSGI_APPLICATION = 'core.wsgi.application'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 # ========================
 # 2. APPLICATION DEFINITION
@@ -218,7 +219,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Cherry Gold Interiors API',
     'DESCRIPTION': 'API documentation for Cherry Gold Interiors',
     'VERSION': '1.0.0',
-    'CONTACT': {'email': 'ankit@cherrygoldinteriors.space'},
+    'CONTACT': {'email': 'ankit@cherrygoldinteriors.com'},
     'LICENSE': {'name': 'BSD License'},
 }
 
@@ -228,8 +229,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 X_FRAME_OPTIONS = 'DENY'
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # SECURE_SSL_REDIRECT = True
@@ -251,17 +252,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:3000",
     "http://72.61.253.185",
-    "https://cherrygoldinteriors.space",
-    "https://www.cherrygoldinteriors.space",
+    "https://cherrygoldinteriors.com",
+    "https://www.cherrygoldinteriors.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://72.61.253.185",
-    "http://cherrygoldinteriors.space",
-    "http://www.cherrygoldinteriors.space",
-    "https://cherrygoldinteriors.space",
-    "https://www.cherrygoldinteriors.space",
+    "http://cherrygoldinteriors.com",
+    "http://www.cherrygoldinteriors.com",
+    "https://cherrygoldinteriors.com",
+    "https://www.cherrygoldinteriors.com",
 ]
 
 # ========================
@@ -282,7 +283,7 @@ EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Service specific settings
-ADMIN_EMAIL = 'ankit@cherrygoldinteriors.space'
+ADMIN_EMAIL = 'ankit@cherrygoldinteriors.com'
 CONTACT_PHONE = '+91 9433889668'
 CONTACT_EMAIL = 'cherrygoldinteriors@gmail.com'
 COMPANY_NAME = 'Your Interior Design Company'
