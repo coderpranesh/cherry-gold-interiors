@@ -82,7 +82,7 @@ const uShapeImageMap = {
   'espresso-brown': '/Ushape/matte espresso brown.png',
   'sage-green': '/Ushape/matte sage green.png',
   'pearl-grey': '/Ushape/matte pearl grey.png',
-  'charcoal-black': '/Ushape/matte charcoal black.png',
+  // 'charcoal-black': '/Ushape/matte charcoal black.png',
   'champagne-gold': '/Ushape/matte champagne gold.png',
   'steel-grey': '/Ushape/matte steel grey.png',
   'midnight-black': '/Ushape/matte midnight black.png',
@@ -139,14 +139,14 @@ const lShapeImageMap = {
   'mint-green': '/Lshape/mint green.png',
   'slate-blue': '/Lshape/slate blue.png',
   'warm-white': '/Lshape/warm white.png',
-  'charcoal-grey': '/Lshape/charcoal grey.png', // Overrides lacquered glass for laminates
+  // 'charcoal-grey': '/Lshape/charcoal grey.png', // Overrides lacquered glass for laminates
   'horizontal-zircote': '/Lshape/horizontal zircote wood.png',
 
   // Premium Laminates colors
   'espresso-brown': '/Lshape/espresso brown matte.png',
   'sage-green': '/Lshape/sage green matte.png',
   'pearl-grey': '/Lshape/pearl grey matte.png',
-  'charcoal-black': '/Lshape/charcoal black matte.png', // Overrides acrylics for premium laminates
+  // 'charcoal-black': '/Lshape/charcoal black matte.png', // Overrides acrylics for premium laminates
   'champagne-gold': '/Lshape/champagne gold matte.png',
   'steel-grey': '/Lshape/steel grey matte.png',
   'midnight-black': '/Lshape/midnight black matte.png',
