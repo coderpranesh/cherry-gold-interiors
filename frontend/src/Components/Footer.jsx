@@ -1,5 +1,4 @@
-import React from 'react';
-import lo from '../assets/logo_foot.png';
+import brandEmblem from '../assets/cherry-gold-emblem.png';
 import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Youtube, Shield, FileText, Users, Clock } from 'lucide-react';
 
 const Footer = () => {
@@ -18,9 +17,13 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             
-            <div className="flex items-center space-x-2 mb-6">
-              <img src={lo} alt="Cherry Gold Interiors Logo" className="w-12 h-12" />
-              <span className="font-bold text-xl">Cherry Gold Interiors</span>
+            <div className="flex items-center space-x-3 mb-6">
+              <img 
+                src={brandEmblem} 
+                alt="Cherry Gold Interiors Logo" 
+                className="w-12 h-12 sm:w-14 sm:h-14 object-contain filter drop-shadow-[0_2px_8px_rgba(212,175,55,0.3)] transition-transform duration-300 hover:scale-105" 
+              />
+              <span className="font-bold text-xl tracking-wide text-white">Cherry Gold Interiors</span>
             </div>
             <p className="text-[#F5F5F5] mb-6 leading-relaxed">
               Transforming homes with premium interior design solutions. 15 years of expertise in creating beautiful, functional spaces.

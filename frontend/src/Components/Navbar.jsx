@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, LogOut, Sparkles } from 'lucide-react';
-import brandLogo from '../assets/cherry-gold-full-logo.png';
+import brandLogo from '../assets/cherry-gold-full-logo-transparent.png';
 
 const navItems = [
   { path: '/about', label: 'About' },
