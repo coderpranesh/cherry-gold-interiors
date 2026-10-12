@@ -7,7 +7,7 @@ import TestimonialsSection from '../Components/TestimonialsSection';
 
 const HomePage = () => {
   return (
-    <div>
+    <div className="bg-[#FBF3E8]">
       <HeroSection />
       <HowWeWork />
       <WarrantySection />

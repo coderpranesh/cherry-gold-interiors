@@ -215,7 +215,7 @@ const ReferralDashboard = () => {
     darkGold: '#b8941f',
     charcoal: '#1f1f1f',
     lightCharcoal: '#2a2a2a',
-    cream: '#FDFBD4',
+    cream: '#FBF3E8',
     lightCream: '#f1f1de',
     red: '#dc143c',
     darkRed: '#8b0000',

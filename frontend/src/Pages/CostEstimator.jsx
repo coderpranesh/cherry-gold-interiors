@@ -853,7 +853,7 @@ const CostEstimator = () => {
   };
 
   return (
-    <div className="py-24 lg:py-32 bg-[#FDFBD4] min-h-screen">
+    <div className="py-24 lg:py-32 bg-[#FBF3E8] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 no-print">
         
         {/* Page Heading */}

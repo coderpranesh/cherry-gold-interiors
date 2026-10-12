@@ -50,7 +50,7 @@ const Portfolio = () => {
 
 
   return (
-    <div className="py-32 bg-[#FDFBD4]">
+    <div className="py-32 bg-[#FBF3E8]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
         <div className="text-center mb-16">
@@ -122,7 +122,7 @@ const Portfolio = () => {
         {/* Modal */}
         {selectedProject && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-[#FDFBD4] rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-[#FBF3E8] rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-[#f1f1de] border-b border-gray-200 p-6 flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">{selectedProject.title}</h2>
                 <button
