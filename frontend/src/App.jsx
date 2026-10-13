@@ -23,7 +23,7 @@ import PrivateRoute from './Components/PrivateRoute';
 
 import Footer from './Components/Footer';
 import Chatbot from './Components/Chatbot.jsx';
-import About from './Components/AboutSection.jsx';
+import About from './Pages/About.jsx';
 import './App.css'; 
 function App() {
   return (

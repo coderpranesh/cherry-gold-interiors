@@ -16,7 +16,8 @@ class BlogCategorySerializer(serializers.ModelSerializer):
 
 # Lightweight serializer for blog post list view
 class BlogPostListSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    title = serializers.CharField(read_only=True)
+    author = serializers.SerializerMethodField()
     category = BlogCategorySerializer(read_only=True)
     tags = BlogTagSerializer(many=True, read_only=True)
 
@@ -24,14 +25,25 @@ class BlogPostListSerializer(serializers.ModelSerializer):
         model = BlogPost
         fields = [
             'id', 'title', 'author', 'category', 'tags',
-            'excerpt', 'cover_image', 'published_date'
+            'excerpt', 'cover_image', 'published_date', 'slug'
         ]
+
+    def get_author(self, obj):
+        return {
+            'username': 'cherrygold',
+            'first_name': 'Cherry Gold',
+            'last_name': 'Interiors'
+        }
 
 # Detailed serializer for a single blog post
 class BlogPostDetailSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    title = serializers.CharField(read_only=True)
+    content = serializers.CharField(read_only=True)
+    author = serializers.SerializerMethodField()
     category = BlogCategorySerializer(read_only=True)
     tags = BlogTagSerializer(many=True, read_only=True)
+    meta_title = serializers.SerializerMethodField()
+    meta_description = serializers.SerializerMethodField()
 
     class Meta:
         model = BlogPost
@@ -39,8 +51,21 @@ class BlogPostDetailSerializer(serializers.ModelSerializer):
             'id', 'title', 'author', 'category', 'tags',
             'excerpt', 'content', 'cover_image', 'status',
             'published_date', 'created_at', 'updated_at',
-            'meta_title', 'meta_description'
+            'meta_title', 'meta_description', 'slug'
         ]
+
+    def get_author(self, obj):
+        return {
+            'username': 'cherrygold',
+            'first_name': 'Cherry Gold',
+            'last_name': 'Interiors'
+        }
+
+    def get_meta_title(self, obj):
+        return getattr(obj, 'title', '') or ''
+
+    def get_meta_description(self, obj):
+        return getattr(obj, 'excerpt', '') or ''
 
 # Serializer for search/filtering posts
 class BlogSearchSerializer(serializers.Serializer):

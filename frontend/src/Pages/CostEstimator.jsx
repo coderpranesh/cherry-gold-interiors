@@ -19,20 +19,62 @@ import {
   Layers, 
   ArrowRight,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Paintbrush,
+  Zap,
+  Box,
+  Wrench,
+  Palette,
+  Sliders,
+  ChevronDown,
+  Eye,
+  AlertCircle,
+  Hammer,
+  Crown,
+  Award,
+  CheckCheck,
+  Star
 } from 'lucide-react';
 import ConsultationModal from '../Components/ConsultationModal';
 
+// High-Resolution 3D Concept Model Assets
+import aboutLivingRoom from '../assets/about-living-room.jpg';
+import consultationDining from '../assets/consultation-dining-room.jpg';
+import ctaLivingRoom from '../assets/cta-living-room.jpg';
+import heroInterior from '../assets/hero-interior.jpg';
+
 const CostEstimator = () => {
+  // Navigation tab: 'estimator' | '3d-models' | 'rate-card'
+  const [activeTab, setActiveTab] = useState('estimator');
+
   // Current active work configuration form
   const [formData, setFormData] = useState({
     projectType: 'kitchen',
     roomLabel: '',
+    // Painting specific
+    paintingPackage: 'with-putty', // 'without-putty' (₹30) | 'with-putty' (₹35)
+    colorOption: 'Warm Ivory (#FBF3E8)',
+    customColor: '',
+    // Standard modular packages
     kitchenPackage: 'standard',
     wallPanelingPackage: 'standard',
     falseCeilingType: 'gypsum',
     interiorPackage: 'standard',
     wardrobePackage: 'standard',
+    // Minor Electrical
+    minorElectricalItem: 'electrical-point',
+    wireLength: 'standard', // 'standard' (₹4,000) | 'long' (₹5,000)
+    // Doors & Carpentry
+    doorsCarpentryItem: 'custom-drawer',
+    // Gate & Grill painting
+    gateGrillItem: 'collapsible-gate',
+    // Civil works & Outsourced
+    civilWorkType: 'Wall Demolition & Plastering',
+    civilBaseCost: 20000,
+    outsourcedWorkType: 'Sliding Aluminium Windows',
+    outsourcedBaseCost: 30000,
+    // Dimensions & Quantities
+    quantity: 1,
     length: '10',
     width: '12',
     height: '9',
@@ -54,7 +96,7 @@ const CostEstimator = () => {
     contact_phone: ''
   });
 
-  // Items List: supports multiple works (Kitchen + Wardrobe + Ceiling + Paneling, etc.)
+  // Items List: supports multiple works (Kitchen + Wardrobe + Painting + Electrical + Doors, etc.)
   const [itemsList, setItemsList] = useState([]);
 
   // Modals state
@@ -87,55 +129,323 @@ const CostEstimator = () => {
     return rate;
   };
 
-  // Data arrays
-  const projectTypes = [
-    { id: 'kitchen', name: 'Modular Kitchen', baseRate: 1650, defaultWork: 'Modular Kitchen Interior Work' },
-    { id: 'wardrobe', name: 'Wardrobe', baseRate: 1400, defaultWork: 'Master Bedroom Wardrobe Work' },
-    { id: 'false-ceiling', name: 'False Ceiling', baseRate: 140, defaultWork: 'False Ceiling & Lighting Work' },
-    { id: 'wall-paneling', name: 'Wall Paneling', baseRate: 475, defaultWork: 'Wall Paneling & Decor Work' },
-    { id: 'interior-decoration', name: 'Interior Decoration', baseRate: 1400, defaultWork: 'Complete Home Interior Work' },
-    { id: 'complete-home', name: 'Complete Home', baseRate: 1600, defaultWork: 'Luxury Villa / Apartment Interior Work' }
+  // Luxury Color Palette Presets
+  const colorPresets = [
+    { name: 'Warm Ivory (#FBF3E8)', hex: '#FBF3E8', label: 'Warm Ivory (Signature Neutral)', border: '#e8d8be' },
+    { name: 'Royal Ivory (#FDFBD4)', hex: '#FDFBD4', label: 'Royal Ivory Glow', border: '#e6e2a8' },
+    { name: 'Soft Cashmere (#EFE6DD)', hex: '#EFE6DD', label: 'Soft Cashmere / Beige', border: '#d9cdbf' },
+    { name: 'Muted Gold (#D4AF37)', hex: '#D4AF37', label: 'Metallic Gold Accent', border: '#b89425' },
+    { name: 'Ruby Crimson (#C0142B)', hex: '#C0142B', label: 'Cherry Red / Ruby', border: '#9e0d20' },
+    { name: 'Pearl White (#FFFFFF)', hex: '#FFFFFF', label: 'Pearl Pure White', border: '#dcdcdc' },
+    { name: 'Charcoal Slate (#2D3748)', hex: '#2D3748', label: 'Charcoal Slate Dark', border: '#1a202c' },
+    { name: 'Pastel Sage (#E2EBD8)', hex: '#E2EBD8', label: 'Pastel Sage Mint', border: '#c7d6ba' },
+    { name: 'Custom Shade Code', hex: '#E2E8F0', label: 'Custom Shade Code / Asian Paints', border: '#cbd5e1' }
   ];
 
+  // Common Room Space Chips
+  const commonRooms = [
+    'Living Room',
+    'Master Bedroom',
+    'Modular Kitchen',
+    'Dining Area',
+    'Kids Bedroom',
+    'Guest Bedroom',
+    'Puja Room',
+    'Balcony',
+    'Foyer / Entrance',
+    'Study Room'
+  ];
+
+  // Project Types Catalog
+  const projectTypes = [
+    { id: 'kitchen', name: 'Modular Kitchen', baseRate: 1500, unit: 'sq ft', icon: Home, category: 'area', badge: 'BWP Marine Ply' },
+    { id: 'wardrobe', name: 'Modular Wardrobe', baseRate: 1200, unit: 'sq ft', icon: Box, category: 'area', badge: 'Soft-Close' },
+    { id: 'painting', name: 'Wall & Ceiling Paint', baseRate: 30, unit: 'sq ft', icon: Paintbrush, category: 'area', badge: '₹30 or ₹35' },
+    { id: 'false-ceiling', name: 'False Ceiling', baseRate: 100, unit: 'sq ft', icon: Layers, category: 'area', badge: 'Gypsum/POP' },
+    { id: 'wall-paneling', name: 'Wall Paneling', baseRate: 450, unit: 'sq ft', icon: Layers, category: 'area', badge: 'Louvers & Marble' },
+    { id: 'minor-electrical', name: 'Electrical & Minor Works', baseRate: 1200, unit: 'point / item', icon: Zap, category: 'item', badge: '4-Trade Labour' },
+    { id: 'doors-carpentry', name: 'Doors & Custom Cabinetry', baseRate: 5000, unit: 'item', icon: Wrench, category: 'item', badge: 'Solid Core / Ply' },
+    { id: 'gate-grill-paint', name: 'Gate & Grill Paint Package', baseRate: 2500, unit: 'unit', icon: Paintbrush, category: 'item', badge: 'Enamel Coating' },
+    { id: 'civil-work', name: 'Civil Works (10% Markup)', baseRate: 'Base + 10%', unit: 'estimate', icon: Hammer, category: 'civil', badge: 'Site Supervised' },
+    { id: 'outsourced-work', name: 'Outsourced Specialist (5%)', baseRate: 'Base + 5%', unit: 'estimate', icon: ShieldCheck, category: 'outsourced', badge: 'Vendor Vetted' },
+    { id: 'interior-decoration', name: 'Interior Decoration', baseRate: 1250, unit: 'sq ft', icon: Sparkles, category: 'area', badge: 'Styling & Polish' },
+    { id: 'complete-home', name: 'Complete Home Turnkey', baseRate: 1600, unit: 'sq ft', icon: Home, category: 'area', badge: 'All-Inclusive' }
+  ];
+
+  // Minor Electrical Rate Items
+  const minorElectricalRates = [
+    { 
+      id: 'electrical-point', 
+      name: 'New Concealed Electrical Point', 
+      rateStandard: 4000, 
+      rateLong: 5000, 
+      description: '₹4,000 fixed (up to ₹5,000 for long wire runs > 15ft)',
+      breakdown: 'Includes 4-trade coordination: 1. Wall cutting labour → 2. Electrician wiring & metal box → 3. Rajmistry cement plaster leveling → 4. Painter putty touch-up'
+    },
+    { 
+      id: 'fan-hook', 
+      name: 'Fan Hook & Clamp Repositioning', 
+      rate: 1200, 
+      description: '₹1,200 fixed per hook / room',
+      breakdown: 'Precision middle clamp repositioning, anchoring, ceiling hook adjustment & surface leveling.'
+    },
+    { 
+      id: 'switchboard-8', 
+      name: '8-Module Modular Switchboard Replacement', 
+      rate: 1500, 
+      description: '₹1,500 / board',
+      breakdown: 'Includes 8-module modular plate & box, switches, sockets, wiring adjustments, installation & testing.'
+    },
+    { 
+      id: 'switchboard-6', 
+      name: '6-Module Modular Switchboard Replacement', 
+      rate: 1200, 
+      description: '₹1,200 / board',
+      breakdown: 'Includes 6-module modular plate & box, switches, sockets, wiring adjustments, installation & testing.'
+    },
+    { 
+      id: 'profile-light-6ft', 
+      name: 'Profile Light 6-Foot Run', 
+      rate: 2000, 
+      description: '₹2,000 / 6 ft',
+      breakdown: 'Includes 6ft aluminium profile channel, LED strip light, milky diffuser, concealed driver & fitting.'
+    },
+    { 
+      id: 'ceiling-downlight', 
+      name: 'Ceiling Downlight Fixture', 
+      rate: 1200, 
+      description: '₹1,200 / light',
+      breakdown: 'Includes ceiling hole cutting, branded downlight fixture, wiring connection, testing & alignment.'
+    },
+    { 
+      id: 'cob-spotlight', 
+      name: 'Small COB Spotlight Fixture', 
+      rate: 1000, 
+      description: '₹1,000 / light',
+      breakdown: 'Includes focused spotlight fixture, concealed driver connection, ceiling clamp & lighting test.'
+    }
+  ];
+
+  // Doors & Custom Carpentry Items
+  const doorsCarpentryRates = [
+    { 
+      id: 'custom-drawer', 
+      name: 'Custom Drawer with Lock', 
+      rate: 5000, 
+      description: '₹5,000 / drawer (Fixed selling price)',
+      breakdown: 'Includes: 2 telescopic drawer channels (one each side) + Additional BWP marine plywood construction + Carpenter cutting, assembly & fitting + Laminate pasting & finishing + Lock with fitting & alignment.'
+    },
+    { 
+      id: 'hidden-drawer-kitchen', 
+      name: 'Hidden Drawer Inside Kitchen', 
+      rate: 5000, 
+      description: '₹5,000 / unit',
+      breakdown: 'Concealed drawer construction, extra BWP ply, 2 side channels, internal laminate finish, hardware & carpenter labour.'
+    },
+    { 
+      id: 'door-frame', 
+      name: 'Door Frame (Chaukhat)', 
+      rate: 12000, 
+      description: '₹12,000 fixed / door frame',
+      breakdown: 'Heavy-duty Hardwood / WPC door frame, sizing, anti-termite treatment, anchoring, holdfasts & precision vertical alignment.'
+    },
+    { 
+      id: 'entrance-door', 
+      name: 'Entrance Main Door (Plain)', 
+      rate: 25500, 
+      description: 'Starting at ₹25,500 fixed',
+      breakdown: 'Heavy-duty solid core entrance door, plain laminate/veneer finish, heavy brass hinges, branded lockset & master fitting.'
+    },
+    { 
+      id: 'wardrobe-led', 
+      name: 'LED Lighting Inside Wardrobe', 
+      rate: 10000, 
+      description: '₹10,000 / wardrobe',
+      breakdown: 'Includes interior vertical LED strip lighting, sensor auto-switch, concealed wiring, power supply driver & finishing.'
+    },
+    { 
+      id: 'loft-led', 
+      name: 'LED Lighting Under Kitchen Loft Cabinets', 
+      rate: 10000, 
+      description: '₹10,000 / kitchen layout',
+      breakdown: 'Under-cabinet profile LED strip along overhead loft bottom, wiring, dedicated driver, installation & finish.'
+    },
+    { 
+      id: 'profile-glass-shutter', 
+      name: 'Profile Shutter Door with Plain Glass', 
+      rate: 7500, 
+      description: '₹7,500 / unit (up to 5 ft long)',
+      breakdown: 'Profile shutter up to 5 ft long, 1–1.5 ft wide plain glass panel, slim aluminium profile frame, glass fitting & hardware.'
+    },
+    { 
+      id: 'double-door-shutter', 
+      name: 'Double-Door Cabinet Shutter Set', 
+      rate: 8000, 
+      description: '₹8,000 / set (Two cabinet shutters)',
+      breakdown: 'Two cabinet shutters, selected laminate finish, soft-close hinges, standard hardware, carpenter labour & alignment.'
+    }
+  ];
+
+  // Gate & Grill Painting Packages
+  const gateGrillRates = [
+    {
+      id: 'collapsible-gate',
+      name: 'Collapsible Gate Painting Package',
+      rate: 3500,
+      description: '₹3,500 / gate',
+      breakdown: 'Surface sanding & minor rust removal, metal primer application, final synthetic enamel paint coating, labour & finishing.'
+    },
+    {
+      id: 'window-grill',
+      name: 'Window Grill & Frame Painting Package',
+      rate: 2500,
+      description: '₹2,500 / window',
+      breakdown: 'Surface sanding & minor rust removal, primer application, final colour coating, labour & finishing (standard window).'
+    }
+  ];
+
+  // Civil Works Examples & Markup
+  const civilWorkExamples = [
+    'Wall Breaking & Demolition',
+    'Brickwork & Plastering',
+    'Floor & Wall Tiling Work',
+    'Waterproofing & Seepage Repair',
+    'Cement Work & Wall Levelling',
+    'Other Civil Contractor Services'
+  ];
+
+  // Outsourced Specialist Works Examples & Markup
+  const outsourcedWorkExamples = [
+    'Collapsible Gate Supply & Fitting',
+    'Sliding Aluminium Door Fitting',
+    'Aluminium Window Supply & Fitting',
+    'Steel Fabrication & Installation',
+    'Grill & Railing Work',
+    'Glass Partition Installation',
+    'Other Specialist Vendor Work'
+  ];
+
+  // Standard Modular Packages
   const kitchenPackages = [
-    { id: 'standard', name: 'Standard Package', rate: 1500, description: 'BWP Plywood + Choice of Veneer or Glossy Laminate', features: ['Smooth edge banding', 'Soft-close hinges & channels', 'Profile lights inside cabinets', '2 Years Hardware Warranty', '10 Years Service Warranty'], notIncluded: ['Magic corner', 'Stainless steel baskets', 'Tandem (charged extra)'] },
-    { id: 'luxury', name: 'Luxury Package', rate: '1,800–₹2,000', description: 'BWP Plywood + Acrylic Finish (High Gloss)', features: ['Mirror-like glossy look', 'Scratch-resistant surface', 'Premium durability', 'Soft-close hardware', 'Profile lighting inside cabinets', '5 Years Hardware Warranty', '10 Years Service Warranty'], notIncluded: ['Magic corner', 'Stainless steel baskets'] }
+    { id: 'standard', name: 'Standard Package', rate: 1500, description: 'BWP Plywood + Choice of Veneer or Glossy Laminate', features: ['Smooth edge banding', 'Soft-close hinges & channels', 'Profile lights inside cabinets', '2 Years Hardware Warranty', '10 Years Service Warranty'] },
+    { id: 'luxury', name: 'Luxury Package', rate: 1900, description: 'BWP Plywood + Acrylic Finish (High Gloss)', features: ['Mirror-like glossy look', 'Scratch-resistant surface', 'Premium durability', 'Soft-close hardware', 'Profile lighting inside cabinets', '5 Years Hardware Warranty', '10 Years Service Warranty'] }
   ];
 
   const wallPanelingPackages = [
-    { id: 'standard', name: 'Standard Package', rate: '450-₹500', description: '25% area covered with design materials', features: ['12mm plywood base', 'Cushion panels', 'Laminates', 'UV marble sheets', 'Designer PVC louvers', 'CNC-cut designs'] },
-    { id: 'premium', name: 'Premium Package', rate: '550–₹600', description: '50% area covered with design materials', features: ['12mm plywood base', 'Premium design materials', 'More design flexibility', 'Enhanced finishes', 'Custom CNC work'] }
+    { id: 'standard', name: 'Standard Package', rate: 475, description: '25% area covered with design materials', features: ['12mm plywood base', 'Cushion panels', 'Laminates', 'UV marble sheets', 'Designer PVC louvers', 'CNC-cut designs'] },
+    { id: 'premium', name: 'Premium Package', rate: 575, description: '50% area covered with design materials', features: ['12mm plywood base', 'Premium design materials', 'More design flexibility', 'Enhanced finishes', 'Custom CNC work'] }
   ];
 
   const falseCeilingTypes = [
-    { id: 'gypsum', name: 'Gypsum False Ceiling', rate: 100, description: 'Sleek, modern look with clean lines', features: ['Best for standard rooms', 'Minimalistic designs', 'Paint & Putty: ₹30/sq.ft extra'] },
-    { id: 'pop', name: 'POP False Ceiling', rate: 120, description: 'Smooth surface, ideal for curves & creative shapes', features: ['Best for living rooms', 'Artistic ceiling concepts', 'Paint & Putty: ₹30/sq.ft extra'] },
-    { id: 'pvc', name: 'PVC False Ceiling', rate: 220, description: 'Available in textures & prints - no painting needed', features: ['Water-resistant', 'Termite-proof', 'Low-maintenance', 'Lighting charges based on custom design'] }
+    { id: 'gypsum', name: 'Gypsum False Ceiling', rate: 100, description: 'Sleek, modern look with clean lines', features: ['Best for standard rooms', 'Minimalistic designs', 'Paint & Putty: ₹35/sq.ft extra'] },
+    { id: 'pop', name: 'POP False Ceiling', rate: 120, description: 'Smooth surface, ideal for curves & creative shapes', features: ['Best for living rooms', 'Artistic ceiling concepts', 'Paint & Putty: ₹35/sq.ft extra'] },
+    { id: 'pvc', name: 'PVC False Ceiling', rate: 220, description: 'Available in textures & prints - no painting needed', features: ['Water-resistant', 'Termite-proof', 'Low-maintenance'] }
   ];
 
   const interiorPackages = [
-    { id: 'standard', name: 'Standard Plan', rate: 1250, description: '0.8mm/1mm Glossy Laminate with Basic PVC Edge Banding', features: ['7 Years Warranty', 'Moisture & scratch-resistant', 'Budget-friendly', 'Simple modular finish', 'Low-maintenance'], bestFor: 'Budget-conscious projects that need reliable, neat modular work' },
-    { id: 'premium', name: 'Premium Plan', rate: 1450, description: 'High Gloss Laminate with Soft PVC Edge Banding', features: ['10 Years Warranty', 'Sleek gloss & modern finish', 'Soft edge banding', 'Enhanced elegance', 'Premium brand quality'], bestFor: 'Stylish, mid-range home interiors with perfect price-aesthetics balance' },
-    { id: 'royal', name: 'Royal Plan', rate: 1800, description: 'Acrylic High Gloss Laminate with Seamless Finish', features: ['15 Years Warranty', 'Mirror-like shine', 'Premium appearance', 'Scratch-resistant', 'Seamless edge finish'], bestFor: 'Ultra-premium interiors with maximum durability and luxury appeal' }
+    { id: 'standard', name: 'Standard Plan', rate: 1250, description: '0.8mm/1mm Glossy Laminate with Basic PVC Edge Banding', features: ['7 Years Warranty', 'Moisture & scratch-resistant', 'Budget-friendly', 'Simple modular finish'] },
+    { id: 'premium', name: 'Premium Plan', rate: 1450, description: 'High Gloss Laminate with Soft PVC Edge Banding', features: ['10 Years Warranty', 'Sleek gloss & modern finish', 'Soft edge banding', 'Enhanced elegance'] },
+    { id: 'royal', name: 'Royal Plan', rate: 1800, description: 'Acrylic High Gloss Laminate with Seamless Finish', features: ['15 Years Warranty', 'Mirror-like shine', 'Premium appearance', 'Scratch-resistant'] }
   ];
 
   const wardrobePackages = [
-    { id: 'standard', name: 'Standard Package', rate: '1200 - ₹1300', description: 'Premium Plywood + Slightly Glossy Laminate', features: ['7 Years Service Warranty', '1 Year Hardware Warranty', 'Durable laminate finish', 'Customizable design'], profileLight: false },
-    { id: 'premium', name: 'Premium Package', rate: '1400- ₹1500', description: 'BWP Termite-Proof Plywood + High Gloss Laminate/Veneer', features: ['10 Years Service Warranty', '2 Years Hardware Warranty', 'Superior water & termite resistance', 'Ultra-glossy premium look', 'Profile light inside wardrobe included'], profileLight: true },
-    { id: 'luxury', name: 'Luxury Package', rate: '1,700–₹1,900', description: 'BWP Plywood + Acrylic Laminate (Scratch-Resistant)', features: ['15 Years Service Warranty', '3 Years Hardware Warranty', 'Ultra-premium mirror gloss finish', 'Maximum durability', 'Scratch-resistant', 'Profile light inside wardrobe included'], profileLight: true }
+    { id: 'standard', name: 'Standard Package', rate: 1250, description: 'Premium Plywood + Slightly Glossy Laminate', features: ['7 Years Service Warranty', '1 Year Hardware Warranty', 'Durable laminate finish'] },
+    { id: 'premium', name: 'Premium Package', rate: 1450, description: 'BWP Termite-Proof Plywood + High Gloss Laminate/Veneer', features: ['10 Years Service Warranty', '2 Years Hardware Warranty', 'Superior water resistance', 'Profile light included'] },
+    { id: 'luxury', name: 'Luxury Package', rate: 1800, description: 'BWP Plywood + Acrylic Laminate (Scratch-Resistant)', features: ['15 Years Service Warranty', '3 Years Hardware Warranty', 'Mirror gloss finish', 'Profile light included'] }
   ];
 
+  // Comprehensive List of Add-ons / Accessories
   const additionalFeatures = [
-    { id: 'soft-close', name: 'Soft Close Hinges', cost: 15000 },
-    { id: 'led-lighting', name: 'LED Lighting', cost: 8000 },
-    { id: 'pull-out-drawers', name: 'Pull-out Drawers', cost: 12000 },
-    { id: 'mirror-work', name: 'Mirror Work', cost: 10000 },
-    { id: 'glass-shutters', name: 'Glass Shutters', cost: 18000 },
-    { id: 'magic-corner', name: 'Magic Corner (Kitchen)', cost: 25000 },
-    { id: 'steel-baskets', name: 'Stainless Steel Baskets', cost: 15000 }
+    { id: 'custom-drawer', name: 'Custom Drawer with Lock', cost: 5000, desc: '2 channels, extra ply, laminate & lock' },
+    { id: 'hidden-drawer', name: 'Hidden Kitchen Drawer', cost: 5000, desc: 'Concealed box with channels & ply' },
+    { id: 'profile-glass-shutter', name: 'Profile Plain Glass Shutter', cost: 7500, desc: '5ft profile aluminium & plain glass' },
+    { id: 'double-door-shutter', name: 'Double-Door Cabinet Shutter Set', cost: 8000, desc: '2 shutters with hinges & labour' },
+    { id: 'loft-led', name: 'LED Under Kitchen Loft', cost: 10000, desc: 'Profile LED run with driver' },
+    { id: 'wardrobe-led', name: 'Wardrobe Interior LED Strip', cost: 10000, desc: 'Vertical strip with sensor' },
+    { id: 'profile-light-6ft', name: 'Profile Light 6-ft Run', cost: 2000, desc: 'Channel + LED strip + diffuser' },
+    { id: 'ceiling-downlight', name: 'Ceiling Downlight', cost: 1200, desc: 'Downlight fixture with wiring' },
+    { id: 'cob-spotlight', name: 'Small COB Spotlight', cost: 1000, desc: 'Focused COB fixture' },
+    { id: 'fan-hook', name: 'Fan Hook & Clamp Reposition', cost: 1200, desc: 'Ceiling clamp repositioning' },
+    { id: 'electrical-point-std', name: 'New Electrical Point (4-Trade)', cost: 4000, desc: 'Cutting + Wiring + Mason + Putty' },
+    { id: 'switchboard-8', name: '8-Module Switchboard', cost: 1500, desc: 'Plate, box, switches & sockets' },
+    { id: 'switchboard-6', name: '6-Module Switchboard', cost: 1200, desc: 'Plate, box, switches & sockets' },
+    { id: 'soft-close', name: 'Soft Close Hinges (Full Unit)', cost: 15000, desc: 'Hydraulic soft-close hinges' },
+    { id: 'mirror-work', name: 'Mirror Work', cost: 10000, desc: 'Beveled designer mirror' },
+    { id: 'magic-corner', name: 'Magic Corner (Kitchen)', cost: 25000, desc: 'Chrome pull-out corner basket' },
+    { id: 'steel-baskets', name: 'Stainless Steel Baskets (Set)', cost: 15000, desc: 'SS 304 modular kitchen baskets' }
   ];
 
-  const commonRooms = ['Kitchen', 'Master Bedroom', 'Living Room', 'Dining Area', 'Guest Bedroom', 'Kids Room'];
+  // 3D Interior Concept Models for Packages
+  const conceptModels3D = [
+    {
+      id: 'kitchen-3d',
+      title: 'Modular Kitchen 3D Architecture',
+      tag: 'L-Shaped & Parallel Layouts',
+      rate: '₹1,500 – ₹1,900 / sq.ft',
+      image: heroInterior,
+      badge: 'Royal Acrylic Gloss',
+      specs: [
+        'BWP Marine Grade Plywood Carcass (Waterproof)',
+        'Anti-scratch Acrylic High Gloss Finish with Laser Edge-band',
+        'Under-Cabinet Profile LED Strip Lighting (₹10k value)',
+        'Concealed In-Drawer Cutlery Tray & Soft-close Tandem Boxes',
+        '20 Years Workmanship Warranty & Lifetime Service Assurance'
+      ],
+      description: 'Ergonomic 3D modular kitchen model engineered for smooth movement between hob, sink, and refrigerator with moisture-sealed jointing.',
+      targetType: 'kitchen'
+    },
+    {
+      id: 'wardrobe-3d',
+      title: 'Master Bedroom Wardrobe 3D Layout',
+      tag: 'Floor-to-Ceiling Luxury Storage',
+      rate: '₹1,200 – ₹1,800 / sq.ft',
+      image: consultationDining,
+      badge: 'Profile Glass Shutter',
+      specs: [
+        'Full-height BWP Termite-Proof Plywood internal carcass',
+        'Slim Profile Shutter with Tinted/Plain Glass (₹7,500/unit)',
+        'Custom Drawers with Concealed Locksets (₹5,000/drawer)',
+        'Integrated Interior Vertical Sensor LED Strip Lighting',
+        'Dedicated Saree / Suit Hanging & Velvet Accessory Trays'
+      ],
+      description: 'Architectural floor-to-ceiling 3D wardrobe concept with internal concealed locks, soft-close sliding channels, and ambient vertical illumination.',
+      targetType: 'wardrobe'
+    },
+    {
+      id: 'living-3d',
+      title: 'Luxury Living Room 3D Concept',
+      tag: 'Wall Paneling + POP Ceiling + Lighting',
+      rate: 'Turnkey Layout Package',
+      image: aboutLivingRoom,
+      badge: 'Fluted Louvers & UV Marble',
+      specs: [
+        'Designer Fluted PVC Louvers & UV Marble Sheet TV Unit',
+        'Perimeter POP False Ceiling with Concealed Cove Lights',
+        '6-Foot Warm Gold Profile Light Runs (₹2,000/run)',
+        'Integrated 8-Module & 6-Module Modular Switchboards',
+        'Signature Warm Ivory (#FBF3E8) Surface Harmony'
+      ],
+      description: 'Acoustic fluted wall paneling combined with architectural layered false ceiling and warm indirect cove lighting for a five-star ambience.',
+      targetType: 'wall-paneling'
+    },
+    {
+      id: 'complete-home-3d',
+      title: 'Turnkey 2BHK / 3BHK Home 3D Layout',
+      tag: 'All-Inclusive Interior Package',
+      rate: '₹1,600 / sq.ft Turnkey',
+      image: ctaLivingRoom,
+      badge: 'Turnkey Handover',
+      specs: [
+        'Turnkey Living, Dining, Master Bedroom & Kitchen',
+        'Civil Works & Wall Levelling with 10% Coordination',
+        'Outsourced Sliding Aluminium Windows with 5% Coordination',
+        'Birla Putty + Luxury Emulsion Painting @ ₹35/sq.ft',
+        'Guaranteed Handover in 10–15 Working Days'
+      ],
+      description: 'Complete home turnkey model synchronizing civil masonry, electrical point additions, carpentry, and painting under one unified proposal.',
+      targetType: 'complete-home'
+    }
+  ];
 
   const getCSRFToken = () => {
     const cookieValue = document.cookie
@@ -153,7 +463,7 @@ const CostEstimator = () => {
       const subtotal = totalBasePrice + totalFeaturesTotal;
       const gst = formData.includeGST ? subtotal * 0.18 : 0;
       const finalCost = subtotal + gst;
-      const totalArea = calculatedItems.reduce((sum, item) => sum + item.area, 0);
+      const totalArea = calculatedItems.reduce((sum, item) => sum + (item.area || 0), 0);
 
       const response = await fetch('http://127.0.0.1:8000/api/quote/api/estimations/', {
         method: 'POST',
@@ -218,56 +528,182 @@ const CostEstimator = () => {
 
   // Build a single work item object from current form values
   const buildCurrentWorkItem = () => {
-    const projectType = projectTypes.find(p => p.id === formData.projectType) || projectTypes[0];
+    const projectTypeObj = projectTypes.find(p => p.id === formData.projectType) || projectTypes[0];
+    const qty = Math.max(1, parseInt(formData.quantity, 10) || 1);
     const length = parseFloat(formData.length) || 1;
     const width = parseFloat(formData.width) || 1;
     const area = length * width;
 
     let baseRate = 0;
+    let basePrice = 0;
     let selectedPackage = '';
     let packageDescription = '';
     let packageFeatures = [];
+    let unitLabel = 'sq ft';
+    let extraDetails = {};
 
     const getRate = (pkg) => parseRate(pkg.rate);
 
-    if (formData.projectType === 'kitchen') {
+    // 1. PAINTING WORK
+    if (formData.projectType === 'painting') {
+      const withPutty = formData.paintingPackage === 'with-putty';
+      baseRate = withPutty ? 35 : 30;
+      basePrice = area * baseRate;
+      const shadeName = formData.colorOption === 'Custom Shade Code' && formData.customColor.trim() 
+        ? formData.customColor.trim() 
+        : formData.colorOption;
+
+      selectedPackage = withPutty ? 'Painting with Birla Putty (₹35/sq.ft)' : 'Standard Painting (₹30/sq.ft)';
+      packageDescription = withPutty 
+        ? `Sanding + 2 coats Birla Putty + Primer + 2 coats Luxury Emulsion in shade "${shadeName}"`
+        : `Surface Sanding + 1 coat Primer + 2 coats Premium Emulsion in shade "${shadeName}"`;
+      packageFeatures = withPutty
+        ? ['Surface sanding & crack repair', '2 coats Birla White wall putty', '1 coat acrylic primer', '2 coats luxury emulsion paint', 'Switchboard & floor masking']
+        : ['Mechanical surface sanding', '1 coat primer base', '2 coats premium emulsion paint', 'Floor protection & final clean'];
+      extraDetails = { shadeName, withPutty };
+    }
+    // 2. MINOR ELECTRICAL WORKS
+    else if (formData.projectType === 'minor-electrical') {
+      const elecItem = minorElectricalRates.find(r => r.id === formData.minorElectricalItem) || minorElectricalRates[0];
+      if (elecItem.id === 'electrical-point') {
+        const isLong = formData.wireLength === 'long';
+        baseRate = isLong ? 5000 : 4000;
+        selectedPackage = `New Electrical Point (${isLong ? 'Long Run >15ft @ ₹5k' : 'Standard Run @ ₹4k'})`;
+      } else {
+        baseRate = elecItem.rate;
+        selectedPackage = elecItem.name;
+      }
+      basePrice = baseRate * qty;
+      unitLabel = `${qty} unit${qty > 1 ? 's' : ''}`;
+      packageDescription = elecItem.breakdown;
+      packageFeatures = [
+        'Concealed wall grooving / cutting',
+        'FR copper wiring & modular metal box',
+        'Cement plastering by Rajmistry flush with wall',
+        'Painter putty touch-up & finish',
+        'Circuit testing & safety inspection'
+      ];
+      extraDetails = { quantity: qty, isLongWire: formData.wireLength === 'long' };
+    }
+    // 3. DOORS & CUSTOM CARPENTRY
+    else if (formData.projectType === 'doors-carpentry') {
+      const doorItem = doorsCarpentryRates.find(d => d.id === formData.doorsCarpentryItem) || doorsCarpentryRates[0];
+      baseRate = doorItem.rate;
+      basePrice = baseRate * qty;
+      selectedPackage = `${doorItem.name} (₹${baseRate.toLocaleString('en-IN')})`;
+      unitLabel = `${qty} unit${qty > 1 ? 's' : ''}`;
+      packageDescription = doorItem.breakdown;
+      packageFeatures = [
+        'BWP Marine / Hardwood structural integrity',
+        'Heavy-duty hardware & slide alignment',
+        'Multi-layer laminate / veneer protective finish',
+        'Branded locks & precision fitting'
+      ];
+      extraDetails = { quantity: qty };
+    }
+    // 4. GATE & GRILL PAINTING
+    else if (formData.projectType === 'gate-grill-paint') {
+      const ggItem = gateGrillRates.find(g => g.id === formData.gateGrillItem) || gateGrillRates[0];
+      baseRate = ggItem.rate;
+      basePrice = baseRate * qty;
+      selectedPackage = `${ggItem.name} (₹${baseRate.toLocaleString('en-IN')})`;
+      unitLabel = `${qty} unit${qty > 1 ? 's' : ''}`;
+      packageDescription = ggItem.breakdown;
+      packageFeatures = [
+        'Surface sanding & rust scraping',
+        'Red oxide / metal anti-corrosive primer',
+        '2 coats premium synthetic enamel gloss finish',
+        'Full labour and edge finishing included'
+      ];
+      extraDetails = { quantity: qty };
+    }
+    // 5. CIVIL WORKS (10% MARKUP)
+    else if (formData.projectType === 'civil-work') {
+      const baseCost = Math.max(1000, parseFloat(formData.civilBaseCost) || 20000);
+      const markupAmount = Math.round(baseCost * 0.10);
+      basePrice = baseCost + markupAmount;
+      baseRate = basePrice;
+      selectedPackage = `Civil Work: ${formData.civilWorkType}`;
+      unitLabel = '1 Project Scope';
+      packageDescription = `Contractor base: ₹${baseCost.toLocaleString('en-IN')} + 10% coordination fee (₹${markupAmount.toLocaleString('en-IN')})`;
+      packageFeatures = [
+        'Site supervision & contractor alignment',
+        'Quality inspection of cement mortar & leveling',
+        'Debris clearance & site management',
+        '10% transparent coordination fee'
+      ];
+      extraDetails = { baseCost, markupPercent: 10, markupAmount };
+    }
+    // 6. OUTSOURCED SPECIALIST (5% MARKUP)
+    else if (formData.projectType === 'outsourced-work') {
+      const baseCost = Math.max(1000, parseFloat(formData.outsourcedBaseCost) || 30000);
+      const markupAmount = Math.round(baseCost * 0.05);
+      basePrice = baseCost + markupAmount;
+      baseRate = basePrice;
+      selectedPackage = `Outsourced: ${formData.outsourcedWorkType}`;
+      unitLabel = '1 Vendor Scope';
+      packageDescription = `Vendor base quote: ₹${baseCost.toLocaleString('en-IN')} + 5% coordination fee (₹${markupAmount.toLocaleString('en-IN')})`;
+      packageFeatures = [
+        'Specialist vendor sourcing & dimension verification',
+        'Transportation & on-site fitting coordination',
+        'Hardware alignment and quality check',
+        '5% transparent coordination fee'
+      ];
+      extraDetails = { baseCost, markupPercent: 5, markupAmount };
+    }
+    // 7. MODULAR KITCHEN
+    else if (formData.projectType === 'kitchen') {
       const pkg = kitchenPackages.find(p => p.id === formData.kitchenPackage) || kitchenPackages[0];
       baseRate = getRate(pkg);
+      basePrice = area * baseRate;
       selectedPackage = pkg.name;
       packageDescription = pkg.description;
       packageFeatures = pkg.features;
-    } else if (formData.projectType === 'wall-paneling') {
+    }
+    // 8. WALL PANELING
+    else if (formData.projectType === 'wall-paneling') {
       const pkg = wallPanelingPackages.find(p => p.id === formData.wallPanelingPackage) || wallPanelingPackages[0];
       baseRate = getRate(pkg);
+      basePrice = area * baseRate;
       selectedPackage = pkg.name;
       packageDescription = pkg.description;
       packageFeatures = pkg.features;
-    } else if (formData.projectType === 'false-ceiling') {
+    }
+    // 9. FALSE CEILING
+    else if (formData.projectType === 'false-ceiling') {
       const pkg = falseCeilingTypes.find(t => t.id === formData.falseCeilingType) || falseCeilingTypes[0];
       baseRate = getRate(pkg);
+      basePrice = area * baseRate;
       selectedPackage = pkg.name;
       packageDescription = pkg.description;
       packageFeatures = pkg.features;
-    } else if (formData.projectType === 'interior-decoration') {
+    }
+    // 10. INTERIOR DECORATION
+    else if (formData.projectType === 'interior-decoration') {
       const pkg = interiorPackages.find(p => p.id === formData.interiorPackage) || interiorPackages[0];
       baseRate = getRate(pkg);
+      basePrice = area * baseRate;
       selectedPackage = pkg.name;
       packageDescription = pkg.description;
       packageFeatures = pkg.features;
-    } else if (formData.projectType === 'wardrobe') {
+    }
+    // 11. WARDROBE
+    else if (formData.projectType === 'wardrobe') {
       const pkg = wardrobePackages.find(p => p.id === formData.wardrobePackage) || wardrobePackages[0];
       baseRate = getRate(pkg);
+      basePrice = area * baseRate;
       selectedPackage = pkg.name;
       packageDescription = pkg.description;
       packageFeatures = pkg.features;
-    } else {
-      baseRate = parseRate(projectType.baseRate);
-      selectedPackage = 'Standard Package';
-      packageDescription = 'Basic package with standard features';
-      packageFeatures = ['Termite-proof materials', 'Standard fitting warranty'];
     }
-
-    const basePrice = area * baseRate;
+    // 12. COMPLETE HOME / TURNKEY
+    else {
+      baseRate = parseRate(projectTypeObj.baseRate);
+      basePrice = area * baseRate;
+      selectedPackage = 'Turnkey Complete Home';
+      packageDescription = 'Full home modular woodwork, hardware & installation';
+      packageFeatures = ['Termite-proof BWP materials', 'Turnkey coordination', '20 Years Workmanship Warranty'];
+    }
 
     // Resolve additional features selected for this work
     const selectedFeaturesObj = formData.additionalFeatures.map(featId => {
@@ -280,19 +716,23 @@ const CostEstimator = () => {
     return {
       id: 'work_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
       projectType: formData.projectType,
-      projectTypeName: projectType.name,
+      projectTypeName: projectTypeObj.name,
       roomLabel: formData.roomLabel.trim(),
       packageName: selectedPackage,
       packageDescription,
       packageFeatures,
+      unitLabel,
+      quantity: qty,
       length,
       width,
-      area,
+      area: projectTypeObj.category === 'area' ? area : qty,
+      isAreaBased: projectTypeObj.category === 'area',
       baseRate,
       basePrice,
       additionalFeatures: selectedFeaturesObj,
       featuresTotal,
-      itemTotal
+      itemTotal,
+      extraDetails
     };
   };
 
@@ -313,8 +753,8 @@ const CostEstimator = () => {
       contact_phone: formData.contact_phone || prev.contact_phone
     }));
 
-    // Reset current form to prepare for next work addition, or switch to next popular work type
-    const nextType = formData.projectType === 'kitchen' ? 'wardrobe' : formData.projectType === 'wardrobe' ? 'false-ceiling' : 'wall-paneling';
+    // Reset current form to prepare for next work addition
+    const nextType = formData.projectType === 'kitchen' ? 'wardrobe' : formData.projectType === 'wardrobe' ? 'painting' : 'kitchen';
     setFormData(prev => ({
       ...prev,
       projectType: nextType,
@@ -347,7 +787,7 @@ const CostEstimator = () => {
   const subtotal = totalBasePrice + totalFeaturesTotal;
   const gst = formData.includeGST ? Math.round(subtotal * 0.18) : 0;
   const finalCost = subtotal + gst;
-  const totalArea = itemsList.reduce((sum, item) => sum + item.area, 0);
+  const totalArea = itemsList.filter(i => i.isAreaBased).reduce((sum, item) => sum + (item.area || 0), 0);
 
   // Scope of Work generator combining all selected works
   const getScopeOfWorkForItems = (items) => {
@@ -359,7 +799,42 @@ const CostEstimator = () => {
       const pkg = item.packageName;
       const room = item.roomLabel ? ` [${item.roomLabel}]` : '';
 
-      if (pType === 'kitchen') {
+      if (pType === 'painting') {
+        const shade = item.extraDetails?.shadeName || 'Selected Palette';
+        const withPutty = item.extraDetails?.withPutty;
+        allScopes.push(
+          { work: `Surface Preparation${room}`, desc: withPutty ? 'Mechanical sanding, crack bridging & double-coat Birla White Wall Putty application' : 'Surface sanding, dust clearing and high-adhesion primer base application' },
+          { work: `Paint Application${room}`, desc: `2 coats luxury emulsion coating in shade: ${shade} with seamless roller finish` },
+          { work: `Masking & Protection${room}`, desc: 'Switchboard tape masking, floor drop-cloth protection, and post-application cleanup' }
+        );
+      } else if (pType === 'minor-electrical') {
+        allScopes.push(
+          { work: `Concealed Chasing & Conduit${room}`, desc: `4-Trade coordination: wall cutting, PVC pipe & FR copper wiring (Polycab/Finolex) for ${pkg}` },
+          { work: `Civil Plastering & Putty${room}`, desc: 'Rajmistry cement mortar leveling flush with wall + painter putty pre-finish' },
+          { work: `Modular Fixtures & Testing${room}`, desc: 'Modular plate mounting, switch alignment, load testing & circuit balancing' }
+        );
+      } else if (pType === 'doors-carpentry') {
+        allScopes.push(
+          { work: `Woodwork & Carcass${room}`, desc: `Heavy-duty structural execution (${pkg}) with BWP marine grade plywood / hardwood` },
+          { work: `Hardware & Channels${room}`, desc: 'Dual-side telescopic channels, heavy brass/SS hinges & laser-aligned fittings' },
+          { work: `Laminate & Lock Fitting${room}`, desc: 'Scratch-resistant laminate balance, branded lock installation & smooth slide test' }
+        );
+      } else if (pType === 'gate-grill-paint') {
+        allScopes.push(
+          { work: `Rust Treatment & Primer${room}`, desc: 'Wire-brush scraping, rust removal & anti-corrosive metal red oxide/zinc primer' },
+          { work: `Enamel Paint Finishing${room}`, desc: '2 coats high-gloss synthetic enamel finish for outdoor weather resistance' }
+        );
+      } else if (pType === 'civil-work') {
+        allScopes.push(
+          { work: `Civil Execution & Supervision${room}`, desc: `${item.packageName} with end-to-end site supervision & quality control` },
+          { work: `Contractor Coordination (10%)${room}`, desc: '10% coordination charge for site logistics, material procurement & safety administration' }
+        );
+      } else if (pType === 'outsourced-work') {
+        allScopes.push(
+          { work: `Specialist Fabrication${room}`, desc: `${item.packageName} with on-site dimension vetting & specialist fabrication` },
+          { work: `Vendor Management (5%)${room}`, desc: '5% vendor coordination charge covering delivery logistics, installation & inspection' }
+        );
+      } else if (pType === 'kitchen') {
         allScopes.push(
           { work: `Kitchen Carcass${room}`, desc: `Heavy duty BWP Marine Plywood carcass with ${pkg} finish` },
           { work: `Shutters & Hardware${room}`, desc: 'Soft-close hydraulic hinges, precision edge-banded shutters with premium laminates' },
@@ -374,26 +849,17 @@ const CostEstimator = () => {
       } else if (pType === 'false-ceiling') {
         allScopes.push(
           { work: `Ceiling Structure${room}`, desc: `Precision perimeter channel framework for ${pkg || 'False Ceiling'}` },
-          { work: `Ceiling Design & Board${room}`, desc: 'Basket-pattern / tray ceiling design with POP/Gypsum border detailing and garnish' },
-          { work: `Finishing & Jointing${room}`, desc: 'Full joint-tape application, complete putty and primer protective coating' }
+          { work: `Ceiling Design & Board${room}`, desc: 'Tray ceiling design with POP/Gypsum border detailing, joint taping & primer' }
         );
       } else if (pType === 'wall-paneling') {
         allScopes.push(
           { work: `Wall Paneling Core${room}`, desc: `12mm calibrated plywood base paneling according to ${pkg}` },
-          { work: `Decorative Paneling${room}`, desc: 'Designer PVC louvers / UV marble sheets / CNC styling as per specifications' },
-          { work: `Trim & Finishing${room}`, desc: 'Seamless flush-fit edge joints and architectural border symmetry' }
-        );
-      } else if (pType === 'interior-decoration') {
-        allScopes.push(
-          { work: `Modular Carpentry${room}`, desc: `Custom modular carpentry with ${pkg} materials and soft edge-banding` },
-          { work: `Surface Finish & Polish${room}`, desc: 'High gloss / acrylic scratch-resistant laminate overlay with seamless edges' },
-          { work: `Hardware & Inspection${room}`, desc: 'Branded soft-close hardware, alignment check and handover testing' }
+          { work: `Decorative Paneling${room}`, desc: 'Designer PVC louvers / UV marble sheets / CNC styling as per specifications' }
         );
       } else {
         allScopes.push(
           { work: `${item.projectTypeName} Layout${room}`, desc: `Precision installation according to ${pkg} design concept` },
-          { work: `Paneling & Surface${room}`, desc: 'Termite and borer resistant engineered panels with premium surface finish' },
-          { work: `Finishing & Handover${room}`, desc: 'Complete high-adhesion putty base, primer coating, and protective sealing' }
+          { work: `Paneling & Surface${room}`, desc: 'Termite and borer resistant engineered panels with premium surface finish' }
         );
       }
     });
@@ -403,7 +869,6 @@ const CostEstimator = () => {
 
   // Open the Client Name Modal before triggering PDF download or Letterhead preview
   const handleRequestDownload = () => {
-    // If no items in list yet, add the currently configured work first
     let activeList = itemsList;
     if (activeList.length === 0) {
       const newItem = buildCurrentWorkItem();
@@ -504,7 +969,6 @@ const CostEstimator = () => {
 
   // Generate and print the official 2-Page Letterhead PDF Quote via iframe
   const executePrint = (client, itemsToPrint) => {
-    // Remove any existing print iframe
     const existing = document.getElementById('quotation-print-frame');
     if (existing) {
       existing.remove();
@@ -530,7 +994,7 @@ const CostEstimator = () => {
     const printSubtotal = printBasePrice + printFeaturesTotal;
     const printGst = formData.includeGST ? Math.round(printSubtotal * 0.18) : 0;
     const printFinalCost = printSubtotal + printGst;
-    const printTotalArea = itemsToPrint.reduce((sum, item) => sum + item.area, 0);
+    const printTotalArea = itemsToPrint.filter(i => i.isAreaBased).reduce((sum, item) => sum + (item.area || 0), 0);
 
     const scopeRows = getScopeOfWorkForItems(itemsToPrint).map((item, idx) => `
       <tr style="border-bottom: 1px solid #f1d5d5; background: ${idx % 2 === 0 ? '#ffffff' : '#fdf8f8'};">
@@ -539,23 +1003,35 @@ const CostEstimator = () => {
       </tr>
     `).join('');
 
-    const itemizedRows = itemsToPrint.map((item, idx) => `
-      <tr style="border-bottom: 1px solid #f1d5d5; background: ${idx % 2 === 0 ? '#ffffff' : '#fdf8f8'};">
-        <td style="padding: 6px 8px; font-weight: bold; color: #555; text-align: center;">${idx + 1}</td>
-        <td style="padding: 6px 8px; font-weight: 600; color: #111;">
-          ${item.projectTypeName} ${item.roomLabel ? `<span style="color: #666; font-weight: normal;">(${item.roomLabel})</span>` : ''}
-          ${item.additionalFeatures && item.additionalFeatures.length > 0 
-            ? `<div style="font-size: 8.5px; color: #777; font-weight: normal; margin-top: 2px;">+ Add-ons: ${item.additionalFeatures.map(f => f.name).join(', ')}</div>` 
-            : ''}
-        </td>
-        <td style="padding: 6px 8px; color: #333; font-size: 10px;">
-          ${item.packageName} (${item.length}ft × ${item.width}ft = ${item.area} sq.ft)
-        </td>
-        <td style="padding: 6px 8px; text-align: right; font-weight: bold; color: #111;">
-          ₹${item.itemTotal.toLocaleString('en-IN')}
-        </td>
-      </tr>
-    `).join('');
+    const itemizedRows = itemsToPrint.map((item, idx) => {
+      let dimensionOrQty = '';
+      if (item.isAreaBased) {
+        dimensionOrQty = `${item.packageName} (${item.length}ft × ${item.width}ft = ${item.area} sq.ft)`;
+        if (item.extraDetails?.shadeName) {
+          dimensionOrQty += `<br/><span style="color: #c0142b; font-weight: 600;">Color: ${item.extraDetails.shadeName}</span>`;
+        }
+      } else {
+        dimensionOrQty = `${item.packageName} [${item.unitLabel}]`;
+      }
+
+      return `
+        <tr style="border-bottom: 1px solid #f1d5d5; background: ${idx % 2 === 0 ? '#ffffff' : '#fdf8f8'};">
+          <td style="padding: 6px 8px; font-weight: bold; color: #555; text-align: center;">${idx + 1}</td>
+          <td style="padding: 6px 8px; font-weight: 600; color: #111;">
+            ${item.projectTypeName} ${item.roomLabel ? `<span style="color: #666; font-weight: normal;">(${item.roomLabel})</span>` : ''}
+            ${item.additionalFeatures && item.additionalFeatures.length > 0 
+              ? `<div style="font-size: 8.5px; color: #777; font-weight: normal; margin-top: 2px;">+ Add-ons: ${item.additionalFeatures.map(f => f.name).join(', ')}</div>` 
+              : ''}
+          </td>
+          <td style="padding: 6px 8px; color: #333; font-size: 10px;">
+            ${dimensionOrQty}
+          </td>
+          <td style="padding: 6px 8px; text-align: right; font-weight: bold; color: #111;">
+            ₹${item.itemTotal.toLocaleString('en-IN')}
+          </td>
+        </tr>
+      `;
+    }).join('');
 
     const worksOverviewText = itemsToPrint.map(i => i.roomLabel ? `${i.projectTypeName} (${i.roomLabel})` : i.projectTypeName).join(', ');
 
@@ -637,7 +1113,7 @@ const CostEstimator = () => {
 
               <div style="height: 1.5px; background: #c0142b; margin: 8px 0 14px;"></div>
 
-              <!-- Project & Client Metadata Box (CLIENT NAME PROMINENTLY DISPLAYED) -->
+              <!-- Project & Client Metadata Box -->
               <div style="display: flex; justify-content: space-between; align-items: flex-start; font-size: 11.5px; margin-bottom: 12px; line-height: 1.5; background: #faf8f8; border: 1px solid #ebd4d4; border-radius: 4px; padding: 8px 12px;">
                 <div>
                   <p style="margin: 1px 0;">
@@ -670,7 +1146,7 @@ const CostEstimator = () => {
                     <span style="color: #eab308; font-size: 12px;">✦</span> DESIGN CONCEPT & SCOPE
                   </h3>
                   <p style="font-size: 10px; font-style: italic; color: #222; line-height: 1.55; margin: 0; text-align: justify;">
-                    A personalized luxury interior design proposal curated exclusively for <strong>${client.clientName || 'our client'}</strong> covering <strong>${worksOverviewText}</strong> spanning a total calculated layout area of <strong>${printTotalArea} sq.ft</strong>. Designed with high-durability BWP marine materials, smooth edge-banding, designer aesthetics, and precision laser alignment as discussed.
+                    A personalized luxury interior design proposal curated exclusively for <strong>${client.clientName || 'our client'}</strong> covering <strong>${worksOverviewText}</strong> ${printTotalArea > 0 ? `spanning a total calculated layout area of <strong>${printTotalArea} sq.ft</strong>` : ''}. Designed with high-durability BWP marine materials, smooth edge-banding, transparent labour coordination, and precision laser alignment as discussed.
                   </p>
                 </div>
 
@@ -697,13 +1173,13 @@ const CostEstimator = () => {
                 <!-- NOT INCLUDED -->
                 <div style="margin-bottom: 8px;">
                   <h3 style="color: #c0142b; font-size: 10.5px; font-weight: 800; text-transform: uppercase; margin: 0 0 4px; display: flex; align-items: center; gap: 6px;">
-                    <span style="color: #eab308; font-size: 12px;">✦</span> NOT INCLUDED
+                    <span style="color: #eab308; font-size: 12px;">✦</span> TERMS & TRANSPARENCY NOTES
                   </h3>
                   <ul style="margin: 0; padding-left: 4px; list-style: none; font-size: 9.5px; font-style: italic; color: #333; line-height: 1.55;">
-                    <li>• Electrical wiring, electrical points, fixtures and related heavy electrical work.</li>
-                    <li>• Wooden garnish or any woodwork beyond agreed scope.</li>
-                    <li>• Final colour paint/painting work is not included unless specified.</li>
-                    <li>• Any additional work or design modifications beyond the approved scope will be charged separately.</li>
+                    <li>• Civil Works: 10% coordination charge applied to external contractor base cost for site supervision.</li>
+                    <li>• Outsourced Works: 5% vendor management charge applied to specialist base vendor costs (aluminium, fabrication, gates).</li>
+                    <li>• New Electrical Point: ₹4,000 includes 4-trade coordination (cutter, electrician, mason, painter). Wire runs >15ft charged at ₹5,000.</li>
+                    <li>• Any modifications or work beyond agreed scope will be charged separately with prior client approval.</li>
                   </ul>
                 </div>
               </div>
@@ -773,7 +1249,7 @@ const CostEstimator = () => {
                         <tr style="background: #b91c1c; color: #ffffff;">
                           <th style="padding: 5px 8px; text-align: center; width: 6%;">#</th>
                           <th style="padding: 5px 8px; text-align: left; width: 38%;">Scope / Work Item</th>
-                          <th style="padding: 5px 8px; text-align: left; width: 32%;">Package & Dimensions</th>
+                          <th style="padding: 5px 8px; text-align: left; width: 32%;">Package & Details</th>
                           <th style="padding: 5px 8px; text-align: right; width: 24%;">Amount (₹)</th>
                         </tr>
                       </thead>
@@ -853,592 +1329,1433 @@ const CostEstimator = () => {
   };
 
   return (
-    <div className="py-24 lg:py-32 bg-[#FBF3E8] min-h-screen">
+    <div className="relative py-20 lg:py-28 bg-[#FBF3E8] min-h-screen overflow-hidden">
+      
+      {/* Opulent Ambient Background Glows */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-amber-200/35 to-amber-100/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/3 right-10 w-[550px] h-[550px] bg-gradient-to-bl from-red-200/25 to-rose-100/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute bottom-10 left-10 w-[600px] h-[600px] bg-gradient-to-tr from-amber-100/30 to-amber-50/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 no-print">
         
-        {/* Page Heading */}
-        <div className="text-center mb-10 sm:mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 text-xs font-bold mb-3">
-            <Sparkles size={14} /> Multi-Room Quotation Builder
+        {/* Page Heading — Ultra Luxury Hero Header */}
+        <div className="text-center mb-8 sm:mb-12">
+          
+          {/* Royal Seal Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-100/90 via-white to-amber-100/90 border border-amber-300/80 text-amber-900 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm backdrop-blur-sm">
+            <Crown size={14} className="text-[#c0142b]" />
+            <span>Cherry Gold Signature Quotation Studio</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span className="text-amber-800 font-semibold lowercase">20-yr warranty</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3 tracking-tight">
-            Cost Estimator & Quotation Generator
+
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 tracking-tight font-serif">
+            Cost Estimator & Transparent Proposal
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
-            Configure all your interior requirements — Modular Kitchen, Wardrobe, False Ceiling, Paneling — into one comprehensive proposal and download your official PDF quote.
+          
+          <p className="text-xs sm:text-sm md:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Craft your home interior quotation with instant space personalization, curated color palettes, transparent trade labour breakdowns, and download an official letterhead quotation.
           </p>
+
+          {/* Segmented Luxury Tab Navigation */}
+          <div className="mt-8 inline-flex p-1.5 bg-white/80 backdrop-blur-md border border-amber-200/70 rounded-2xl shadow-sm gap-1 sm:gap-2">
+            <button
+              onClick={() => setActiveTab('estimator')}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'estimator'
+                  ? 'bg-gradient-to-r from-[#c0142b] to-[#8f0e1f] text-white shadow-md shadow-red-900/20 ring-1 ring-amber-400/50'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-amber-50/60'
+              }`}
+            >
+              <Calculator size={16} /> Quotation Builder
+            </button>
+            <button
+              onClick={() => setActiveTab('3d-models')}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
+                activeTab === '3d-models'
+                  ? 'bg-gradient-to-r from-[#c0142b] to-[#8f0e1f] text-white shadow-md shadow-red-900/20 ring-1 ring-amber-400/50'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-amber-50/60'
+              }`}
+            >
+              <Eye size={16} /> 3D Concept Models
+            </button>
+            <button
+              onClick={() => setActiveTab('rate-card')}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'rate-card'
+                  ? 'bg-gradient-to-r from-[#c0142b] to-[#8f0e1f] text-white shadow-md shadow-red-900/20 ring-1 ring-amber-400/50'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-amber-50/60'
+              }`}
+            >
+              <FileText size={16} /> Fixed Rate Cards
+            </button>
+          </div>
         </div>
 
         {/* Success toast notification */}
         {successToast && (
-          <div className="mb-6 max-w-xl mx-auto bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center justify-between text-sm font-semibold animate-bounce">
-            <div className="flex items-center gap-2">
+          <div className="mb-6 max-w-xl mx-auto bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center justify-between text-sm font-semibold animate-bounce border border-emerald-400/30">
+            <div className="flex items-center gap-2.5">
               <CheckCircle2 size={18} />
               <span>{successToast}</span>
             </div>
-            <button onClick={() => setSuccessToast('')} className="p-1 hover:bg-emerald-700 rounded-lg">
+            <button onClick={() => setSuccessToast('')} className="p-1 hover:bg-white/20 rounded-lg">
               <X size={16} />
             </button>
           </div>
         )}
 
-        {/* 2-Column Grid: Left Work Form, Right Quotation Summary Breakdown */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* ========================================================================= */}
-          {/* LEFT COLUMN: Add Work / Service Form                                     */}
-          {/* ========================================================================= */}
-          <div className="lg:col-span-6 bg-[#f1f1de] rounded-2xl shadow-lg p-6 sm:p-8 border border-[#e5e5ce]">
+        {/* ========================================================================= */}
+        {/* TAB 1: QUOTATION BUILDER & FORM                                            */}
+        {/* ========================================================================= */}
+        {activeTab === 'estimator' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-300">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center shadow-md">
-                  <Calculator size={20} />
+            {/* LEFT COLUMN: Add Work / Service Form in Luxury White Porcelain Card */}
+            <div className="lg:col-span-7 bg-white/95 backdrop-blur-md rounded-3xl shadow-[0_12px_40px_-10px_rgba(192,20,43,0.06),0_4px_20px_-2px_rgba(212,175,55,0.06)] p-6 sm:p-8 border border-amber-200/80">
+              
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-amber-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#c0142b] to-[#8a0b1c] text-white flex items-center justify-center shadow-md shadow-red-950/20 ring-2 ring-amber-300/60">
+                    <Calculator size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 font-serif leading-tight">
+                      Add Work to Quotation
+                    </h2>
+                    <p className="text-xs text-amber-900/70 font-medium">
+                      Step {itemsList.length + 1}: Select service, space & custom specifications
+                    </p>
+                  </div>
                 </div>
+
+                {itemsList.length > 0 && (
+                  <span className="px-3.5 py-1 bg-gradient-to-r from-amber-50 to-red-50 text-[#c0142b] rounded-full text-xs font-bold border border-amber-200 shadow-sm">
+                    {itemsList.length} Work{itemsList.length > 1 ? 's' : ''} in Quote
+                  </span>
+                )}
+              </div>
+
+              <form onSubmit={handleAddWorkToQuotation} className="space-y-6">
+                
+                {/* 1. Project / Work Type Selector */}
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">
-                    Add Work to Quotation
-                  </h2>
-                  <p className="text-xs text-gray-500">
-                    Step {itemsList.length + 1}: Select service & room details
+                  <div className="flex items-center justify-between mb-2.5">
+                    <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider">
+                      1. Select Work Type *
+                    </label>
+                    <span className="text-[11px] text-amber-800 font-medium">Click to configure</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {projectTypes.map(type => {
+                      const isSelected = formData.projectType === type.id;
+                      const IconComponent = type.icon;
+                      return (
+                        <button
+                          key={type.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, projectType: type.id })}
+                          className={`p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between group ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#c0142b] to-[#8a0b1c] text-white border-transparent shadow-lg shadow-red-900/25 ring-2 ring-amber-400'
+                              : 'bg-[#FDFBF7] hover:bg-white text-gray-800 border-amber-200/70 hover:border-amber-400 hover:shadow-md'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1.5 w-full">
+                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${
+                              isSelected ? 'bg-white/20 text-white' : 'bg-red-50 text-[#c0142b]'
+                            }`}>
+                              <IconComponent size={14} />
+                            </div>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                              isSelected ? 'bg-black/20 text-amber-200' : 'bg-amber-100/70 text-amber-900'
+                            }`}>
+                              {type.badge}
+                            </span>
+                          </div>
+
+                          <div>
+                            <span className="font-bold text-xs truncate block">{type.name}</span>
+                            <span className={`text-[10px] mt-0.5 block ${isSelected ? 'text-red-100' : 'text-gray-500'}`}>
+                              {typeof type.baseRate === 'number' ? `from ₹${type.baseRate}/${type.unit}` : type.baseRate}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Room / Space Name Preset Chips + Custom Input */}
+                <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-amber-200/60">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider">
+                      2. Room / Space Name
+                    </label>
+                    <span className="text-[11px] text-amber-800 font-medium">Quick chips or custom type</span>
+                  </div>
+                  
+                  <input
+                    type="text"
+                    name="roomLabel"
+                    value={formData.roomLabel}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Master Bedroom, Living Room, Kitchen 2..."
+                    className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] focus:border-transparent bg-white text-gray-800 text-xs sm:text-sm font-medium shadow-inner"
+                  />
+
+                  {/* Quick Chips */}
+                  <div className="flex flex-wrap gap-1.5 mt-2.5">
+                    {commonRooms.map(room => (
+                      <button
+                        key={room}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, roomLabel: room })}
+                        className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all font-medium ${
+                          formData.roomLabel === room 
+                            ? 'bg-gradient-to-r from-[#c0142b] to-[#990011] text-white border-transparent shadow-sm' 
+                            : 'bg-white text-gray-700 border-amber-200/80 hover:border-amber-400 hover:bg-amber-50/50'
+                        }`}
+                      >
+                        + {room}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. DYNAMIC CONFIGURATION ACCORDING TO WORK TYPE */}
+
+                {/* --- A. PAINTING CONFIGURATION --- */}
+                {formData.projectType === 'painting' && (
+                  <div className="p-5 bg-gradient-to-br from-amber-50/50 via-white to-red-50/30 rounded-2xl border border-amber-200 space-y-5 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-red-800 uppercase tracking-wider">
+                        <Paintbrush size={16} className="text-[#c0142b]" />
+                        <span>Wall & Ceiling Painting Rates & Palettes</span>
+                      </div>
+                      <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                        Smooth Emulsion
+                      </span>
+                    </div>
+
+                    {/* Putty Option Toggle */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-2">
+                        Select Surface Preparation & Finish Tier:
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label className={`p-3.5 rounded-2xl border cursor-pointer flex flex-col justify-between transition-all ${
+                          formData.paintingPackage === 'without-putty'
+                            ? 'border-[#c0142b] bg-red-50/80 shadow-md ring-1 ring-red-400'
+                            : 'border-amber-200 hover:border-amber-300 bg-white'
+                        }`}>
+                          <div className="flex items-center gap-2.5">
+                            <input
+                              type="radio"
+                              name="paintingPackage"
+                              value="without-putty"
+                              checked={formData.paintingPackage === 'without-putty'}
+                              onChange={handleInputChange}
+                              className="text-red-600 focus:ring-red-500 w-4 h-4"
+                            />
+                            <span className="font-bold text-xs text-gray-900">Standard Painting</span>
+                          </div>
+                          <p className="text-[11px] text-gray-600 mt-1.5 pl-6 leading-relaxed">
+                            Sanding + 1 coat Primer + 2 coats Premium Emulsion
+                          </p>
+                          <span className="text-sm font-extrabold text-[#c0142b] mt-2 pl-6">
+                            ₹30 / sq.ft
+                          </span>
+                        </label>
+
+                        <label className={`p-3.5 rounded-2xl border cursor-pointer flex flex-col justify-between transition-all ${
+                          formData.paintingPackage === 'with-putty'
+                            ? 'border-[#c0142b] bg-red-50/80 shadow-md ring-1 ring-red-400'
+                            : 'border-amber-200 hover:border-amber-300 bg-white'
+                        }`}>
+                          <div className="flex items-center gap-2.5">
+                            <input
+                              type="radio"
+                              name="paintingPackage"
+                              value="with-putty"
+                              checked={formData.paintingPackage === 'with-putty'}
+                              onChange={handleInputChange}
+                              className="text-red-600 focus:ring-red-500 w-4 h-4"
+                            />
+                            <span className="font-bold text-xs text-gray-900">Painting with Birla Putty</span>
+                          </div>
+                          <p className="text-[11px] text-gray-600 mt-1.5 pl-6 leading-relaxed">
+                            Sanding + 2 coats Birla Putty + Primer + 2 coats Emulsion
+                          </p>
+                          <span className="text-sm font-extrabold text-[#c0142b] mt-2 pl-6 flex items-center gap-1.5">
+                            ₹35 / sq.ft <span className="text-[10px] bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded font-bold uppercase">Popular</span>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Color Option Selector */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-xs font-bold text-gray-800">
+                          Select Color Shade Palette:
+                        </label>
+                        <span className="text-[11px] text-[#c0142b] font-bold">
+                          Selected: {formData.colorOption}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {colorPresets.map((clr) => {
+                          const isClrSelected = formData.colorOption === clr.name;
+                          return (
+                            <button
+                              key={clr.name}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, colorOption: clr.name })}
+                              className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all ${
+                                isClrSelected
+                                  ? 'border-[#c0142b] bg-red-50 shadow-sm ring-1 ring-red-400'
+                                  : 'border-amber-200/70 hover:border-amber-300 bg-white'
+                              }`}
+                            >
+                              <span 
+                                className="w-5 h-5 rounded-full border shadow-inner flex-shrink-0"
+                                style={{ backgroundColor: clr.hex, borderColor: clr.border }}
+                              />
+                              <span className="text-[11px] font-semibold text-gray-800 truncate">
+                                {clr.label}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {formData.colorOption === 'Custom Shade Code' && (
+                        <div className="mt-3">
+                          <input
+                            type="text"
+                            name="customColor"
+                            value={formData.customColor}
+                            onChange={handleInputChange}
+                            placeholder="Enter Paint Brand & Shade Code (e.g. Asian Paints Royale L123 Whispering White)..."
+                            className="w-full px-3.5 py-2.5 border border-amber-200 rounded-xl text-xs bg-white focus:ring-2 focus:ring-[#c0142b]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* --- B. MINOR ELECTRICAL WORKS CONFIGURATION --- */}
+                {formData.projectType === 'minor-electrical' && (
+                  <div className="p-5 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/20 rounded-2xl border border-amber-200 space-y-4 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-amber-900 uppercase tracking-wider">
+                        <Zap size={16} className="text-amber-600" />
+                        <span>Electrical Points & Minor Fixtures</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                        Fixed Rates
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1.5">
+                        Select Electrical / Minor Work Item:
+                      </label>
+                      <select
+                        name="minorElectricalItem"
+                        value={formData.minorElectricalItem}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {minorElectricalRates.map(r => (
+                          <option key={r.id} value={r.id}>
+                            {r.name} — {r.description}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Specific wire run selector for electrical point */}
+                    {formData.minorElectricalItem === 'electrical-point' && (
+                      <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200 text-xs space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-amber-950">Wire Run Distance:</span>
+                          <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="wireLength"
+                                value="standard"
+                                checked={formData.wireLength === 'standard'}
+                                onChange={handleInputChange}
+                                className="text-red-600 focus:ring-red-500"
+                              />
+                              <span className="font-bold text-gray-800">Standard Run (₹4,000)</span>
+                            </label>
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="wireLength"
+                                value="long"
+                                checked={formData.wireLength === 'long'}
+                                onChange={handleInputChange}
+                                className="text-red-600 focus:ring-red-500"
+                              />
+                              <span className="font-bold text-gray-800">Long Run &gt;15ft (₹5,000)</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Transparent 4-Trade Labour Visual Stepper */}
+                        <div className="mt-2 p-3 bg-white rounded-xl border border-amber-300 text-[11px] text-gray-700 leading-relaxed shadow-sm">
+                          <strong className="text-[#c0142b] block mb-2 font-serif text-xs">
+                            ✦ Why ₹4,000 Fixed per Point? (Comprehensive 4-Trade Labour Stepper):
+                          </strong>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                            <div className="p-2 bg-amber-50/50 rounded-lg border border-amber-200">
+                              <span className="font-bold text-red-700 block">1. Wall Cutter</span>
+                              Trench chipping in solid brick/concrete.
+                            </div>
+                            <div className="p-2 bg-amber-50/50 rounded-lg border border-amber-200">
+                              <span className="font-bold text-red-700 block">2. Electrician</span>
+                              Conduit laying & FR copper wiring.
+                            </div>
+                            <div className="p-2 bg-amber-50/50 rounded-lg border border-amber-200">
+                              <span className="font-bold text-red-700 block">3. Rajmistry</span>
+                              Cement mortar plaster leveling.
+                            </div>
+                            <div className="p-2 bg-amber-50/50 rounded-lg border border-amber-200">
+                              <span className="font-bold text-red-700 block">4. Painter</span>
+                              Putty filling & primer finish.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Quantity input */}
+                    <div className="flex items-center justify-between pt-1">
+                      <label className="text-xs font-bold text-gray-800">
+                        Quantity / Number of Points / Units:
+                      </label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        min="1"
+                        value={formData.quantity}
+                        onChange={handleInputChange}
+                        className="w-24 px-3 py-2 border border-amber-200 rounded-xl text-center text-sm font-bold bg-white focus:ring-2 focus:ring-[#c0142b]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* --- C. DOORS & CUSTOM CARPENTRY CONFIGURATION --- */}
+                {formData.projectType === 'doors-carpentry' && (
+                  <div className="p-5 bg-gradient-to-br from-purple-50/40 via-white to-amber-50/20 rounded-2xl border border-amber-200 space-y-4 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-purple-900 uppercase tracking-wider">
+                        <Wrench size={16} className="text-purple-700" />
+                        <span>Doors, Frames & Custom Cabinetry</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-purple-900 bg-purple-100 px-2 py-0.5 rounded-full">
+                        Precision Fitting
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1.5">
+                        Select Custom Carpentry Item:
+                      </label>
+                      <select
+                        name="doorsCarpentryItem"
+                        value={formData.doorsCarpentryItem}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {doorsCarpentryRates.map(d => (
+                          <option key={d.id} value={d.id}>
+                            {d.name} — {d.description}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Breakdown explanation box */}
+                    {(() => {
+                      const selectedItem = doorsCarpentryRates.find(d => d.id === formData.doorsCarpentryItem);
+                      return selectedItem ? (
+                        <div className="p-3.5 bg-purple-50/70 rounded-xl border border-purple-200 text-xs">
+                          <strong className="text-purple-950 block mb-1">
+                            ✦ Item Specifications & Material Breakdown:
+                          </strong>
+                          <p className="text-[11px] text-gray-700 leading-relaxed">
+                            {selectedItem.breakdown}
+                          </p>
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* Quantity */}
+                    <div className="flex items-center justify-between pt-1">
+                      <label className="text-xs font-bold text-gray-800">
+                        Quantity / Number of Doors / Drawers / Sets:
+                      </label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        min="1"
+                        value={formData.quantity}
+                        onChange={handleInputChange}
+                        className="w-24 px-3 py-2 border border-amber-200 rounded-xl text-center text-sm font-bold bg-white focus:ring-2 focus:ring-[#c0142b]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* --- D. GATE & GRILL PAINTING PACKAGE --- */}
+                {formData.projectType === 'gate-grill-paint' && (
+                  <div className="p-5 bg-gradient-to-br from-emerald-50/40 via-white to-amber-50/20 rounded-2xl border border-amber-200 space-y-4 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                        <Paintbrush size={16} className="text-emerald-700" />
+                        <span>Gate & Window Grill Painting Package</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        Enamel Coat
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1.5">
+                        Select Painting Package:
+                      </label>
+                      <select
+                        name="gateGrillItem"
+                        value={formData.gateGrillItem}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {gateGrillRates.map(g => (
+                          <option key={g.id} value={g.id}>
+                            {g.name} — {g.description}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Breakdown */}
+                    {(() => {
+                      const selectedItem = gateGrillRates.find(g => g.id === formData.gateGrillItem);
+                      return selectedItem ? (
+                        <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200 text-xs">
+                          <strong className="text-emerald-950 block mb-1">Package Inclusions:</strong>
+                          <p className="text-[11px] text-gray-700 leading-relaxed">
+                            {selectedItem.breakdown}
+                          </p>
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* Quantity */}
+                    <div className="flex items-center justify-between pt-1">
+                      <label className="text-xs font-bold text-gray-800">
+                        Quantity of Gates / Windows:
+                      </label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        min="1"
+                        value={formData.quantity}
+                        onChange={handleInputChange}
+                        className="w-24 px-3 py-2 border border-amber-200 rounded-xl text-center text-sm font-bold bg-white focus:ring-2 focus:ring-[#c0142b]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* --- E. CIVIL WORKS (10% MARKUP) --- */}
+                {formData.projectType === 'civil-work' && (
+                  <div className="p-5 bg-gradient-to-br from-blue-50/40 via-white to-amber-50/20 rounded-2xl border border-amber-200 space-y-4 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-blue-900 uppercase tracking-wider">
+                        <Hammer size={16} className="text-blue-700" />
+                        <span>Civil Contractor Works (Base Cost + 10% Coordination)</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-blue-900 bg-blue-100 px-2 py-0.5 rounded-full">
+                        Supervised
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1.5">
+                        Civil Work Description / Service:
+                      </label>
+                      <select
+                        name="civilWorkType"
+                        value={formData.civilWorkType}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {civilWorkExamples.map(ex => (
+                          <option key={ex} value={ex}>{ex}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        Estimated External Contractor Base Cost (₹):
+                      </label>
+                      <input
+                        type="number"
+                        name="civilBaseCost"
+                        value={formData.civilBaseCost}
+                        onChange={handleInputChange}
+                        min="1000"
+                        step="1000"
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl bg-white text-sm font-bold text-gray-800 focus:ring-2 focus:ring-[#c0142b]"
+                      />
+                    </div>
+
+                    {/* Markup live display */}
+                    <div className="p-3.5 bg-blue-50/70 rounded-xl border border-blue-200 text-xs space-y-1.5">
+                      <div className="flex justify-between text-gray-700">
+                        <span>External Contractor Base Cost:</span>
+                        <strong>₹{(parseFloat(formData.civilBaseCost) || 0).toLocaleString('en-IN')}</strong>
+                      </div>
+                      <div className="flex justify-between text-blue-900 font-semibold">
+                        <span>+ 10% Site Supervision & Coordination:</span>
+                        <strong>₹{Math.round((parseFloat(formData.civilBaseCost) || 0) * 0.10).toLocaleString('en-IN')}</strong>
+                      </div>
+                      <div className="flex justify-between text-gray-900 font-bold border-t border-blue-200 pt-1.5">
+                        <span>Total Scope Price:</span>
+                        <strong className="text-[#c0142b] text-sm">₹{Math.round((parseFloat(formData.civilBaseCost) || 0) * 1.10).toLocaleString('en-IN')}</strong>
+                      </div>
+                      <p className="text-[10px] text-gray-500 pt-1">
+                        *An additional 10% coordination charge applies to external contractor base cost for site supervision, procurement, and quality verification.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* --- F. OUTSOURCED SPECIALIST (5% MARKUP) --- */}
+                {formData.projectType === 'outsourced-work' && (
+                  <div className="p-5 bg-gradient-to-br from-emerald-50/40 via-white to-amber-50/20 rounded-2xl border border-amber-200 space-y-4 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                        <ShieldCheck size={16} className="text-emerald-700" />
+                        <span>Outsourced Specialist Works (Vendor Base + 5% Markup)</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full">
+                        Vendor Managed
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1.5">
+                        Outsourced Service Type:
+                      </label>
+                      <select
+                        name="outsourcedWorkType"
+                        value={formData.outsourcedWorkType}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {outsourcedWorkExamples.map(ex => (
+                          <option key={ex} value={ex}>{ex}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        External Specialist Vendor Base Cost (₹):
+                      </label>
+                      <input
+                        type="number"
+                        name="outsourcedBaseCost"
+                        value={formData.outsourcedBaseCost}
+                        onChange={handleInputChange}
+                        min="1000"
+                        step="1000"
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl bg-white text-sm font-bold text-gray-800 focus:ring-2 focus:ring-[#c0142b]"
+                      />
+                    </div>
+
+                    {/* Markup live display */}
+                    <div className="p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-200 text-xs space-y-1.5">
+                      <div className="flex justify-between text-gray-700">
+                        <span>Vendor Base Quotation:</span>
+                        <strong>₹{(parseFloat(formData.outsourcedBaseCost) || 0).toLocaleString('en-IN')}</strong>
+                      </div>
+                      <div className="flex justify-between text-emerald-900 font-semibold">
+                        <span>+ 5% Vendor Management & Coordination:</span>
+                        <strong>₹{Math.round((parseFloat(formData.outsourcedBaseCost) || 0) * 0.05).toLocaleString('en-IN')}</strong>
+                      </div>
+                      <div className="flex justify-between text-gray-900 font-bold border-t border-emerald-200 pt-1.5">
+                        <span>Total Scope Price:</span>
+                        <strong className="text-[#c0142b] text-sm">₹{Math.round((parseFloat(formData.outsourcedBaseCost) || 0) * 1.05).toLocaleString('en-IN')}</strong>
+                      </div>
+                      <p className="text-[10px] text-gray-500 pt-1">
+                        *An additional 5% coordination charge applies for dimension vetting, site logistics, and installation oversight.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* --- G. STANDARD MODULAR CARPENTRY PACKAGES --- */}
+                {['kitchen', 'wardrobe', 'false-ceiling', 'wall-paneling', 'interior-decoration', 'complete-home'].includes(formData.projectType) && (
+                  <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-amber-200/70">
+                    <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">
+                      3. Select Package / Quality Tier *
+                    </label>
+
+                    {formData.projectType === 'kitchen' && (
+                      <select
+                        name="kitchenPackage"
+                        value={formData.kitchenPackage}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {kitchenPackages.map(pkg => (
+                          <option key={pkg.id} value={pkg.id}>
+                            {pkg.name} — ₹{pkg.rate}/sq.ft ({pkg.description})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {formData.projectType === 'wardrobe' && (
+                      <select
+                        name="wardrobePackage"
+                        value={formData.wardrobePackage}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {wardrobePackages.map(pkg => (
+                          <option key={pkg.id} value={pkg.id}>
+                            {pkg.name} — ₹{pkg.rate}/sq.ft ({pkg.description})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {formData.projectType === 'false-ceiling' && (
+                      <select
+                        name="falseCeilingType"
+                        value={formData.falseCeilingType}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {falseCeilingTypes.map(type => (
+                          <option key={type.id} value={type.id}>
+                            {type.name} — ₹{type.rate}/sq.ft ({type.description})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {formData.projectType === 'wall-paneling' && (
+                      <select
+                        name="wallPanelingPackage"
+                        value={formData.wallPanelingPackage}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {wallPanelingPackages.map(pkg => (
+                          <option key={pkg.id} value={pkg.id}>
+                            {pkg.name} — ₹{pkg.rate}/sq.ft ({pkg.description})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {formData.projectType === 'interior-decoration' && (
+                      <select
+                        name="interiorPackage"
+                        value={formData.interiorPackage}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold shadow-inner"
+                      >
+                        {interiorPackages.map(pkg => (
+                          <option key={pkg.id} value={pkg.id}>
+                            {pkg.name} — ₹{pkg.rate}/sq.ft ({pkg.description})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {formData.projectType === 'complete-home' && (
+                      <div className="p-3 bg-white rounded-xl border border-amber-200 text-xs text-gray-700">
+                        <span className="font-bold text-gray-900">Luxury Turnkey Plan:</span> ₹1,600/sq.ft covering living, kitchen, master & guest bedroom turnkey woodwork.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 4. AREA DIMENSIONS (FEET) — Only shown for area-based services */}
+                {['kitchen', 'wardrobe', 'painting', 'false-ceiling', 'wall-paneling', 'interior-decoration', 'complete-home'].includes(formData.projectType) && (
+                  <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-amber-200/70">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider">
+                        4. Area Dimensions (Feet) *
+                      </label>
+                      <span className="text-xs font-bold text-[#c0142b] bg-red-50 px-2.5 py-0.5 rounded-full border border-red-200">
+                        Area: {(parseFloat(formData.length || 0) * parseFloat(formData.width || 0))} sq ft
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] text-gray-600 mb-1 font-medium">Length (ft)</label>
+                        <input
+                          type="number"
+                          name="length"
+                          value={formData.length}
+                          onChange={handleInputChange}
+                          required
+                          min="1"
+                          className="w-full px-3.5 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-gray-600 mb-1 font-medium">Width / Height (ft)</label>
+                        <input
+                          type="number"
+                          name="width"
+                          value={formData.width}
+                          onChange={handleInputChange}
+                          required
+                          min="1"
+                          className="w-full px-3.5 py-2.5 border border-amber-200 rounded-xl focus:ring-2 focus:ring-[#c0142b] bg-white text-gray-800 text-xs sm:text-sm font-semibold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. ADD-ON ACCESSORIES & MINOR WORK CHIPS FOR THIS WORK */}
+                <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-amber-200/70">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider">
+                      5. Add-on Accessories & Minor Works
+                    </label>
+                    <span className="text-[11px] text-amber-800 font-medium">(Optional upgrades)</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs max-h-56 overflow-y-auto pr-1">
+                    {additionalFeatures.map(feat => {
+                      const isSelected = formData.additionalFeatures.includes(feat.id);
+                      return (
+                        <label 
+                          key={feat.id} 
+                          className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all cursor-pointer ${
+                            isSelected 
+                              ? 'border-[#c0142b] bg-red-50/80 shadow-sm' 
+                              : 'border-amber-200/60 hover:border-amber-300 bg-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => handleFeatureChange(feat.id, e.target.checked)}
+                              className="rounded text-red-600 focus:ring-red-500 w-3.5 h-3.5 flex-shrink-0 cursor-pointer"
+                            />
+                            <div className="min-w-0">
+                              <span className={`block truncate text-xs ${isSelected ? 'text-[#c0142b] font-bold' : 'text-gray-800 font-medium'}`}>
+                                {feat.name}
+                              </span>
+                              {feat.desc && (
+                                <span className="text-[10px] text-gray-500 block truncate">
+                                  {feat.desc}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${
+                            isSelected ? 'bg-gradient-to-r from-[#c0142b] to-[#990011] text-white' : 'bg-amber-100/70 text-amber-900'
+                          }`}>
+                            +₹{feat.cost.toLocaleString('en-IN')}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full bg-gradient-to-r from-[#c0142b] via-[#a31024] to-[#800010] hover:from-[#a31024] hover:to-[#66000c] text-white py-4 px-6 rounded-2xl font-bold transition-all shadow-xl shadow-red-950/20 text-sm flex items-center justify-center gap-2 ring-1 ring-amber-400/40 hover:scale-[1.01]"
+                  >
+                    <Plus size={18} />
+                    <span>+ Add This Work to Quotation</span>
+                  </button>
+                  <p className="text-center text-[11px] text-gray-500 mt-2">
+                    Combine Kitchen, Wardrobe, Painting, Electrical points & Doors into one unified client proposal.
                   </p>
                 </div>
-              </div>
 
-              {itemsList.length > 0 && (
-                <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">
-                  {itemsList.length} Work{itemsList.length > 1 ? 's' : ''} in Quote
-                </span>
-              )}
+              </form>
             </div>
 
-            <form onSubmit={handleAddWorkToQuotation} className="space-y-5">
+
+            {/* RIGHT COLUMN: Luxury Quotation Summary Receipt & PDF Download */}
+            <div className="lg:col-span-5 bg-white/95 backdrop-blur-md rounded-3xl shadow-[0_12px_40px_-10px_rgba(192,20,43,0.08),0_4px_20px_-2px_rgba(212,175,55,0.08)] p-6 sm:p-7 border border-amber-200/90 sticky top-28">
               
-              {/* 1. Project / Work Type Selector */}
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                  1. Select Work Type *
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {projectTypes.map(type => {
-                    const isSelected = formData.projectType === type.id;
-                    return (
-                      <button
-                        key={type.id}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, projectType: type.id })}
-                        className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
-                          isSelected
-                            ? 'bg-red-600 text-white border-red-600 shadow-md ring-2 ring-red-300'
-                            : 'bg-white hover:bg-gray-50 text-gray-800 border-gray-200'
-                        }`}
-                      >
-                        <span className="font-bold text-xs truncate">{type.name}</span>
-                        <span className={`text-[10px] mt-1 ${isSelected ? 'text-red-100' : 'text-gray-500'}`}>
-                          from ₹{type.baseRate}/sq ft
-                        </span>
-                      </button>
-                    );
-                  })}
+              {/* Header with Luxury Ribbon */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-amber-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shadow-sm">
+                    <Award size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 font-serif">Quotation Summary</h3>
+                    <p className="text-xs text-amber-900/70">
+                      {itemsList.length === 0 
+                        ? 'Proposal is currently empty.'
+                        : `${itemsList.length} Work${itemsList.length > 1 ? 's' : ''} in this proposal`}
+                    </p>
+                  </div>
                 </div>
+
+                {itemsList.length > 0 && (
+                  <button
+                    onClick={() => setItemsList([])}
+                    className="text-xs text-[#c0142b] hover:text-red-800 font-semibold underline"
+                  >
+                    Clear All
+                  </button>
+                )}
               </div>
 
-              {/* 2. Optional Room / Space Label */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    2. Room / Space Name (Optional)
-                  </label>
-                  <span className="text-[11px] text-gray-500">helps distinguish multiple works</span>
-                </div>
-                
-                <input
-                  type="text"
-                  name="roomLabel"
-                  value={formData.roomLabel}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Master Bedroom, Living Room, Kitchen 2..."
-                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white text-gray-800 text-xs sm:text-sm"
-                />
-
-                {/* Quick Chips */}
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {commonRooms.map(room => (
-                    <button
-                      key={room}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, roomLabel: room })}
-                      className={`text-[11px] px-2 py-0.5 rounded-md border transition-all ${
-                        formData.roomLabel === room 
-                          ? 'bg-red-600 text-white border-red-600' 
-                          : 'bg-white/80 text-gray-600 border-gray-200 hover:border-gray-400'
-                      }`}
+              {/* List of Added Works */}
+              {itemsList.length > 0 ? (
+                <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1 mb-4">
+                  {itemsList.map((item, index) => (
+                    <div 
+                      key={item.id} 
+                      className="bg-[#FDFBF7] rounded-2xl p-3.5 border border-amber-200/70 shadow-sm relative group hover:border-[#c0142b]/50 hover:bg-white transition-all"
                     >
-                      + {room}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="w-5 h-5 rounded-full bg-red-100 text-[#c0142b] text-[11px] font-bold flex items-center justify-center flex-shrink-0">
+                              {index + 1}
+                            </span>
+                            <h4 className="font-bold text-gray-900 text-xs sm:text-sm truncate">
+                              {item.projectTypeName}
+                              {item.roomLabel && (
+                                <span className="ml-1 text-xs text-gray-500 font-normal">
+                                  ({item.roomLabel})
+                                </span>
+                              )}
+                            </h4>
+                          </div>
 
-              {/* 3. Package Selection (Dynamic per Work Type) */}
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                  3. Select Package / Quality Tier *
-                </label>
-
-                {formData.projectType === 'kitchen' && (
-                  <select
-                    name="kitchenPackage"
-                    value={formData.kitchenPackage}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white text-gray-800 text-xs sm:text-sm font-medium"
-                  >
-                    {kitchenPackages.map(pkg => (
-                      <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} — ₹{pkg.rate}/sq.ft ({pkg.description})
-                      </option>
-                    ))}
-                  </select>
-                )}
-
-                {formData.projectType === 'wardrobe' && (
-                  <select
-                    name="wardrobePackage"
-                    value={formData.wardrobePackage}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white text-gray-800 text-xs sm:text-sm font-medium"
-                  >
-                    {wardrobePackages.map(pkg => (
-                      <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} — ₹{pkg.rate}/sq.ft ({pkg.description})
-                      </option>
-                    ))}
-                  </select>
-                )}
-
-                {formData.projectType === 'false-ceiling' && (
-                  <select
-                    name="falseCeilingType"
-                    value={formData.falseCeilingType}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white text-gray-800 text-xs sm:text-sm font-medium"
-                  >
-                    {falseCeilingTypes.map(type => (
-                      <option key={type.id} value={type.id}>
-                        {type.name} — ₹{type.rate}/sq.ft ({type.description})
-                      </option>
-                    ))}
-                  </select>
-                )}
-
-                {formData.projectType === 'wall-paneling' && (
-                  <select
-                    name="wallPanelingPackage"
-                    value={formData.wallPanelingPackage}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white text-gray-800 text-xs sm:text-sm font-medium"
-                  >
-                    {wallPanelingPackages.map(pkg => (
-                      <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} — ₹{pkg.rate}/sq.ft ({pkg.description})
-                      </option>
-                    ))}
-                  </select>
-                )}
-
-                {formData.projectType === 'interior-decoration' && (
-                  <select
-                    name="interiorPackage"
-                    value={formData.interiorPackage}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white text-gray-800 text-xs sm:text-sm font-medium"
-                  >
-                    {interiorPackages.map(pkg => (
-                      <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} — ₹{pkg.rate}/sq.ft ({pkg.description})
-                      </option>
-                    ))}
-                  </select>
-                )}
-
-                {formData.projectType === 'complete-home' && (
-                  <div className="p-3 bg-white rounded-lg border border-gray-200 text-xs text-gray-700">
-                    <span className="font-bold text-gray-900">Luxury Turnkey Plan:</span> ₹1,600/sq.ft covering living, kitchen, master & guest bedroom turnkey woodwork.
-                  </div>
-                )}
-              </div>
-
-              {/* 4. Dimensions (Length & Width) */}
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    4. Area Dimensions (Feet) *
-                  </label>
-                  <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
-                    Area: {(parseFloat(formData.length || 0) * parseFloat(formData.width || 0))} sq ft
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] text-gray-500 mb-1">Length (ft)</label>
-                    <input
-                      type="number"
-                      name="length"
-                      value={formData.length}
-                      onChange={handleInputChange}
-                      required
-                      min="1"
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white text-gray-800 text-xs sm:text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-gray-500 mb-1">Width / Height (ft)</label>
-                    <input
-                      type="number"
-                      name="width"
-                      value={formData.width}
-                      onChange={handleInputChange}
-                      required
-                      min="1"
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white text-gray-800 text-xs sm:text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 5. Optional Add-on Features for this work */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    5. Add-on Accessories for this Work
-                  </label>
-                  <span className="text-[11px] text-gray-500 font-medium">(Optional upgrades)</span>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  {additionalFeatures.map(feat => {
-                    const isSelected = formData.additionalFeatures.includes(feat.id);
-                    return (
-                      <label 
-                        key={feat.id} 
-                        className={`flex items-center justify-between gap-2 p-2 rounded-lg border transition-all cursor-pointer ${
-                          isSelected 
-                            ? 'border-red-400 bg-red-50 shadow-sm' 
-                            : 'border-gray-200 hover:border-gray-300 bg-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={(e) => handleFeatureChange(feat.id, e.target.checked)}
-                            className="rounded text-red-600 focus:ring-red-500 w-3.5 h-3.5 flex-shrink-0 cursor-pointer"
-                          />
-                          <span className={`truncate text-xs ${isSelected ? 'text-red-900 font-bold' : 'text-gray-700'}`}>
-                            {feat.name}
-                          </span>
-                        </div>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${
-                          isSelected ? 'bg-red-600 text-white' : 'bg-gray-100 text-red-600'
-                        }`}>
-                          +₹{feat.cost.toLocaleString('en-IN')}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Submit Buttons */}
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="w-full bg-[#c0142b] hover:bg-[#a01024] text-white py-3.5 px-6 rounded-xl font-bold transition-all shadow-md hover:shadow-lg text-sm flex items-center justify-center gap-2"
-                >
-                  <Plus size={18} />
-                  <span>+ Add This Work to Quotation</span>
-                </button>
-                <p className="text-center text-[11px] text-gray-500 mt-2">
-                  You can add multiple rooms & works (Kitchen, Wardrobe, Ceiling) together.
-                </p>
-              </div>
-
-            </form>
-          </div>
-
-
-          {/* ========================================================================= */}
-          {/* RIGHT COLUMN: Quotation Summary with All Added Works & PDF Download       */}
-          {/* ========================================================================= */}
-          <div className="lg:col-span-6 bg-[#f1f1de] rounded-2xl shadow-lg p-6 sm:p-8 border border-[#e5e5ce] sticky top-28">
-            
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-300">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">Quotation Summary</h3>
-                <p className="text-xs text-gray-600">
-                  {itemsList.length === 0 
-                    ? 'No works added yet. Click "+ Add This Work" on the left.'
-                    : `${itemsList.length} Work${itemsList.length > 1 ? 's' : ''} combined in this quotation proposal`}
-                </p>
-              </div>
-
-              {itemsList.length > 0 && (
-                <button
-                  onClick={() => setItemsList([])}
-                  className="text-xs text-red-600 hover:text-red-800 font-semibold underline"
-                >
-                  Clear All
-                </button>
-              )}
-            </div>
-
-            {/* List of Added Works */}
-            {itemsList.length > 0 ? (
-              <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1 mb-4">
-                {itemsList.map((item, index) => (
-                  <div 
-                    key={item.id} 
-                    className="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm relative group hover:border-red-300 transition-all"
-                  >
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="w-5 h-5 rounded-full bg-red-100 text-red-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
-                            {index + 1}
-                          </span>
-                          <h4 className="font-bold text-gray-900 text-sm truncate">
-                            {item.projectTypeName}
-                            {item.roomLabel && (
-                              <span className="ml-1 text-xs text-gray-500 font-normal">
-                                ({item.roomLabel})
+                          <div className="text-[11px] text-gray-600 mt-1 pl-6">
+                            {item.isAreaBased ? (
+                              <span>
+                                {item.length}ft × {item.width}ft = <strong className="text-gray-800">{item.area} sq ft</strong> @ ₹{item.baseRate}/sq ft
+                                {item.extraDetails?.shadeName && (
+                                  <span className="block text-[#c0142b] font-medium">
+                                    Color Shade: {item.extraDetails.shadeName}
+                                  </span>
+                                )}
+                              </span>
+                            ) : (
+                              <span>
+                                {item.packageName} ({item.unitLabel})
                               </span>
                             )}
-                          </h4>
-                          <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-700 rounded font-medium">
-                            {item.packageName}
-                          </span>
+                          </div>
+
+                          {/* Add-ons tag list */}
+                          {item.additionalFeatures && item.additionalFeatures.length > 0 && (
+                            <div className="pl-6 mt-1.5 flex flex-wrap gap-1">
+                              {item.additionalFeatures.map(feat => (
+                                <span key={feat.id} className="text-[10px] bg-red-50 text-[#c0142b] px-2 py-0.5 rounded-full font-medium border border-red-200/60">
+                                  + {feat.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
-                        <p className="text-xs text-gray-500 mt-1 pl-7">
-                          {item.length}ft × {item.width}ft = <strong className="text-gray-700">{item.area} sq ft</strong> @ ₹{item.baseRate}/sq ft
-                        </p>
-
-                        {/* Add-ons tag list */}
-                        {item.additionalFeatures && item.additionalFeatures.length > 0 && (
-                          <div className="pl-7 mt-1.5 flex flex-wrap gap-1">
-                            {item.additionalFeatures.map(feat => (
-                              <span key={feat.id} className="text-[10px] bg-red-50 text-red-700 px-1.5 py-0.5 rounded font-medium">
-                                + {feat.name}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2.5 flex-shrink-0">
-                        <span className="font-extrabold text-gray-900 text-sm">
-                          ₹{item.itemTotal.toLocaleString('en-IN')}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveItem(item.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Remove this work"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="font-extrabold text-gray-900 text-sm">
+                            ₹{item.itemTotal.toLocaleString('en-IN')}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Remove this work"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10 px-4 bg-[#FDFBF7] rounded-2xl border border-dashed border-amber-200 mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-400 flex items-center justify-center mx-auto mb-2">
+                    <Home size={22} />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 px-4 bg-white/60 rounded-xl border border-dashed border-gray-300 mb-4">
-                <Home className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                <h4 className="text-sm font-bold text-gray-700">Quotation is Currently Empty</h4>
-                <p className="text-xs text-gray-500 max-w-xs mx-auto mt-1">
-                  Configure your room on the left (e.g. Modular Kitchen) and click <strong className="text-red-600 font-semibold">+ Add This Work</strong> to start building your quote.
-                </p>
-              </div>
-            )}
-
-            {/* Client Info Status Banner */}
-            <div className="bg-white rounded-xl p-3.5 border border-gray-200 mb-4 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
-                  <User size={16} />
+                  <h4 className="text-sm font-bold text-gray-800 font-serif">Quotation is Empty</h4>
+                  <p className="text-xs text-gray-500 max-w-xs mx-auto mt-1">
+                    Select your space on the left and click <strong className="text-[#c0142b] font-semibold">+ Add This Work</strong> to start building your luxury quote.
+                  </p>
                 </div>
-                <div className="truncate">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">
-                    Quotation Prepared For:
-                  </span>
-                  <strong className="text-gray-900 text-xs truncate block">
-                    {clientDetails.clientName ? clientDetails.clientName : 'Customer Name (Required)'}
-                  </strong>
-                  <span className="text-[10px] block truncate">
-                    Phone: {clientDetails.contact_phone 
-                      ? <strong className="text-gray-700">+91 {clientDetails.contact_phone}</strong> 
-                      : <span className="text-red-600 font-semibold">Required (Compulsory)</span>}
-                  </span>
-                </div>
-              </div>
+              )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setPendingAction('download');
-                  setCustomerForm({
-                    clientName: clientDetails.clientName || '',
-                    contact_phone: clientDetails.contact_phone || formData.contact_phone || '',
-                    location: clientDetails.location || '',
-                    projectName: clientDetails.projectName || ''
-                  });
-                  setNameError('');
-                  setPhoneError('');
-                  setIsCustomerModalOpen(true);
-                }}
-                className="px-2.5 py-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50 font-bold rounded-lg transition-colors flex items-center gap-1 flex-shrink-0"
-              >
-                <Edit3 size={13} />
-                {clientDetails.clientName && clientDetails.contact_phone ? 'Edit Details' : '+ Set Details'}
-              </button>
-            </div>
-
-            {/* Financial Summary */}
-            {itemsList.length > 0 && (
-              <div className="space-y-2.5 pt-3 border-t border-gray-300 text-xs sm:text-sm">
-                
-                <div className="flex justify-between items-center text-gray-700">
-                  <span>Base Works Total ({itemsList.length} items, {totalArea} sq ft)</span>
-                  <span className="font-semibold text-gray-900">₹{totalBasePrice.toLocaleString('en-IN')}</span>
-                </div>
-
-                {totalFeaturesTotal > 0 && (
-                  <div className="flex justify-between items-center text-gray-700">
-                    <span>Accessories & Add-ons</span>
-                    <span className="font-semibold text-gray-900">+₹{totalFeaturesTotal.toLocaleString('en-IN')}</span>
+              {/* Client Info Status Banner */}
+              <div className="bg-[#FDFBF7] rounded-2xl p-3.5 border border-amber-200/80 mb-4 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-100 to-amber-200 text-amber-900 flex items-center justify-center flex-shrink-0 shadow-inner">
+                    <User size={16} />
                   </div>
-                )}
-
-                <div className="flex justify-between items-center text-gray-700">
-                  <span>Subtotal</span>
-                  <span className="font-semibold text-gray-900">₹{subtotal.toLocaleString('en-IN')}</span>
-                </div>
-
-                {/* GST Toggle */}
-                <div className="flex items-center justify-between p-2.5 bg-amber-50 rounded-lg border border-amber-200">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="summary-gst"
-                      checked={formData.includeGST}
-                      onChange={(e) => setFormData(prev => ({ ...prev, includeGST: e.target.checked }))}
-                      className="w-4 h-4 text-red-600 rounded focus:ring-red-500 cursor-pointer"
-                    />
-                    <label htmlFor="summary-gst" className="text-xs font-semibold text-gray-800 cursor-pointer">
-                      Include GST (18%)
-                    </label>
-                  </div>
-                  <span className="text-xs font-bold text-gray-900">
-                    {formData.includeGST ? `₹${gst.toLocaleString('en-IN')}` : '₹0'}
-                  </span>
-                </div>
-
-                {/* Grand Total */}
-                <div className="border-t border-gray-300 pt-3">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <span className="text-sm sm:text-base font-bold text-gray-900 block">Total Project Cost</span>
-                      <span className="text-[11px] text-gray-500">Includes materials, design & installation</span>
-                    </div>
-                    <span className="text-2xl sm:text-3xl font-extrabold text-[#c0142b]">
-                      ₹{finalCost.toLocaleString('en-IN')}
+                  <div className="truncate">
+                    <span className="text-[9px] uppercase font-bold text-amber-800/80 block tracking-wider">
+                      Prepared Exclusively For:
+                    </span>
+                    <strong className="text-gray-900 text-xs truncate block">
+                      {clientDetails.clientName ? clientDetails.clientName : 'Customer Name (Required)'}
+                    </strong>
+                    <span className="text-[10px] block truncate">
+                      Phone: {clientDetails.contact_phone 
+                        ? <strong className="text-gray-700">+91 {clientDetails.contact_phone}</strong> 
+                        : <span className="text-red-600 font-semibold">Required for PDF</span>}
                     </span>
                   </div>
                 </div>
 
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingAction('download');
+                    setCustomerForm({
+                      clientName: clientDetails.clientName || '',
+                      contact_phone: clientDetails.contact_phone || formData.contact_phone || '',
+                      location: clientDetails.location || '',
+                      projectName: clientDetails.projectName || ''
+                    });
+                    setNameError('');
+                    setPhoneError('');
+                    setIsCustomerModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 text-xs text-[#c0142b] hover:bg-red-50 font-bold rounded-xl transition-colors flex items-center gap-1 flex-shrink-0 border border-red-200"
+                >
+                  <Edit3 size={13} />
+                  {clientDetails.clientName && clientDetails.contact_phone ? 'Edit' : '+ Set'}
+                </button>
               </div>
-            )}
 
-            {/* Action Buttons: Prompts for Customer Name before PDF download */}
-            <div className="space-y-3 pt-5 mt-4 border-t border-gray-300">
-              <button 
-                onClick={handleRequestDownload}
-                className="w-full bg-[#c0142b] hover:bg-[#a01024] text-white py-3.5 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm"
-              >
-                <Download size={16} />
-                <span>Download Official PDF Quotation (Letterhead)</span>
-              </button>
+              {/* Financial Summary */}
+              {itemsList.length > 0 && (
+                <div className="space-y-2 pt-3 border-t border-amber-100 text-xs sm:text-sm">
+                  
+                  <div className="flex justify-between items-center text-gray-700">
+                    <span>Base Works Total ({itemsList.length} items)</span>
+                    <span className="font-semibold text-gray-900">₹{totalBasePrice.toLocaleString('en-IN')}</span>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={handleRequestLetterheadPreview}
-                  className="bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                  {totalFeaturesTotal > 0 && (
+                    <div className="flex justify-between items-center text-gray-700">
+                      <span>Accessories & Add-ons</span>
+                      <span className="font-semibold text-gray-900">+₹{totalFeaturesTotal.toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center text-gray-700">
+                    <span>Subtotal</span>
+                    <span className="font-semibold text-gray-900">₹{subtotal.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  {/* GST Toggle with Luxury Card */}
+                  <div className="flex items-center justify-between p-2.5 bg-gradient-to-r from-amber-50 to-orange-50/60 rounded-xl border border-amber-200">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="summary-gst"
+                        checked={formData.includeGST}
+                        onChange={(e) => setFormData(prev => ({ ...prev, includeGST: e.target.checked }))}
+                        className="w-4 h-4 text-red-600 rounded focus:ring-red-500 cursor-pointer"
+                      />
+                      <label htmlFor="summary-gst" className="text-xs font-semibold text-gray-800 cursor-pointer">
+                        Include GST (18%)
+                      </label>
+                    </div>
+                    <span className="text-xs font-bold text-gray-900">
+                      {formData.includeGST ? `₹${gst.toLocaleString('en-IN')}` : '₹0'}
+                    </span>
+                  </div>
+
+                  {/* Grand Total */}
+                  <div className="border-t border-amber-200 pt-3 mt-1">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-sm sm:text-base font-bold text-gray-900 font-serif block">Total Project Cost</span>
+                        <span className="text-[10px] text-gray-500">Materials, hardware & labour included</span>
+                      </div>
+                      <span className="text-2xl sm:text-3xl font-extrabold text-[#c0142b] font-serif">
+                        ₹{finalCost.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="space-y-2.5 pt-4 mt-4 border-t border-amber-100">
+                <button 
+                  onClick={handleRequestDownload}
+                  className="w-full bg-gradient-to-r from-[#c0142b] via-[#a31024] to-[#800010] hover:from-[#a31024] hover:to-[#66000c] text-white py-3.5 px-4 rounded-2xl font-bold transition-all shadow-xl shadow-red-950/20 flex items-center justify-center gap-2 text-sm ring-1 ring-amber-400/40 hover:scale-[1.01]"
                 >
-                  <FileText size={14} className="text-red-600" />
-                  <span>View Letterhead</span>
+                  <Download size={16} />
+                  <span>Download Official PDF Letterhead</span>
                 </button>
-                
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-amber-100 hover:bg-amber-200 text-amber-900 py-2.5 px-3 rounded-xl text-xs font-bold transition-colors shadow-sm"
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    onClick={handleRequestLetterheadPreview}
+                    className="bg-white hover:bg-amber-50/50 text-gray-800 border border-amber-200/90 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                  >
+                    <FileText size={14} className="text-[#c0142b]" />
+                    <span>View Letterhead</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 text-amber-950 py-2.5 px-3 rounded-xl text-xs font-bold transition-colors shadow-sm border border-amber-300/80"
+                  >
+                    Free Consultation
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+
+        {/* ========================================================================= */}
+        {/* TAB 2: 3D CONCEPT MODELS & PACKAGES (USER REQUEST)                        */}
+        {/* ========================================================================= */}
+        {activeTab === '3d-models' && (
+          <div className="space-y-8">
+            <div className="text-center max-w-2xl mx-auto">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100/80 px-3 py-1 rounded-full border border-amber-200">
+                Visual Architectural Gallery
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 font-serif mt-2">
+                Interactive 3D Interior Concept Models
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1.5">
+                Inspect realistic interior package layouts, verify materials, and apply complete package specifications directly to your quotation in one click.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {conceptModels3D.map(model => (
+                <div 
+                  key={model.id}
+                  className="bg-white/95 backdrop-blur-md rounded-3xl overflow-hidden shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] border border-amber-200/80 flex flex-col justify-between hover:shadow-2xl hover:border-amber-400 transition-all duration-300 group"
                 >
-                  Book Free Consultation
-                </button>
+                  <div>
+                    {/* High-Resolution Architectural Photo Container */}
+                    <div className="relative h-64 sm:h-72 bg-gray-900 overflow-hidden">
+                      <img 
+                        src={model.image} 
+                        alt={model.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-95"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/images/logo.png';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                      
+                      <div className="absolute top-4 left-4 flex gap-2">
+                        <span className="px-3 py-1 bg-gradient-to-r from-[#c0142b] to-[#8a0b1c] text-white rounded-full text-[11px] font-bold uppercase tracking-wider shadow-md ring-1 ring-amber-400/50">
+                          {model.tag}
+                        </span>
+                      </div>
+
+                      <div className="absolute top-4 right-4">
+                        <span className="px-3 py-1 bg-white/90 backdrop-blur-md text-amber-950 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow border border-amber-300">
+                          {model.badge}
+                        </span>
+                      </div>
+
+                      <div className="absolute bottom-4 left-4 right-4 text-white">
+                        <h3 className="text-xl font-bold font-serif drop-shadow">{model.title}</h3>
+                        <p className="text-xs text-amber-300 font-bold mt-0.5">{model.rate}</p>
+                      </div>
+                    </div>
+
+                    <div className="p-6 sm:p-7 space-y-4">
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {model.description}
+                      </p>
+
+                      <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-amber-200/60">
+                        <h4 className="text-xs font-bold text-amber-950 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                          <CheckCheck size={14} className="text-[#c0142b]" />
+                          <span>Standard Inclusions in this 3D Package:</span>
+                        </h4>
+                        <ul className="space-y-2 text-xs text-gray-700">
+                          {model.specs.map((sp, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <Star size={12} className="text-amber-600 flex-shrink-0 mt-0.5 fill-amber-400" />
+                              <span>{sp}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 sm:p-7 pt-0">
+                    <button
+                      onClick={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          projectType: model.targetType
+                        }));
+                        setActiveTab('estimator');
+                      }}
+                      className="w-full bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 text-amber-950 font-bold py-3 px-4 rounded-2xl text-xs border border-amber-300 flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <Sparkles size={14} className="text-[#c0142b]" />
+                      <span>Configure This 3D Package in Estimator</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+
+        {/* ========================================================================= */}
+        {/* TAB 3: FIXED RATE CARDS & TRANSPARENT PRICING CHEAT-SHEET                  */}
+        {/* ========================================================================= */}
+        {activeTab === 'rate-card' && (
+          <div className="space-y-8">
+            <div className="text-center max-w-2xl mx-auto">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100/80 px-3 py-1 rounded-full border border-amber-200">
+                Zero Hidden Surprises
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 font-serif mt-2">
+                Official Rate Card & Trade Labour Breakdown
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1.5">
+                Every minor fixture, electrical point, custom drawer, and civil markup explained with complete transparency.
+              </p>
+            </div>
+
+            {/* 1. Painting Rates */}
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-sm border border-amber-200/80">
+              <div className="flex items-center gap-3 mb-5 border-b border-amber-100 pb-3">
+                <div className="w-10 h-10 rounded-2xl bg-red-50 text-[#c0142b] flex items-center justify-center shadow-sm">
+                  <Paintbrush size={22} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 font-serif">Wall & Ceiling Painting Rates</h3>
+                  <p className="text-xs text-amber-900/70">Fixed square foot pricing with color choice</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-5 bg-[#FDFBF7] rounded-2xl border border-amber-200">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="font-bold text-sm text-gray-900">Standard Painting</span>
+                    <span className="text-base font-extrabold text-[#c0142b]">₹30 / sq.ft</span>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Includes mechanical surface sanding, 1 coat primer base, 2 coats premium emulsion paint, and clean edge finish.
+                  </p>
+                </div>
+
+                <div className="p-5 bg-gradient-to-br from-red-50/70 to-amber-50/30 rounded-2xl border border-red-200">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="font-bold text-sm text-gray-900">Painting with Birla Putty</span>
+                    <span className="text-base font-extrabold text-[#c0142b]">₹35 / sq.ft</span>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Includes full surface sanding, 2 coats Birla White Wall Putty, 1 coat acrylic primer, 2 coats luxury emulsion paint, and mirror-smooth touch-up.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Minor Works & Electrical Breakdown */}
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-sm border border-amber-200/80">
+              <div className="flex items-center gap-3 mb-5 border-b border-amber-100 pb-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
+                  <Zap size={22} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 font-serif">Minor Electrical Works & 4-Trade Labour</h3>
+                  <p className="text-xs text-amber-900/70">Why new electrical points cost ₹4,000–₹5,000</p>
+                </div>
+              </div>
+
+              <div className="mb-6 p-5 bg-gradient-to-r from-amber-50 to-orange-50/50 rounded-2xl border border-amber-200">
+                <h4 className="text-xs font-bold text-amber-950 uppercase tracking-wider mb-2.5">
+                  ✦ Why does a new electrical point cost ₹4,000 fixed (up to ₹5,000 for long runs)?
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-gray-800">
+                  <div className="bg-white p-3 rounded-xl border border-amber-300">
+                    <span className="font-bold text-[#c0142b] block mb-1">1. Wall Cutter Labour</span>
+                    Grooving, trench chipping into solid brick/concrete wall.
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-amber-300">
+                    <span className="font-bold text-[#c0142b] block mb-1">2. Electrician</span>
+                    Conduit laying, metal concealed box fixing, drawing FR copper wire.
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-amber-300">
+                    <span className="font-bold text-[#c0142b] block mb-1">3. Rajmistry (Mason)</span>
+                    Cement mortar plastering to level groove flush with wall.
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-amber-300">
+                    <span className="font-bold text-[#c0142b] block mb-1">4. Painter</span>
+                    Two coats wall putty filling, sanding & primer touch-up.
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {minorElectricalRates.map(item => (
+                  <div key={item.id} className="p-4 bg-[#FDFBF7] rounded-2xl border border-amber-200/70 text-xs">
+                    <div className="flex justify-between items-start gap-2 mb-1.5">
+                      <span className="font-bold text-gray-900">{item.name}</span>
+                      <span className="font-extrabold text-[#c0142b] flex-shrink-0">
+                        {item.rate ? `₹${item.rate.toLocaleString('en-IN')}` : item.description}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-600 leading-relaxed">{item.breakdown}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. Custom Carpentry & Drawer Rates */}
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-sm border border-amber-200/80">
+              <div className="flex items-center gap-3 mb-5 border-b border-amber-100 pb-3">
+                <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm">
+                  <Wrench size={22} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 font-serif">Custom Drawers, Doors & Cabinetry</h3>
+                  <p className="text-xs text-amber-900/70">Fixed item rates with full material breakdown</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {doorsCarpentryRates.map(item => (
+                  <div key={item.id} className="p-4 bg-[#FDFBF7] rounded-2xl border border-purple-200/70 text-xs">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="font-bold text-gray-900 text-sm">{item.name}</span>
+                      <span className="text-sm font-extrabold text-purple-900">
+                        ₹{item.rate.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-700 leading-relaxed">{item.breakdown}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Gate & Grill Painting Packages */}
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-sm border border-amber-200/80">
+              <div className="flex items-center gap-3 mb-5 border-b border-amber-100 pb-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+                  <ShieldCheck size={22} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 font-serif">Metal Gates & Window Grill Painting</h3>
+                  <p className="text-xs text-amber-900/70">Fixed package rates per unit (not sq.ft)</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {gateGrillRates.map(item => (
+                  <div key={item.id} className="p-4 bg-[#FDFBF7] rounded-2xl border border-emerald-200 text-xs">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-bold text-gray-900 text-sm">{item.name}</span>
+                      <span className="font-extrabold text-emerald-900 text-sm">
+                        ₹{item.rate.toLocaleString('en-IN')} / unit
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-700 mt-1 leading-relaxed">{item.breakdown}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 5. Civil & Outsourced Markups Policy */}
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-sm border border-amber-200/80">
+              <div className="flex items-center gap-3 mb-5 border-b border-amber-100 pb-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                  <Layers size={22} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 font-serif">Civil & Outsourced Work Charges Policy</h3>
+                  <p className="text-xs text-amber-900/70">Transparent markups for external contractors</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-gray-700 leading-relaxed">
+                <div className="p-5 bg-blue-50/60 rounded-2xl border border-blue-200">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <span className="font-bold text-blue-950 text-sm font-serif">1. Civil Works</span>
+                    <span className="px-2.5 py-0.5 bg-blue-600 text-white rounded-full font-bold text-xs">10% Markup</span>
+                  </div>
+                  <p className="mb-2">
+                    An additional 10% coordination and service charge applies to the base cost of civil works executed through external contractors:
+                  </p>
+                  <ul className="list-disc pl-4 space-y-1 text-[11px] text-gray-600">
+                    <li>Wall breaking, demolition & debris removal</li>
+                    <li>Brickwork and cement plastering</li>
+                    <li>Floor and wall tiling & leveling</li>
+                    <li>Waterproofing and seepage treatment</li>
+                  </ul>
+                </div>
+
+                <div className="p-5 bg-emerald-50/60 rounded-2xl border border-emerald-200">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <span className="font-bold text-emerald-950 text-sm font-serif">2. Outsourced Works</span>
+                    <span className="px-2.5 py-0.5 bg-emerald-600 text-white rounded-full font-bold text-xs">5% Markup</span>
+                  </div>
+                  <p className="mb-2">
+                    An additional 5% coordination and vendor management charge applies to the base vendor quotation:
+                  </p>
+                  <ul className="list-disc pl-4 space-y-1 text-[11px] text-gray-600">
+                    <li>Collapsible gate supply & fitting</li>
+                    <li>Sliding aluminium doors & window systems</li>
+                    <li>Steel fabrication, grills and railing work</li>
+                    <li>Toughened glass partition installations</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
           </div>
-
-        </div>
-
-        {/* ========================================================================= */}
-        {/* EXAMPLE CALCULATIONS SECTION                                              */}
-        {/* ========================================================================= */}
-        <div className="mt-16 bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-200">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Example Project Calculations</h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Kitchen Example */}
-            <div className="bg-orange-50/70 rounded-xl p-6 border border-orange-100">
-              <h4 className="font-bold text-gray-900 mb-3">Modular Kitchen - 10ft × 12ft</h4>
-              <div className="text-sm space-y-2 text-gray-700">
-                <p><span className="font-medium text-gray-900">Area:</span> 10 × 12 = 120 sq ft</p>
-                <p><span className="font-medium text-gray-900">Standard Package:</span> ₹1,500 per sq ft</p>
-                <p><span className="font-medium text-gray-900">Base Cost:</span> 120 × ₹1,500 = ₹1,80,000</p>
-                <p><span className="font-medium text-gray-900">GST (18%):</span> ₹32,400</p>
-                <p className="font-bold text-red-600 pt-2 border-t border-orange-200"><span className="font-medium text-gray-900">Total:</span> ₹2,12,400</p>
-              </div>
-            </div>
-
-            {/* Wardrobe Example */}
-            <div className="bg-purple-50/70 rounded-xl p-6 border border-purple-100">
-              <h4 className="font-bold text-gray-900 mb-3">Master Wardrobe - 8ft × 9ft</h4>
-              <div className="text-sm space-y-2 text-gray-700">
-                <p><span className="font-medium text-gray-900">Area:</span> 8 × 9 = 72 sq ft</p>
-                <p><span className="font-medium text-gray-900">Premium Package:</span> ₹1,400 per sq ft</p>
-                <p><span className="font-medium text-gray-900">Base Cost:</span> 72 × ₹1,400 = ₹1,00,800</p>
-                <p><span className="font-medium text-gray-900">GST (18%):</span> ₹18,144</p>
-                <p className="font-bold text-purple-700 pt-2 border-t border-purple-200"><span className="font-medium text-gray-900">Total:</span> ₹1,18,944</p>
-              </div>
-            </div>
-
-            {/* False Ceiling Example */}
-            <div className="bg-green-50/70 rounded-xl p-6 border border-green-100">
-              <h4 className="font-bold text-gray-900 mb-3">POP False Ceiling - 12ft × 14ft</h4>
-              <div className="text-sm space-y-2 text-gray-700">
-                <p><span className="font-medium text-gray-900">Area:</span> 12 × 14 = 168 sq ft</p>
-                <p><span className="font-medium text-gray-900">POP Ceiling:</span> ₹120 per sq ft</p>
-                <p><span className="font-medium text-gray-900">Cost:</span> 168 × ₹120 = ₹20,160</p>
-                <p><span className="font-medium text-gray-900">Paint & Putty:</span> 168 × ₹30 = ₹5,040</p>
-                <p className="font-bold text-emerald-600 pt-2 border-t border-green-200"><span className="font-medium text-gray-900">Total:</span> ₹29,736</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
 
       </div>
 
@@ -1447,24 +2764,24 @@ const CostEstimator = () => {
       {/* CUSTOMER NAME & DETAILS MODAL (MANDATORY BEFORE PDF DOWNLOAD)              */}
       {/* ========================================================================= */}
       {isCustomerModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 no-print animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4 no-print animate-fadeIn">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-amber-200">
             
-            <div className="bg-[#c0142b] p-5 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                  <User size={18} />
+            <div className="bg-gradient-to-r from-[#c0142b] via-[#a31024] to-[#800010] p-6 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                  <User size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold">Client Quotation Details</h3>
+                  <h3 className="text-base font-bold font-serif">Client Quotation Details</h3>
                   <p className="text-xs text-red-100">Enter customer name for the official proposal</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsCustomerModalOpen(false)}
-                className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-white/10"
+                className="p-1 rounded-xl text-white/80 hover:text-white hover:bg-white/10"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
@@ -1476,7 +2793,7 @@ const CostEstimator = () => {
                   Customer / Client Full Name *
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-gray-400 absolute left-3 top-3.5 pointer-events-none" />
+                  <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
                     type="text"
                     required
@@ -1486,7 +2803,7 @@ const CostEstimator = () => {
                       if (nameError) setNameError('');
                     }}
                     placeholder="e.g. Mr. Narayan Jana / Priya Roy"
-                    className="w-full pl-9 pr-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm bg-white"
+                    className="w-full pl-10 pr-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c0142b] focus:border-transparent text-sm bg-white"
                     autoFocus
                   />
                 </div>
@@ -1504,12 +2821,12 @@ const CostEstimator = () => {
                   <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                     Contact Phone Number *
                   </label>
-                  <span className="text-[10px] text-red-600 font-bold uppercase tracking-wider bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+                  <span className="text-[10px] text-red-600 font-bold uppercase tracking-wider bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
                     Compulsory
                   </span>
                 </div>
                 <div className="relative">
-                  <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-3.5 pointer-events-none" />
+                  <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
                     type="tel"
                     required
@@ -1519,7 +2836,7 @@ const CostEstimator = () => {
                       if (phoneError) setPhoneError('');
                     }}
                     placeholder="Enter 10-digit mobile number (e.g. 9433889668)"
-                    className={`w-full pl-9 pr-3.5 py-2.5 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm bg-white ${
+                    className={`w-full pl-10 pr-3.5 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#c0142b] text-sm bg-white ${
                       phoneError ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'
                     }`}
                   />
@@ -1538,13 +2855,13 @@ const CostEstimator = () => {
                   Project Location / Address (Optional)
                 </label>
                 <div className="relative">
-                  <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-3.5 pointer-events-none" />
+                  <MapPin className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
                   <input
                     type="text"
                     value={customerForm.location}
                     onChange={(e) => setCustomerForm({ ...customerForm, location: e.target.value })}
                     placeholder="e.g. Noapara, Belgharia 700090"
-                    className="w-full pl-9 pr-3.5 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-sm bg-white"
+                    className="w-full pl-10 pr-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c0142b] text-sm bg-white"
                   />
                 </div>
               </div>
@@ -1559,7 +2876,7 @@ const CostEstimator = () => {
                   value={customerForm.projectName}
                   onChange={(e) => setCustomerForm({ ...customerForm, projectName: e.target.value })}
                   placeholder="e.g. Modular Kitchen & Wardrobe Interior Work"
-                  className="w-full px-3.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-xs sm:text-sm bg-white"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c0142b] text-xs sm:text-sm bg-white"
                 />
               </div>
 
@@ -1568,13 +2885,13 @@ const CostEstimator = () => {
                 <button
                   type="button"
                   onClick={() => setIsCustomerModalOpen(false)}
-                  className="px-4 py-2.5 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#c0142b] hover:bg-[#a01024] text-white px-5 py-2.5 rounded-lg text-xs font-bold flex items-center gap-2 shadow-md transition-all"
+                  className="bg-gradient-to-r from-[#c0142b] to-[#990011] hover:from-[#a31024] hover:to-[#7a000d] text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all"
                 >
                   <Download size={14} />
                   <span>{pendingAction === 'download' ? 'Download Official PDF' : 'Open Letterhead'}</span>
@@ -1591,19 +2908,19 @@ const CostEstimator = () => {
       {/* SCREEN MODAL: INTERACTIVE 2-PAGE LETTERHEAD PREVIEW                        */}
       {/* ========================================================================= */}
       {isQuotationModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 no-print">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 no-print">
           
-          <div className="bg-gray-100 rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[92vh]">
+          <div className="bg-gray-100 rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[92vh] border border-amber-300/40">
             
             {/* Modal Top Control Bar */}
-            <div className="bg-white px-4 sm:px-6 py-3.5 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-2">
+            <div className="bg-white px-4 sm:px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="font-bold text-sm text-gray-900">
+                <span className="font-bold text-sm text-gray-900 font-serif">
                   Official Letterhead Proposal ({clientDetails.quotationNo})
                 </span>
                 {clientDetails.clientName && (
-                  <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-xs bg-red-100 text-[#c0142b] px-2.5 py-0.5 rounded-full font-bold">
                     For: {clientDetails.clientName}
                   </span>
                 )}
@@ -1612,22 +2929,22 @@ const CostEstimator = () => {
               <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   onClick={() => setIsEditingClient(!isEditingClient)}
-                  className="px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-1.5 rounded-xl border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 transition-colors"
                 >
-                  <Edit3 size={13} className="text-red-600" />
+                  <Edit3 size={13} className="text-[#c0142b]" />
                   {isEditingClient ? 'Hide Customizer' : 'Edit Quotation Details'}
                 </button>
 
                 <button
                   onClick={() => executePrint(clientDetails, itemsList.length > 0 ? itemsList : [buildCurrentWorkItem()])}
-                  className="bg-[#c0142b] hover:bg-[#a01024] text-white px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md transition-all"
+                  className="bg-gradient-to-r from-[#c0142b] to-[#990011] hover:from-[#a31024] hover:to-[#7a000d] text-white px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition-all"
                 >
                   <Printer size={14} /> Print / Save as PDF
                 </button>
 
                 <button
                   onClick={() => setIsQuotationModalOpen(false)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="p-1.5 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -1644,7 +2961,7 @@ const CostEstimator = () => {
                       type="text"
                       value={clientDetails.clientName}
                       onChange={(e) => setClientDetails({ ...clientDetails, clientName: e.target.value })}
-                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded bg-white"
+                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg bg-white"
                       placeholder="e.g. Narayan Jana"
                     />
                   </div>
@@ -1654,7 +2971,7 @@ const CostEstimator = () => {
                       type="text"
                       value={clientDetails.projectName}
                       onChange={(e) => setClientDetails({ ...clientDetails, projectName: e.target.value })}
-                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded bg-white"
+                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg bg-white"
                     />
                   </div>
                   <div>
@@ -1663,7 +2980,7 @@ const CostEstimator = () => {
                       type="text"
                       value={clientDetails.quotationNo}
                       onChange={(e) => setClientDetails({ ...clientDetails, quotationNo: e.target.value })}
-                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded bg-white"
+                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg bg-white"
                     />
                   </div>
                   <div>
@@ -1672,7 +2989,7 @@ const CostEstimator = () => {
                       type="text"
                       value={clientDetails.location}
                       onChange={(e) => setClientDetails({ ...clientDetails, location: e.target.value })}
-                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded bg-white"
+                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg bg-white"
                       placeholder="Kolkata"
                     />
                   </div>
@@ -1685,7 +3002,7 @@ const CostEstimator = () => {
               
               <div className="bg-white rounded-lg shadow-xl border border-gray-300 w-full max-w-2xl font-sans text-gray-900">
                 
-                {/* ===================== PAGE 1 ===================== */}
+                {/* PAGE 1 */}
                 <div 
                   className="quotation-page p-6 sm:p-10 bg-white relative border-b-2 border-dashed border-gray-200"
                   style={{ fontFamily: "'Inter', sans-serif" }}
@@ -1740,7 +3057,7 @@ const CostEstimator = () => {
 
                   <div style={{ height: '1.5px', background: '#c0142b', margin: '8px 0 14px' }} />
 
-                  {/* Project & Client Metadata Box (CLIENT NAME SHOWN) */}
+                  {/* Project & Client Metadata Box */}
                   <div className="flex justify-between items-start text-xs mb-3 leading-relaxed text-gray-900 bg-[#faf8f8] p-3 rounded border border-[#ebd4d4]">
                     <div>
                       <p style={{ margin: '1px 0', fontSize: '10px', textTransform: 'uppercase', color: '#666', fontWeight: 'bold' }}>
@@ -1829,7 +3146,7 @@ const CostEstimator = () => {
                           textAlign: 'justify'
                         }}
                       >
-                        A customized interior design proposal prepared for <strong>{clientDetails.clientName || 'our client'}</strong> covering <strong>{itemsList.length > 0 ? itemsList.map(i => i.roomLabel ? `${i.projectTypeName} (${i.roomLabel})` : i.projectTypeName).join(', ') : 'Modular Interior Work'}</strong> spanning a combined layout area of <strong>{totalArea || 120} sq.ft</strong>. Designed with premium BWP marine plywood, scratch-resistant surface finish, and precision laser alignment.
+                        A customized interior design proposal prepared for <strong>{clientDetails.clientName || 'our client'}</strong> covering <strong>{itemsList.length > 0 ? itemsList.map(i => i.roomLabel ? `${i.projectTypeName} (${i.roomLabel})` : i.projectTypeName).join(', ') : 'Modular Interior Work'}</strong> {totalArea > 0 ? `spanning a combined layout area of <strong>${totalArea} sq.ft</strong>` : ''}. Designed with premium BWP marine plywood, scratch-resistant surface finish, and precision laser alignment.
                       </p>
                     </div>
 
@@ -1878,7 +3195,7 @@ const CostEstimator = () => {
                       </div>
                     </div>
 
-                    {/* NOT INCLUDED */}
+                    {/* TRANSPARENT POLICY NOTES */}
                     <div className="mb-2">
                       <h3 
                         style={{ 
@@ -1892,14 +3209,14 @@ const CostEstimator = () => {
                           gap: '6px'
                         }}
                       >
-                        <span style={{ color: '#eab308', fontSize: '12px' }}>✦</span> NOT INCLUDED
+                        <span style={{ color: '#eab308', fontSize: '12px' }}>✦</span> POLICY & INCLUSION NOTES
                       </h3>
                       
                       <ul style={{ margin: 0, paddingLeft: '4px', listStyle: 'none', fontSize: '9.5px', fontStyle: 'italic', color: '#333', lineHeight: '1.55' }}>
-                        <li>• Electrical wiring, electrical points, fixtures and related electrical work.</li>
-                        <li>• Wooden garnish or any woodwork beyond agreed scope.</li>
-                        <li>• Final colour paint/painting work is not included unless specified.</li>
-                        <li>• Any additional work or design changes beyond agreed scope will be charged separately.</li>
+                        <li>• Civil Works: 10% coordination charge applied to external contractor base cost for site supervision.</li>
+                        <li>• Outsourced Works: 5% vendor management charge applied to specialist base vendor costs (aluminium, fabrication, gates).</li>
+                        <li>• New Electrical Point: ₹4,000 fixed includes 4-trade coordination (cutter, electrician, mason, painter). Wire runs &gt;15ft charged at ₹5,000.</li>
+                        <li>• Any additional work or design changes beyond agreed scope will be charged separately with prior approval.</li>
                       </ul>
                     </div>
 
@@ -1911,7 +3228,7 @@ const CostEstimator = () => {
                 </div>
 
 
-                {/* ===================== PAGE 2 ===================== */}
+                {/* PAGE 2 */}
                 <div 
                   className="quotation-page p-6 sm:p-10 bg-white relative"
                   style={{ fontFamily: "'Inter', sans-serif" }}
@@ -1950,7 +3267,7 @@ const CostEstimator = () => {
                       </p>
                       
                       <p style={{ fontSize: '9px', fontStyle: 'italic', color: '#555', margin: 0, lineHeight: '1.4' }}>
-                        Note: Warranty does not cover damage caused by water leakage, seepage, moisture, structural movement, or third-party electrical work.
+                        Note: Warranty does not cover damage caused by water leakage, seepage, moisture, structural movement, or third-party modifications.
                       </p>
                     </div>
 
@@ -2017,30 +3334,42 @@ const CostEstimator = () => {
                             <tr style={{ background: '#b91c1c', color: '#ffffff' }}>
                               <th style={{ padding: '5px 8px', textAlign: 'center', width: '6%' }}>#</th>
                               <th style={{ padding: '5px 8px', textAlign: 'left', width: '38%' }}>Scope / Work Item</th>
-                              <th style={{ padding: '5px 8px', textAlign: 'left', width: '32%' }}>Package & Area</th>
+                              <th style={{ padding: '5px 8px', textAlign: 'left', width: '32%' }}>Package & Area / Qty</th>
                               <th style={{ padding: '5px 8px', textAlign: 'right', width: '24%' }}>Amount (₹)</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {(itemsList.length > 0 ? itemsList : [buildCurrentWorkItem()]).map((item, idx) => (
-                              <tr key={idx} style={{ borderBottom: '1px solid #f1d5d5', background: idx % 2 === 0 ? '#ffffff' : '#fdf8f8' }}>
-                                <td style={{ padding: '5px 8px', fontWeight: 'bold', color: '#555', textAlign: 'center' }}>{idx + 1}</td>
-                                <td style={{ padding: '5px 8px', fontWeight: '600', color: '#111' }}>
-                                  {item.projectTypeName} {item.roomLabel ? <span style={{ color: '#666', fontWeight: 'normal' }}>({item.roomLabel})</span> : ''}
-                                  {item.additionalFeatures && item.additionalFeatures.length > 0 && (
-                                    <div style={{ fontSize: '8.5px', color: '#777', fontWeight: 'normal', marginTop: '2px' }}>
-                                      + Add-ons: {item.additionalFeatures.map(f => f.name).join(', ')}
-                                    </div>
-                                  )}
-                                </td>
-                                <td style={{ padding: '5px 8px', color: '#333' }}>
-                                  {item.packageName} ({item.length}ft × {item.width}ft = {item.area} sq ft)
-                                </td>
-                                <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 'bold', color: '#111' }}>
-                                  ₹{item.itemTotal.toLocaleString('en-IN')}
-                                </td>
-                              </tr>
-                            ))}
+                            {(itemsList.length > 0 ? itemsList : [buildCurrentWorkItem()]).map((item, idx) => {
+                              let dimDisplay = '';
+                              if (item.isAreaBased) {
+                                dimDisplay = `${item.packageName} (${item.length}ft × ${item.width}ft = ${item.area} sq ft)`;
+                                if (item.extraDetails?.shadeName) {
+                                  dimDisplay += ` [Color: ${item.extraDetails.shadeName}]`;
+                                }
+                              } else {
+                                dimDisplay = `${item.packageName} (${item.unitLabel})`;
+                              }
+
+                              return (
+                                <tr key={idx} style={{ borderBottom: '1px solid #f1d5d5', background: idx % 2 === 0 ? '#ffffff' : '#fdf8f8' }}>
+                                  <td style={{ padding: '5px 8px', fontWeight: 'bold', color: '#555', textAlign: 'center' }}>{idx + 1}</td>
+                                  <td style={{ padding: '5px 8px', fontWeight: '600', color: '#111' }}>
+                                    {item.projectTypeName} {item.roomLabel ? <span style={{ color: '#666', fontWeight: 'normal' }}>({item.roomLabel})</span> : ''}
+                                    {item.additionalFeatures && item.additionalFeatures.length > 0 && (
+                                      <div style={{ fontSize: '8.5px', color: '#777', fontWeight: 'normal', marginTop: '2px' }}>
+                                        + Add-ons: {item.additionalFeatures.map(f => f.name).join(', ')}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: '5px 8px', color: '#333' }}>
+                                    {dimDisplay}
+                                  </td>
+                                  <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 'bold', color: '#111' }}>
+                                    ₹{item.itemTotal.toLocaleString('en-IN')}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                           <tfoot>
                             <tr style={{ borderTop: '1.5px solid #c0142b', background: '#fff5f5', fontWeight: '600' }}>
@@ -2126,20 +3455,20 @@ const CostEstimator = () => {
             </div>
 
             {/* Modal Bottom Action Bar */}
-            <div className="bg-white px-4 sm:px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+            <div className="bg-white px-4 sm:px-6 py-4 border-t border-gray-200 flex items-center justify-between">
               <span className="text-xs text-gray-500">
-                Official quotation ready for export & printing.
+                Official quotation proposal formatted for 2-page A4 print.
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsQuotationModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
                 >
                   Close
                 </button>
                 <button
                   onClick={() => executePrint(clientDetails, itemsList.length > 0 ? itemsList : [buildCurrentWorkItem()])}
-                  className="bg-[#c0142b] hover:bg-[#a01024] text-white px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 shadow-md transition-all"
+                  className="bg-gradient-to-r from-[#c0142b] to-[#990011] hover:from-[#a31024] hover:to-[#7a000d] text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all"
                 >
                   <Printer size={15} /> Print / Save as PDF
                 </button>

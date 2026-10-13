@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+// frontend/src/Components/Chatbot.jsx
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   MessageCircle,
   X,
@@ -17,11 +18,22 @@ import {
   Zap,
   Sparkles,
   CheckCircle,
-  Clock
+  Clock,
+  Maximize2,
+  Minimize2,
+  Minus,
+  RotateCcw,
+  Crown,
+  Layers,
+  ArrowRight,
+  ExternalLink
 } from "lucide-react";
+import cherryEmblem from "../assets/cherry-gold-emblem.png";
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -40,25 +52,24 @@ const ChatBot = () => {
     preferredContact: localStorage.getItem('chatbot_preferred_contact') || 'phone'
   });
   const [chatHistory, setChatHistory] = useState([]);
-  const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
 
   const packages = {
-    basic: { rate: 1200, name: "Basic Package" },
-    premium: { rate: 1800, name: "Premium Package" },
-    luxury: { rate: 2500, name: "Luxury Package" }
+    basic: { rate: 1200, name: "Basic Luxury Package" },
+    premium: { rate: 1800, name: "Premium Royal Package" },
+    luxury: { rate: 2500, name: "Imperia Ultra-Luxury" }
   };
 
   const faqData = {
-    services: "We offer modular kitchens, wardrobes, false ceilings, TV units, bed designs, wallpapers, flooring, wall paneling, and complete home interiors with 3D design preview.",
-    locations: "We serve Kolkata, and other cities on request. Free site visits available in service areas.",
-    costs: "Basic: ₹1,200/sqft, Premium: ₹1,800/sqft, Luxury: ₹2,500/sqft. Includes design, materials, and installation. Use our budget calculator for estimates!",
-    timeline: "Modular kitchens: 3-4 weeks, Wardrobes: 2-3 weeks, Complete homes: 8-12 weeks. Timeline depends on project complexity and approvals.",
-    warranty: "Modular Kitchen & Wardrobes: 5 years, TV Units & Storage: 3 years, False Ceiling & Lighting: 2 years. Covers manufacturing defects and hardware failures.",
-    payment: "Advance: 20%, Design Approval: 40%, Manufacturing Complete: 30%, Final Delivery: 10%. EMI options available.",
-    booking: "You can book through our website forms, call +91 9433889668, or WhatsApp us. For rescheduling, contact our support team with your booking reference.",
-    howwework: "Our process: 1) Free Consultation 2) Site Survey 3) 2D/3D Design 4) Material Selection 5) Execution 6) Quality Check 7) Handover"
+    services: "We offer bespoke modular kitchens, luxury wardrobes, acoustic false ceilings, TV entertainment units, king master bedrooms, wall paneling, and turnkey 3D architectural execution.",
+    locations: "Headquartered in Kolkata, with turnkey project execution available across Mumbai, Pune, Ranchi, Hyderabad, and other metropolitan cities on request.",
+    costs: "Basic Package: ₹1,200/sqft • Premium: ₹1,800/sqft • Ultra-Luxury: ₹2,500/sqft. Includes 3D blueprints, IS 710 BWP plywood carcass, Hafele hardware, and master installation.",
+    timeline: "Modular Kitchens: 21-28 days • Walk-in Wardrobes: 14-21 days • Turnkey Villas & Full Homes: 60-90 days with guaranteed on-time penalty clause.",
+    warranty: "20-Year Anti-Delamination & Termite Warranty on BWP Carcass, 10-Year Warranty on Hafele / Hettich soft-close hydraulics, and 5-Year finish maintenance cover.",
+    payment: "Structured 4-Phase Escrow: 20% Initial Booking • 40% Design & 3D Approval • 30% Factory Manufacturing • 10% Final White-Glove Handover. Zero-cost EMI available.",
+    booking: "You can book directly via our Services page, call our Chief Architect at +91 9433889668, or chat with our Concierge right here.",
+    howwework: "Our 5-Stage Journey: 1) Site Laser Audit 2) 3D Virtual Elevation 3) Factory Precision Tooling 4) White-Glove Assembly 5) 20-Year Certified Handover."
   };
 
   // Initialize speech recognition
@@ -86,39 +97,6 @@ const ChatBot = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      const greeting = userPreferences.name
-        ? `Welcome back, ${userPreferences.name}! ✨ Great to see you again at Cherry Gold Interiors!`
-        : "Hello! 👋 Welcome to Cherry Gold Interiors! I'm your AI assistant here to help you with:";
-
-      const welcomeMessage = userPreferences.name
-        ? `${greeting}\n\n🎯 **Quick Access to All Features:**`
-        : `${greeting}\n\n🏠 Interior design guidance\n📞 Booking consultations\n💰 Budget estimation\n🍳 3D Kitchen Designer\n📊 Cost Estimator\n📋 Project tracking\n🎁 Current offers & deals\n📸 Portfolio gallery\n💎 Refer & earn rewards\n❓ Complete FAQ support\n\n🎯 **Choose what interests you most:**`;
-
-      addBotMessage(welcomeMessage, [
-        { text: "💰 Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-        { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
-        { text: "📊 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
-        { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
-        { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
-        { text: "🛍️ Browse Services", action: () => handleOptionClick("Browse Services") },
-        { text: "💎 Refer & Earn", action: () => handleOptionClick("Refer & Earn") },
-        { text: "📋 Track Project", action: () => handleOptionClick("Track My Project") },
-        { text: "❓ FAQ & Help", action: () => handleOptionClick("FAQ") }
-      ]);
-    }
-  }, [isOpen, userPreferences.name]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const addMessage = useCallback((content, type, options, showBudgetCalculator, showLeadForm, showProjectTracker) => {
     const newMessage = {
       id: Date.now().toString(),
@@ -133,25 +111,52 @@ const ChatBot = () => {
     };
     setMessages(prev => [...prev, newMessage]);
 
-    // Save to chat history
     if (type === 'user' || type === 'bot') {
-      setChatHistory(prev => [...prev.slice(-20), newMessage]); // Keep last 20 messages
+      setChatHistory(prev => [...prev.slice(-20), newMessage]);
     }
   }, []);
 
   const addBotMessage = useCallback((content, options, showBudgetCalculator = false, showLeadForm = false, showProjectTracker = false) => {
     setIsTyping(true);
-    const typingDelay = Math.min(content.length * 20, 2000); // Dynamic typing delay based on content length
+    const typingDelay = Math.min(content.length * 12, 1200);
     setTimeout(() => {
       setIsTyping(false);
       addMessage(content, 'bot', options, showBudgetCalculator, showLeadForm, showProjectTracker);
     }, typingDelay);
   }, [addMessage]);
 
-  // Voice input functionality
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      const greeting = userPreferences.name
+        ? `Welcome back, ${userPreferences.name}! ✨ Good to see you again at Cherry Gold Interiors!`
+        : "Namaste! 👋 Welcome to Cherry Gold Interiors. I'm your AI Concierge, here to craft your bespoke dream space:";
+
+      const welcomeMessage = userPreferences.name
+        ? `${greeting}\n\n👑 **What would you like to explore today?**`
+        : `${greeting}\n\n🏛️ Bespoke 3D Interior Design Guidance\n💰 Instant Turnkey Budget Estimation\n📞 Book Free Site Measurement & Consultation\n🍳 Interactive 3D Kitchen Designer (50+ Finishes)\n📋 Real-Time Project Status Tracking\n🎁 Exclusive Seasonal Privileges & Offers\n\n✨ **Choose an option below or type your query:**`;
+
+      addBotMessage(welcomeMessage, [
+        { text: "💰 Instant Budget Calculator", action: () => handleOptionClick("Get Budget Estimate") },
+        { text: "📞 Book Free Consultation", action: () => handleOptionClick("Book Consultation") },
+        { text: "🍳 3D Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+        { text: "📋 Track Project Status", action: () => handleOptionClick("Track My Project") },
+        { text: "📊 Cost Estimator Tool", action: () => handleOptionClick("Cost Estimator") },
+        { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
+        { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
+        { text: "🛍️ Browse Services", action: () => handleOptionClick("Browse Services") },
+        { text: "💎 VIP Refer & Earn", action: () => handleOptionClick("Refer & Earn") },
+        { text: "❓ FAQ & Support", action: () => handleOptionClick("FAQ") }
+      ]);
+    }
+  }, [isOpen, userPreferences.name, addBotMessage]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
   const toggleVoiceInput = () => {
     if (!recognitionRef.current) {
-      alert('Voice recognition is not supported in your browser.');
+      alert('Voice recognition is not supported in this browser.');
       return;
     }
 
@@ -191,19 +196,18 @@ const ChatBot = () => {
   };
 
   const handleGeneralInput = (message) => {
-    // Enhanced AI-like responses with more natural language processing
     const responses = {
-      greetings: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'],
-      services: ['service', 'what do you offer', 'what can you do', 'offerings', 'specialties'],
-      location: ['location', 'where', 'city', 'area', 'serve', 'available'],
-      cost: ['cost', 'price', 'budget', 'expensive', 'cheap', 'affordable', 'rate'],
-      time: ['time', 'duration', 'how long', 'timeline', 'when', 'schedule'],
-      warranty: ['warranty', 'guarantee', 'protection', 'coverage'],
+      greetings: ['hello', 'hi', 'hey', 'namaste', 'good morning', 'good afternoon', 'good evening'],
+      services: ['service', 'what do you offer', 'what can you do', 'offerings', 'specialties', 'work'],
+      location: ['location', 'where', 'city', 'area', 'serve', 'available', 'kolkata'],
+      cost: ['cost', 'price', 'budget', 'expensive', 'cheap', 'affordable', 'rate', 'sqft'],
+      time: ['time', 'duration', 'how long', 'timeline', 'when', 'schedule', 'days'],
+      warranty: ['warranty', 'guarantee', 'protection', 'termite'],
       payment: ['payment', 'emi', 'installment', 'pay', 'finance'],
-      booking: ['book', 'appointment', 'consultation', 'schedule', 'meet'],
-      tracking: ['track', 'status', 'project', 'progress', 'update'],
+      booking: ['book', 'appointment', 'consultation', 'schedule', 'meet', 'visit'],
+      tracking: ['track', 'status', 'project', 'progress', 'update', 'uwc'],
       help: ['faq', 'help', 'support', 'question', 'doubt'],
-      thanks: ['thank', 'thanks', 'appreciate', 'grateful'],
+      thanks: ['thank', 'thanks', 'appreciate', 'shukriya'],
       goodbye: ['bye', 'goodbye', 'see you', 'later', 'exit']
     };
 
@@ -220,59 +224,53 @@ const ChatBot = () => {
 
     switch (responseType) {
       case 'greetings':
-        const greetingResponses = [
-          "Hello there! 😊 Welcome to Cherry Gold Interiors!",
-          "Hi! Great to have you here! ✨",
-          "Hey! Ready to transform your space? 🏠"
-        ];
-        const randomGreeting = greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
-        addBotMessage(randomGreeting + " How can I help you today?", [
-          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-          { text: "Browse Services", action: () => handleOptionClick("Browse Services") }
+        addBotMessage("Namaste! 😊 Welcome to Cherry Gold Interiors! How can our design team help elevate your space today?", [
+          { text: "💰 Instant Budget Calculator", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "📞 Book Free Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "🍳 3D Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") }
         ]);
         break;
 
       case 'services':
-        addBotMessage("🌟 " + faqData.services + "\n\nWhich service interests you the most?", [
-          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-          { text: "View Portfolio", action: () => addBotMessage("Visit our portfolio section to see our amazing completed projects! 🎨") }
+        addBotMessage("👑 " + faqData.services + "\n\nWhich space would you like to design first?", [
+          { text: "🍳 3D Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+          { text: "💰 Turnkey Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") }
         ]);
         break;
 
       case 'location':
-        addBotMessage("📍 " + faqData.locations + "\n\nWould you like to schedule a free site visit?", [
-          { text: "Book Site Visit", action: () => handleOptionClick("Book Consultation") },
-          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") }
+        addBotMessage("📍 " + faqData.locations + "\n\nWould you like our senior architect to visit your site for free laser measurement?", [
+          { text: "📞 Book Free Site Visit", action: () => handleOptionClick("Book Consultation") },
+          { text: "💰 Calculate Budget", action: () => handleOptionClick("Get Budget Estimate") }
         ]);
         break;
 
       case 'cost':
-        addBotMessage("💰 " + faqData.costs + "\n\n✨ Would you like me to calculate a personalized estimate for your space?", [
-          { text: "Calculate My Budget", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "Book Free Consultation", action: () => handleOptionClick("Book Consultation") }
+        addBotMessage("💰 " + faqData.costs + "\n\n✨ Want an instant calculation for your exact room dimensions?", [
+          { text: "💰 Calculate My Budget", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "📞 Book Free Site Visit", action: () => handleOptionClick("Book Consultation") }
         ]);
         break;
 
       case 'time':
-        addBotMessage("⏰ " + faqData.timeline + "\n\nWant to get started with your project timeline?", [
-          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
+        addBotMessage("⏰ " + faqData.timeline + "\n\nReady to get your 3D blueprints started?", [
+          { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
           { text: "How We Work", action: () => handleOptionClick("How We Work") }
         ]);
         break;
 
       case 'warranty':
-        addBotMessage("🛡️ " + faqData.warranty + "\n\nOur warranty ensures your peace of mind!", [
-          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-          { text: "Terms & Conditions", action: () => addBotMessage("For detailed terms and conditions, please contact us at +91 9876543210 📞") }
+        addBotMessage("🛡️ " + faqData.warranty + "\n\nEvery project includes our certified stamp and official warranty certificate.", [
+          { text: "📞 Book Free Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "How We Work", action: () => handleOptionClick("How We Work") }
         ]);
         break;
 
       case 'payment':
-        addBotMessage("💳 " + faqData.payment + "\n\n🏦 We also offer flexible EMI options through our financial partners to make your dream home affordable!", [
-          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") }
+        addBotMessage("💳 " + faqData.payment, [
+          { text: "💰 Calculate Budget", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "📞 Discuss with Consultant", action: () => handleOptionClick("Book Consultation") }
         ]);
         break;
 
@@ -289,44 +287,27 @@ const ChatBot = () => {
         break;
 
       case 'thanks':
-        const thankResponses = [
-          "You're very welcome! 😊 Happy to help!",
-          "My pleasure! 🌟 Anything else I can assist with?",
-          "Glad I could help! ✨ What else would you like to know?"
-        ];
-        const randomThank = thankResponses[Math.floor(Math.random() * thankResponses.length)];
-        addBotMessage(randomThank, [
-          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-          { text: "Browse Services", action: () => handleOptionClick("Browse Services") }
+        addBotMessage("It is our absolute pleasure! ✨ If you have any more questions about layouts, materials, or finishes, I'm right here for you.", [
+          { text: "💰 Calculate Budget", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "📞 Book Site Visit", action: () => handleOptionClick("Book Consultation") }
         ]);
         break;
 
       case 'goodbye':
-        addBotMessage("Thank you for visiting Cherry Gold Interiors! 👋 Feel free to come back anytime. Have a wonderful day! ✨", [
-          { text: "Quick Question", action: () => showMainMenu() },
+        addBotMessage("Thank you for visiting Cherry Gold Interiors! 👋 May your home become a masterpiece. Have a wonderful day! 🥂", [
+          { text: "Start Fresh Chat", action: () => clearChat() },
           { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") }
         ]);
         break;
 
       default:
-        const smartResponses = [
-          "I understand you're looking for information about interior design! 🏠",
-          "That's a great question! Let me help you with that. ✨",
-          "I'm here to assist you with all your interior design needs! 🎨"
-        ];
-        const randomSmart = smartResponses[Math.floor(Math.random() * smartResponses.length)];
-        addBotMessage(randomSmart + " Here are all the ways I can help:", [
-          { text: "💰 Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
-          { text: "📋 Track My Project", action: () => handleOptionClick("Track My Project") },
-          { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
-          { text: "📊 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
+        addBotMessage("I'm here to assist you with all aspects of luxury home interiors! 🏛️ Here are the most popular concierge services available right now:", [
+          { text: "💰 Instant Budget Calculator", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "📞 Book Free Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "🍳 3D Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+          { text: "📋 Track Project Status", action: () => handleOptionClick("Track My Project") },
           { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
-          { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
-          { text: "💎 Refer & Earn", action: () => handleOptionClick("Refer & Earn") },
-          { text: "🛍️ Browse Services", action: () => handleOptionClick("Browse Services") },
-          { text: "❓ FAQ & Help", action: () => handleOptionClick("FAQ") }
+          { text: "❓ FAQ & Support", action: () => handleOptionClick("FAQ") }
         ]);
     }
   };
@@ -337,149 +318,98 @@ const ChatBot = () => {
     switch (option) {
       case "Get Budget Estimate":
         setCurrentFlow('budgetEstimation');
-        addBotMessage("Great! I'll help you calculate a budget estimate for your interior project. What's the length of your room in feet?", [], true);
+        addBotMessage("Let's calculate your turnkey budget! 📐 What is the length of your room in feet (e.g. 12)?", [], true);
         break;
 
       case "Book Consultation":
         setCurrentFlow('leadCollection');
-        addBotMessage("Excellent! I'll help you book a free consultation with our design experts. What's your full name?", [], false, true);
+        addBotMessage("Splendid! Let's arrange a free design consultation. What is your full name?", [], false, true);
         break;
 
       case "Track My Project":
         setCurrentFlow('projectTracking');
-        addBotMessage("Please enter your project name or Unique Work Code (UWC) to track your project status:", [], false, false, true);
+        addBotMessage("Please enter your Project Code, Service Number, or Unique Work Code (e.g. CG2024001 or CG-2025-VILLA1):", [], false, false, true);
         break;
 
       case "Browse Services":
-        addBotMessage("🌟 **Our Complete Interior Design Services:**\n\n🍳 **Modular Kitchen** - Starting ₹1,50,000\n• L-shaped, U-shaped, Island designs\n• Premium finishes & smart storage\n• 3D Kitchen Designer available\n\n🛏️ **Bedroom Interior** - Starting ₹80,000\n• Wardrobes, bed designs, lighting\n• Space optimization solutions\n\n🛋️ **Living Room** - Starting ₹1,00,000\n• TV units, false ceiling, furniture\n• Modern & traditional designs\n\n🛁 **Bathroom Interior** - Starting ₹60,000\n• Complete renovation solutions\n• Premium fixtures & fittings\n\n🏠 **Complete Home** - Starting ₹5,00,000\n• End-to-end interior solutions\n• Project management included\n\n🏢 **Office Interior** - Starting ₹2,00,000\n• Corporate & co-working spaces\n• Ergonomic designs\n\nWhich service interests you?", [
-          { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
-          { text: "📋 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
-          { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
-          { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
-          { text: "📖 Service Catalogue", action: () => handleOptionClick("Service Catalogue") },
-          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") }
+        addBotMessage("👑 **Our Turnkey Bespoke Offerings:**\n\n🍳 **Modular Kitchens** — From ₹1,50,000 (Lacquered Glass, Acrylics, Veneers)\n🛏️ **Master Bedrooms & Wardrobes** — From ₹1,20,000\n🛋️ **Living & Entertainment Lounges** — From ₹1,80,000\n🏠 **Turnkey Complete Home Execution** — From ₹5,00,000\n\nExplore our interactive design tools:", [
+          { text: "🍳 3D Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+          { text: "📊 Full Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
+          { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") }
         ]);
         break;
 
       case "How We Work":
         addBotMessage(faqData.howwework, [
-          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "View Portfolio", action: () => addBotMessage("Visit /portfolio to see our completed projects.") }
+          { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
+          { text: "💰 Calculate Budget", action: () => handleOptionClick("Get Budget Estimate") }
         ]);
         break;
 
       case "Kitchen Designer":
-        addBotMessage("🍳 **3D Kitchen Designer** - Design your dream kitchen!\n\n✨ **Features:**\n• Real-time 3D visualization\n• 50+ premium finishes & colors\n• L-shaped, U-shaped, Island layouts\n• Lacquered glass, acrylics, veneers\n• Instant cost estimation\n• Save & share designs\n\n🎨 **Available Finishes:**\n• Lacquered Glass (High-gloss)\n• Acrylics (Smooth & vibrant)\n• Veneers (Natural wood grain)\n• Standard & Premium Laminates\n\nReady to design your kitchen?", [
-          { text: "🚀 Open Kitchen Designer", action: () => addBotMessage("Visit /kitchen-designer to start designing your dream kitchen! 🍳✨") },
+        addBotMessage("🍳 **Interactive 3D Kitchen Designer:**\n\n• Real-time 3D camera angles (Front, 45° Isometric, Top)\n• 50+ German-engineered finishes (Lacquered Glass, Acrylics, Wood Veneers, Super-Matte Laminates)\n• L-Shaped & U-Shaped floor configurations\n• Instant turnkey quotation preview & blueprint download!", [
+          { text: "🚀 Launch 3D Kitchen Studio", action: () => window.location.href = '/kitchen-designer' },
           { text: "📞 Book Kitchen Consultation", action: () => handleOptionClick("Book Consultation") },
-          { text: "💰 Get Kitchen Quote", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "📸 Kitchen Portfolio", action: () => addBotMessage("Check our stunning kitchen designs at /portfolio! 🎨") }
+          { text: "💰 Get Quick Budget", action: () => handleOptionClick("Get Budget Estimate") }
         ]);
         break;
 
       case "Cost Estimator":
-        addBotMessage("📊 **Advanced Cost Estimator** - Get detailed project estimates!\n\n🔧 **Features:**\n• Room-wise cost breakdown\n• Material & labor estimates\n• Multiple package options\n• Instant calculations\n• PDF report generation\n• Comparison tools\n\n💡 **Estimate Types:**\n• Basic Package: ₹1,200/sqft\n• Premium Package: ₹1,800/sqft\n• Luxury Package: ₹2,500/sqft\n\nGet your detailed estimate now!", [
-          { text: "🧮 Open Cost Estimator", action: () => addBotMessage("Visit /cost-estimator for detailed project estimates! 📊💰") },
-          { text: "📞 Book Free Site Visit", action: () => handleOptionClick("Book Consultation") },
-          { text: "🍳 Kitchen Cost Calculator", action: () => handleOptionClick("Get Budget Estimate") }
+        addBotMessage("📊 **Advanced Turnkey Cost Estimator:**\n\nConfigure room-by-room specifications, choose between Basic (₹1,200), Premium (₹1,800), and Luxury (₹2,500) tiers, and get a complete line-item PDF breakdown.", [
+          { text: "🧮 Open Cost Estimator", action: () => window.location.href = '/cost-estimator' },
+          { text: "📞 Schedule Site Visit", action: () => handleOptionClick("Book Consultation") }
         ]);
         break;
 
       case "View Portfolio":
-        addBotMessage("📸 **Our Stunning Portfolio** - See our completed projects!\n\n🏆 **Featured Projects:**\n• 500+ completed projects\n• Modern & traditional designs\n• Before & after galleries\n• Customer testimonials\n• Award-winning designs\n\n🎨 **Categories:**\n• Modular Kitchens\n• Bedroom Interiors\n• Living Rooms\n• Complete Homes\n• Office Spaces\n• Luxury Apartments\n\nExplore our work!", [
-          { text: "🖼️ View Full Portfolio", action: () => addBotMessage("Explore our amazing work at /portfolio! 📸✨") },
-          { text: "🍳 Kitchen Gallery", action: () => addBotMessage("See our kitchen designs at /portfolio#kitchens! 🍳") },
-          { text: "🛏️ Bedroom Gallery", action: () => addBotMessage("Check bedroom designs at /portfolio#bedrooms! 🛏️") },
-          { text: "📞 Discuss Your Project", action: () => handleOptionClick("Book Consultation") }
+        addBotMessage("📸 **Cherry Gold Design Gallery:**\n\nBrowse 500+ completed turnkey luxury residences, modular kitchens, and penthouses executed across Kolkata and India.", [
+          { text: "🖼️ Browse Portfolio", action: () => window.location.href = '/portfolio' },
+          { text: "📞 Discuss My Space", action: () => handleOptionClick("Book Consultation") }
         ]);
         break;
 
       case "Current Offers":
-        addBotMessage("🎁 **Exclusive Offers & Deals** - Save big on your dream home!\n\n🔥 **Current Promotions:**\n• 20% OFF on complete home interiors\n• Free 3D design consultation\n• Zero-cost EMI options\n• Monsoon special discounts\n• Festive season bonuses\n\n💎 **Premium Benefits:**\n• Extended warranty\n• Priority scheduling\n• Premium material upgrades\n• Dedicated project manager\n\nDon't miss these amazing deals!", [
-          { text: "🎯 View All Offers", action: () => addBotMessage("Check all current offers at /offers! 🎁💰") },
-          { text: "📞 Book to Claim Offer", action: () => handleOptionClick("Book Consultation") },
-          { text: "💰 Calculate Savings", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "⏰ Offer Validity", action: () => addBotMessage("Most offers valid till month-end. Book now to secure your discount! ⏰") }
-        ]);
-        break;
-
-      case "Service Catalogue":
-        addBotMessage("📖 **Complete Service Catalogue** - Everything we offer!\n\n📋 **Detailed Services:**\n• Service descriptions\n• Material specifications\n• Design options\n• Price ranges\n• Timeline estimates\n• Warranty details\n\n🎨 **Categories:**\n• Modular Kitchens\n• Wardrobes & Storage\n• Living Room Solutions\n• Bedroom Interiors\n• Bathroom Renovations\n• Office Interiors\n• False Ceilings\n• Flooring & Wall Panels\n\nExplore our complete range!", [
-          { text: "📚 Browse Catalogue", action: () => addBotMessage("View our complete catalogue at /catalogue! 📖✨") },
-          { text: "🍳 Kitchen Catalogue", action: () => addBotMessage("Kitchen designs at /catalogue#kitchens! 🍳") },
-          { text: "📞 Discuss Requirements", action: () => handleOptionClick("Book Consultation") },
-          { text: "💰 Get Service Quote", action: () => handleOptionClick("Get Budget Estimate") }
+        addBotMessage("🎁 **Royal Seasonal Privileges:**\n\n• Up to ₹1,50,000 Festive Cashback on Turnkey Full Homes\n• Free 3D Photorealistic Architectural Walkthrough\n• Zero-Cost 12-Month EMI on Select Packages\n• Complimentary Hafele Soft-Close Hardware Upgrade!", [
+          { text: "🎯 View All Offers", action: () => window.location.href = '/offers' },
+          { text: "📞 Claim This Offer", action: () => handleOptionClick("Book Consultation") }
         ]);
         break;
 
       case "Refer & Earn":
-        addBotMessage("💎 **Refer & Earn Program** - Earn rewards for referrals!\n\n🎯 **How It Works:**\n1. Refer friends & family\n2. They book our services\n3. You earn cash rewards\n4. No limit on referrals!\n\n💰 **Reward Structure:**\n• Kitchen projects: ₹5,000\n• Bedroom interiors: ₹3,000\n• Complete homes: ₹15,000\n• Office projects: ₹8,000\n\n🏆 **Benefits:**\n• Instant reward credits\n• Multiple referral bonuses\n• Special recognition\n• Exclusive member perks\n\nStart earning today!", [
-          { text: "🚀 Join Refer & Earn", action: () => addBotMessage("Join our referral program at /refer-earn! 💎💰") },
-          { text: "📞 Refer Someone Now", action: () => handleOptionClick("Book Consultation") },
-          { text: "💰 Check Reward Rates", action: () => addBotMessage("Rewards: Kitchen ₹5K, Bedroom ₹3K, Complete Home ₹15K! 💰") },
-          { text: "📋 Terms & Conditions", action: () => addBotMessage("Visit /refer-earn for complete T&C! 📋") }
-        ]);
-        break;
-
-      case "About Us":
-        addBotMessage("🏢 **About Cherry Gold Interiors** - Your trusted design partner!\n\n🌟 **Our Story:**\n• 10+ years of excellence\n• 500+ happy customers\n• Award-winning designs\n• Expert team of designers\n• Quality craftsmanship\n\n🎯 **Our Mission:**\nTo transform spaces into beautiful, functional homes that reflect your personality and lifestyle.\n\n🏆 **Why Choose Us:**\n• Free 3D design consultation\n• Premium quality materials\n• Timely project delivery\n• Comprehensive warranty\n• Post-installation support\n\nLet's create your dream space!", [
-          { text: "📖 Read Full Story", action: () => addBotMessage("Learn more about us at /about! 🏢✨") },
-          { text: "👥 Meet Our Team", action: () => addBotMessage("Meet our expert designers at /about#team! 👥") },
-          { text: "🏆 Our Achievements", action: () => addBotMessage("See our awards at /about#achievements! 🏆") },
-          { text: "📞 Start Your Project", action: () => handleOptionClick("Book Consultation") }
+        addBotMessage("💎 **Cherry Gold Ambassador Club:**\n\nEarn up to ₹15,000 instant direct bank reward for every friend or neighbor who books their turnkey home with us. Zero limits!", [
+          { text: "👑 Ambassador Dashboard", action: () => window.location.href = '/refer-earn' },
+          { text: "📞 Refer a Friend", action: () => handleOptionClick("Book Consultation") }
         ]);
         break;
 
       case "FAQ":
-        addBotMessage("❓ **Frequently Asked Questions** - Get instant answers!\n\n📋 **Popular Questions:**", [
+        addBotMessage("❓ **Frequently Asked Questions:**\n\nSelect a topic below for instant verification:", [
           { text: "What services do you offer?", action: () => addBotMessage("🌟 " + faqData.services) },
-          { text: "Which locations do you serve?", action: () => addBotMessage("📍 " + faqData.locations) },
-          { text: "What are your package costs?", action: () => addBotMessage("💰 " + faqData.costs) },
-          { text: "How long does a project take?", action: () => addBotMessage("⏰ " + faqData.timeline) },
-          { text: "What warranty do you provide?", action: () => addBotMessage("🛡️ " + faqData.warranty) },
-          { text: "What's the payment schedule?", action: () => addBotMessage("💳 " + faqData.payment) },
-          { text: "📚 View All FAQs", action: () => addBotMessage("Visit /faq for comprehensive answers! ❓📚") },
-          { text: "🔙 Back to Main Menu", action: () => showMainMenu() }
+          { text: "Which cities do you serve?", action: () => addBotMessage("📍 " + faqData.locations) },
+          { text: "What are your package rates?", action: () => addBotMessage("💰 " + faqData.costs) },
+          { text: "What is the project timeline?", action: () => addBotMessage("⏰ " + faqData.timeline) },
+          { text: "What warranty is provided?", action: () => addBotMessage("🛡️ " + faqData.warranty) },
+          { text: "🔙 Return to Main Menu", action: () => showMainMenu() }
         ]);
         break;
 
       default:
-        addBotMessage("Thank you for your interest! How else can I assist you?", [
-          { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-          { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-          { text: "Browse Services", action: () => handleOptionClick("Browse Services") }
+        addBotMessage("How else may I assist you with your interior design journey?", [
+          { text: "💰 Instant Budget Calculator", action: () => handleOptionClick("Get Budget Estimate") },
+          { text: "📞 Book Free Consultation", action: () => handleOptionClick("Book Consultation") }
         ]);
     }
   };
 
-  const handleServiceOption = (service) => {
-    addBotMessage(`Great choice! ${service} is one of our specialties. Would you like to:\n\n📏 Get a budget estimate\n📞 Book a consultation\n🎨 See design ideas`, [
-      { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-      { text: "Book Consultation", action: () => handleOptionClick("Book Consultation") },
-      { text: "Design Ideas", action: () => addBotMessage(`For ${service}, we recommend modern designs with premium materials. Visit /portfolio for inspiration!`) }
-    ]);
-  };
-
   const showMainMenu = () => {
     setCurrentFlow('main');
-    const menuMessage = userPreferences.name
-      ? `What else can I help you with today, ${userPreferences.name}? ✨\n\n🎯 **All Available Features:**`
-      : "How else can I help you today? 😊\n\n🎯 **Complete Feature Menu:**";
-
-    addBotMessage(menuMessage, [
-      { text: "💰 Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-      { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
-      { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
-      { text: "📊 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
-      { text: "📋 Track My Project", action: () => handleOptionClick("Track My Project") },
+    addBotMessage("How else can our Concierge assist you today?", [
+      { text: "💰 Instant Budget Calculator", action: () => handleOptionClick("Get Budget Estimate") },
+      { text: "📞 Book Free Consultation", action: () => handleOptionClick("Book Consultation") },
+      { text: "🍳 3D Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+      { text: "📋 Track Project Status", action: () => handleOptionClick("Track My Project") },
       { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
-      { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
-      { text: "💎 Refer & Earn", action: () => handleOptionClick("Refer & Earn") },
-      { text: "🛍️ Browse Services", action: () => handleOptionClick("Browse Services") },
-      { text: "📖 Service Catalogue", action: () => handleOptionClick("Service Catalogue") },
-      { text: "🏢 About Us", action: () => handleOptionClick("About Us") },
-      { text: "❓ FAQ & Help", action: () => handleOptionClick("FAQ") }
+      { text: "❓ FAQ & Support", action: () => handleOptionClick("FAQ") }
     ]);
   };
 
@@ -488,68 +418,52 @@ const ChatBot = () => {
     setChatHistory([]);
     setCurrentFlow('main');
     setTimeout(() => {
-      const greeting = userPreferences.name
-        ? `Welcome back, ${userPreferences.name}! ✨ Ready for a fresh start?`
-        : "Hello! 👋 Welcome to Cherry Gold Interiors!";
-
-      addBotMessage(greeting + " How can I assist you today?\n\n🎯 **All Features Available:**", [
-        { text: "💰 Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-        { text: "📞 Book Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "🍳 Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
-        { text: "📊 Cost Estimator", action: () => handleOptionClick("Cost Estimator") },
-        { text: "🎁 Current Offers", action: () => handleOptionClick("Current Offers") },
-        { text: "📸 View Portfolio", action: () => handleOptionClick("View Portfolio") },
-        { text: "💎 Refer & Earn", action: () => handleOptionClick("Refer & Earn") },
-        { text: "🛍️ Browse Services", action: () => handleOptionClick("Browse Services") },
-        { text: "📋 Track Project", action: () => handleOptionClick("Track My Project") },
-        { text: "❓ FAQ & Help", action: () => handleOptionClick("FAQ") }
+      addBotMessage("Conversation reset! ✨ How can I assist you with your home interior today?", [
+        { text: "💰 Instant Budget Calculator", action: () => handleOptionClick("Get Budget Estimate") },
+        { text: "📞 Book Free Consultation", action: () => handleOptionClick("Book Consultation") },
+        { text: "🍳 3D Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+        { text: "📋 Track Project Status", action: () => handleOptionClick("Track My Project") }
       ]);
-    }, 500);
+    }, 300);
   };
 
   const calculateBudget = () => {
     const { height, width, package: pkg } = budgetCalc;
     if (!height || !width || !pkg) {
-      addBotMessage("Please fill in all the required fields for an accurate budget calculation! 📊", [], true);
+      addBotMessage("Please provide both length and width for an accurate calculation. 📐", [], true);
       return;
     }
 
     const area = parseFloat(height) * parseFloat(width);
     const rate = packages[pkg].rate;
     const totalCost = area * rate;
-
-    // Add some additional cost breakdowns
     const designCost = Math.round(totalCost * 0.15);
     const materialCost = Math.round(totalCost * 0.60);
     const laborCost = Math.round(totalCost * 0.25);
 
-    addBotMessage(`🎉 **Your Personalized Budget Estimate**\n\n📐 **Room Dimensions:** ${height}' × ${width}' (${area} sq ft)\n📦 **Selected Package:** ${packages[pkg].name}\n💰 **Rate:** ₹${rate.toLocaleString()}/sq ft\n\n💎 **Cost Breakdown:**\n🎨 Design & Planning: ₹${designCost.toLocaleString()}\n🏗️ Materials: ₹${materialCost.toLocaleString()}\n👷 Labor & Installation: ₹${laborCost.toLocaleString()}\n\n✨ **Total Estimated Cost: ₹${totalCost.toLocaleString()}**\n\n*This is a preliminary estimate. Final cost may vary based on specific materials, finishes, and design complexity.*\n\n🎯 Ready to bring your vision to life?`, [
-      { text: "Book Free Consultation", action: () => handleOptionClick("Book Consultation") },
-      { text: "Recalculate", action: () => setBudgetCalc({ height: "", width: "", package: 'basic', roomType: "" }) },
-      { text: "View Our Services", action: () => handleOptionClick("Browse Services") },
-      { text: "How We Work", action: () => handleOptionClick("How We Work") }
+    addBotMessage(`🎉 **Turnkey Budget Breakdown**\n\n📐 **Dimensions:** ${height}' × ${width}' (${area} sq.ft)\n📦 **Tier:** ${packages[pkg].name} (₹${rate.toLocaleString('en-IN')}/sq.ft)\n\n💎 **Cost Allocation:**\n🎨 3D Architectural CAD & Planning: ₹${designCost.toLocaleString('en-IN')}\n🏗️ IS 710 Carcass & Hafele Hardware: ₹${materialCost.toLocaleString('en-IN')}\n👷 Master White-Glove Installation: ₹${laborCost.toLocaleString('en-IN')}\n\n✨ **Turnkey Total: ₹${totalCost.toLocaleString('en-IN')}**\n\n*Preliminary estimate. Includes 20-year carcass warranty & zero hidden charges.*`, [
+      { text: "📞 Lock Quote & Book Visit", action: () => handleOptionClick("Book Consultation") },
+      { text: "🔄 Recalculate Dimensions", action: () => setBudgetCalc({ height: "", width: "", package: 'basic', roomType: "" }) }
     ]);
-
-    setCurrentFlow('main');
   };
 
   const handleBudgetEstimation = (input) => {
     if (!budgetCalc.height) {
       const length = parseFloat(input);
       if (isNaN(length)) {
-        addBotMessage("Please enter a valid number for length (e.g., 10)", [], true);
+        addBotMessage("Please enter a valid numeric value for length (e.g. 12):", [], true);
         return;
       }
       setBudgetCalc(prev => ({ ...prev, height: input }));
-      addBotMessage("What's the width of your room in feet?", [], true);
+      addBotMessage("And what is the width of the room in feet (e.g. 10)?", [], true);
     } else if (!budgetCalc.width) {
       const width = parseFloat(input);
       if (isNaN(width)) {
-        addBotMessage("Please enter a valid number for width (e.g., 12)", [], true);
+        addBotMessage("Please enter a valid numeric value for width (e.g. 10):", [], true);
         return;
       }
       setBudgetCalc(prev => ({ ...prev, width: input }));
-      addBotMessage("Which package would you prefer?", [
+      addBotMessage("Which luxury package tier would you like to price?", [
         { text: "Basic (₹1,200/sqft)", action: () => setBudgetCalc(prev => ({ ...prev, package: 'basic' })) },
         { text: "Premium (₹1,800/sqft)", action: () => setBudgetCalc(prev => ({ ...prev, package: 'premium' })) },
         { text: "Luxury (₹2,500/sqft)", action: () => setBudgetCalc(prev => ({ ...prev, package: 'luxury' })) }
@@ -560,34 +474,26 @@ const ChatBot = () => {
   const submitLeadForm = () => {
     const { name, phone, email } = leadData;
 
-    // Enhanced validation
     if (!name.trim()) {
-      addBotMessage("Please enter your full name to proceed. 😊", [], false, true);
+      addBotMessage("Please provide your full name to reserve your consultation.", [], false, true);
       return;
     }
 
     if (!phone.trim() || !/^\d{10}$/.test(phone.replace(/\D/g, ''))) {
-      addBotMessage("Please enter a valid 10-digit phone number. 📱", [], false, true);
+      addBotMessage("Please enter a valid 10-digit mobile number.", [], false, true);
       return;
     }
 
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      addBotMessage("Please enter a valid email address. 📧", [], false, true);
-      return;
-    }
-
-    // Save user preferences
     localStorage.setItem('chatbot_user_name', name);
     localStorage.setItem('chatbot_lead', JSON.stringify(leadData));
     setUserPreferences(prev => ({ ...prev, name }));
 
-    const referenceId = `CG${Date.now().toString().slice(-6)}`;
+    const referenceId = `CG${new Date().getFullYear().toString().slice(-2)}${Math.floor(1000 + Math.random() * 9000)}`;
 
-    addBotMessage(`🎉 Fantastic, ${name}! Your consultation is booked!\n\n✨ **Confirmation Details:**\n📋 Reference ID: ${referenceId}\n📞 We'll call you within 2 hours\n📧 Confirmation email sent\n📅 Free site visit scheduled\n🎨 3D design consultation included\n💎 Premium service guaranteed\n\n🌟 **What's Next?**\nOur design expert will contact you to discuss your vision and schedule the perfect time for your consultation!\n\nAnything else I can help you with today?`, [
-      { text: "Get Budget Estimate", action: () => handleOptionClick("Get Budget Estimate") },
-      { text: "How We Work", action: () => handleOptionClick("How We Work") },
-      { text: "Track My Project", action: () => handleOptionClick("Track My Project") },
-      { text: "Browse Portfolio", action: () => addBotMessage("Check out our stunning portfolio at /portfolio! 🎨✨") }
+    addBotMessage(`🎉 **Consultation Confirmed, ${name}!**\n\n📋 **Service Reference ID:** ${referenceId}\n📞 Senior Architect Callback: Within 2 Business Hours\n📍 Location: ${leadData.city || 'Kolkata'}\n🏡 Scope: ${leadData.roomType || 'Complete Home'}\n\nOur design consultant will contact you to confirm your convenient slot for site laser measurement!`, [
+      { text: "💰 Instant Budget Calculator", action: () => handleOptionClick("Get Budget Estimate") },
+      { text: "🍳 3D Kitchen Designer", action: () => handleOptionClick("Kitchen Designer") },
+      { text: "📋 Track Project Status", action: () => handleOptionClick("Track My Project") }
     ]);
 
     setLeadData({ name: "", phone: "", email: "", city: "", roomType: "", budget: "" });
@@ -597,29 +503,28 @@ const ChatBot = () => {
   const handleLeadCollection = (input) => {
     if (!leadData.name) {
       setLeadData(prev => ({ ...prev, name: input }));
-      addBotMessage("What's your phone number?", [], false, true);
+      addBotMessage("What is your mobile number?", [], false, true);
     } else if (!leadData.phone) {
       setLeadData(prev => ({ ...prev, phone: input }));
-      addBotMessage("What's your email address?", [], false, true);
+      addBotMessage("What is your email address?", [], false, true);
     } else if (!leadData.email) {
       setLeadData(prev => ({ ...prev, email: input }));
-      addBotMessage("Which city are you located in?", [], false, true);
+      addBotMessage("Which city is the property located in?", [], false, true);
     } else if (!leadData.city) {
       setLeadData(prev => ({ ...prev, city: input }));
-      addBotMessage("What type of room/project are you planning?", [
-        { text: "Kitchen", action: () => setLeadData(prev => ({ ...prev, roomType: "Kitchen" })) },
-        { text: "Bedroom", action: () => setLeadData(prev => ({ ...prev, roomType: "Bedroom" })) },
-        { text: "Living Room", action: () => setLeadData(prev => ({ ...prev, roomType: "Living Room" })) },
-        { text: "Office", action: () => setLeadData(prev => ({ ...prev, roomType: "Office" })) },
-        { text: "Complete Home", action: () => setLeadData(prev => ({ ...prev, roomType: "Complete Home" })) }
+      addBotMessage("What type of space are you planning?", [
+        { text: "Modular Kitchen", action: () => setLeadData(prev => ({ ...prev, roomType: "Modular Kitchen" })) },
+        { text: "Complete Home", action: () => setLeadData(prev => ({ ...prev, roomType: "Complete Home" })) },
+        { text: "Master Bedroom", action: () => setLeadData(prev => ({ ...prev, roomType: "Master Bedroom" })) },
+        { text: "Living & Dining", action: () => setLeadData(prev => ({ ...prev, roomType: "Living & Dining" })) }
       ], false, true);
     } else if (!leadData.roomType) {
       setLeadData(prev => ({ ...prev, roomType: input }));
-      addBotMessage("What's your estimated budget range?", [
-        { text: "₹1-2 Lakhs", action: () => setLeadData(prev => ({ ...prev, budget: "1-2" })) },
+      addBotMessage("What is your expected budget range?", [
         { text: "₹2-5 Lakhs", action: () => setLeadData(prev => ({ ...prev, budget: "2-5" })) },
         { text: "₹5-10 Lakhs", action: () => setLeadData(prev => ({ ...prev, budget: "5-10" })) },
-        { text: "₹10+ Lakhs", action: () => setLeadData(prev => ({ ...prev, budget: "10+" })) }
+        { text: "₹10-20 Lakhs", action: () => setLeadData(prev => ({ ...prev, budget: "10-20" })) },
+        { text: "₹20+ Lakhs (Luxury Villa)", action: () => setLeadData(prev => ({ ...prev, budget: "20+" })) }
       ], false, true);
     } else if (!leadData.budget) {
       setLeadData(prev => ({ ...prev, budget: input }));
@@ -629,11 +534,10 @@ const ChatBot = () => {
 
   const trackProject = () => {
     if (!projectCode.trim()) {
-      addBotMessage("Please enter your project name or Unique Work Code (UWC). 😊", [], false, false, true);
+      addBotMessage("Please enter your Project Code or Service Number (e.g. CG2024001 or CG-2025-VILLA1):", [], false, false, true);
       return;
     }
 
-    // Mock project data for demo
     const mockProjects = {
       "CG2024001": {
         serviceNumber: "CG2024001",
@@ -642,18 +546,28 @@ const ChatBot = () => {
         startDate: "2024-01-15",
         expectedCompletion: "2024-02-15",
         status: "In Progress",
-        currentStage: "Manufacturing",
+        currentStage: "Precision Manufacturing",
         progress: 60
+      },
+      "CG-2025-VILLA1": {
+        serviceNumber: "CG-2025-VILLA1",
+        customerName: "Vikramaditya Roy",
+        projectType: "Complete 4BHK Villa Interior",
+        startDate: "2025-01-10",
+        expectedCompletion: "2025-03-30",
+        status: "In Progress",
+        currentStage: "Hardware & On-Site Installation",
+        progress: 78
       },
       "ISHMA": {
         serviceNumber: "IS2025001",
-        customerName: "Ishma Team",
-        projectType: "Music Studio Interior",
+        customerName: "Ishma Sound Studio",
+        projectType: "Acoustic Commercial Studio",
         startDate: "2025-07-01",
         expectedCompletion: "2025-08-15",
         status: "In Progress",
-        currentStage: "Design Approval",
-        progress: 20
+        currentStage: "3D CAD Blueprint Approval",
+        progress: 35
       }
     };
 
@@ -661,16 +575,16 @@ const ChatBot = () => {
 
     if (project) {
       setProjectData(project);
-      addBotMessage(`📋 **Project Status for ${projectCode.toUpperCase()}**\n\n🔄 **Current Status:** ${project.status}\n📊 **Progress:** ${project.progress}%\n👨‍🎨 **Customer:** ${project.customerName}\n🏗️ **Project Type:** ${project.projectType}\n📅 **Start Date:** ${project.startDate}\n⏰ **Expected Completion:** ${project.expectedCompletion}\n📝 **Current Stage:** ${project.currentStage}\n\n✨ Your project is progressing well!`, [
-        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9876543210 for support. 📞") },
-        { text: "Book New Consultation", action: () => handleOptionClick("Book Consultation") },
-        { text: "Track Another Project", action: () => handleOptionClick("Track My Project") }
+      addBotMessage(`📋 **Live Milestone for ${projectCode.toUpperCase()}:**\n\n🏛️ **Client:** ${project.customerName}\n🏗️ **Scope:** ${project.projectType}\n🔄 **Status:** ${project.status} (${project.progress}% Complete)\n🛠️ **Current Milestone:** ${project.currentStage}\n⏰ **Estimated Handover:** ${project.expectedCompletion}\n\n✨ All quality audit parameters meet IS 710 certification benchmarks.`, [
+        { text: "🔍 Open Dedicated Tracking Page", action: () => window.location.href = `/track-project?serviceNo=${encodeURIComponent(project.serviceNumber)}` },
+        { text: "📞 Contact Dedicated Manager", action: () => addBotMessage("Direct concierge hotline: +91 9433889668. Our team is available 7 days a week! 📞") },
+        { text: "Track Another Code", action: () => handleOptionClick("Track My Project") }
       ]);
     } else {
       setProjectData(null);
-      addBotMessage("❌ Project code not found. Please check your project name or Unique Work Code (UWC) and try again.\n\n💡 **You can find your UWC in:**\n• Confirmation email\n• Site visit receipt\n• WhatsApp updates\n\nNeed help finding your code?", [
-        { text: "Contact Support", action: () => addBotMessage("Contact us at +91 9876543210 for support. 📞") },
-        { text: "Book New Project", action: () => handleOptionClick("Book Consultation") },
+      addBotMessage(`❌ Project code "${projectCode.toUpperCase()}" was not found in active records.\n\n💡 Try demo codes: **CG-2025-VILLA1** or **CG2024001**, or check your reservation receipt.`, [
+        { text: "Try Code: CG-2025-VILLA1", action: () => { setProjectCode("CG-2025-VILLA1"); trackProject(); } },
+        { text: "📞 Call Helpline", action: () => addBotMessage("Call our concierge at +91 9433889668. We'll look up your record instantly! 📞") },
         { text: "Try Again", action: () => handleOptionClick("Track My Project") }
       ]);
     }
@@ -686,319 +600,370 @@ const ChatBot = () => {
 
   return (
     <>
-      {/* Floating Chat Button */}
-      <div className="fixed bottom-8 right-4 z-50">
-        {/* Notification badge for new messages */}
-        {!isOpen && messages.length > 0 && (
-          <div className="absolute -top-2 -left-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
-            <Sparkles className="w-3 h-3" />
-          </div>
-        )}
+      {/* ================= FLOATING LAUNCHER (SHOWN WHEN CLOSED) ================= */}
+      {!isOpen && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className="relative group">
+            {/* Glowing Golden Ambient Ping */}
+            <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#C0142B] opacity-75 blur-sm group-hover:opacity-100 transition-opacity animate-pulse pointer-events-none" />
 
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${isOpen
-            ? 'bg-red-600 hover:bg-red-700 border-2 border-white/30 hover:border-white/50 rotate-180'
-            : 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-red-600 hover:from-yellow-500 hover:to-red-700 animate-pulse'
-            } text-white`}
-        >
-          {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
-        </button>
-
-        {/* Floating action hint */}
-        {!isOpen && (
-          <div className="absolute bottom-16 right-0 bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            Chat with us! 💬
-          </div>
-        )}
-      </div>
-
-      {/* Chat Window */}
-      {isOpen && (
-        <div className={`fixed bottom-24 right-4 w-[90vw] max-w-[420px] sm:w-96 sm:max-w-[450px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 flex flex-col transition-all duration-300 ${isMinimized ? 'h-16' : 'h-[calc(100vh-120px)] max-h-[650px] sm:h-[650px]'
-          } sm:bottom-20`}>
-
-          {/* Enhanced Header */}
-          <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-red-600 text-white rounded-t-2xl py-4 px-4 flex items-center justify-between shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
+            <button
+              onClick={() => setIsOpen(true)}
+              className="relative w-14 h-14 rounded-full bg-gradient-to-br from-[#1E090C] via-[#350D14] to-[#120406] border-2 border-[#D4AF37] shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center justify-center p-2.5 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+              aria-label="Open Cherry Gold AI Concierge"
+            >
+              <img
+                src={cherryEmblem}
+                alt="Cherry Gold Monogram"
+                className="w-full h-full object-contain filter drop-shadow-[0_2px_6px_rgba(212,175,55,0.4)] group-hover:scale-110 transition-transform"
+              />
+              
+              {/* Unread Sparkle Badge */}
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#C0142B] border-2 border-white text-white rounded-full flex items-center justify-center shadow-md">
+                <Sparkles className="w-2.5 h-2.5 text-white" />
               </div>
-              <div>
-                <span className="text-lg font-bold">🍒 Cherry Gold AI</span>
-                <div className="flex items-center gap-1 text-xs opacity-90">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span>Online & Ready to Help</span>
+            </button>
+
+            {/* Hover Tooltip Pill */}
+            <div className="absolute bottom-16 right-0 bg-[#1E090C] text-[#F3E5AB] border border-[#D4AF37]/40 text-xs px-3.5 py-1.5 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all pointer-events-none shadow-xl">
+              Cherry Gold AI Concierge ✨
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= REDESIGNED LUXURY CHAT WINDOW (WHEN OPEN) ================= */}
+      {isOpen && (
+        <div
+          className={`fixed z-50 flex flex-col bg-[#FAF7F2] border border-[#D4AF37]/50 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.45)] transition-all duration-300 font-sans ${
+            isMinimized
+              ? 'bottom-6 right-6 w-80 sm:w-96 h-16 rounded-2xl overflow-hidden'
+              : `rounded-3xl overflow-hidden ${
+                  // Responsive height & width: never clips off screen
+                  isExpanded
+                    ? 'bottom-4 sm:bottom-6 right-3 sm:right-6 w-[calc(100vw-24px)] sm:w-[540px] max-w-[calc(100vw-24px)] h-[calc(100vh-90px)] max-h-[640px]'
+                    : 'bottom-4 sm:bottom-6 right-3 sm:right-6 w-[calc(100vw-24px)] sm:w-[410px] max-w-[calc(100vw-24px)] h-[calc(100vh-90px)] max-h-[580px]'
+                }`
+          }`}
+        >
+
+          {/* ================= ROYAL HEADER WITH CHERRY GOLD MONOGRAM ================= */}
+          <div className="bg-gradient-to-r from-[#1A0609] via-[#2F0D14] to-[#140407] text-white py-3 px-4 flex items-center justify-between border-b border-[#D4AF37]/40 shrink-0">
+            
+            {/* Left: Brand Monogram & Status */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#2A0E13] via-[#1E090C] to-[#120406] border border-[#D4AF37]/60 p-1 flex items-center justify-center shadow-md shrink-0">
+                <img 
+                  src={cherryEmblem} 
+                  alt="Cherry Gold Emblem" 
+                  className="w-full h-full object-contain filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" 
+                />
+              </div>
+              <div className="leading-tight">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-serif font-bold text-base sm:text-lg tracking-tight text-white leading-none">
+                    <span className="text-[#FF4A60]">Cherry</span> <span className="bg-gradient-to-r from-[#F7E198] via-[#D4AF37] to-[#C19B2A] bg-clip-text text-transparent">Gold</span>
+                  </span>
+                </div>
+                <div className="text-[9px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold mt-0.5">
+                  — INTERIORS —
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] text-gray-300 mt-0.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                  <span>Online • AI Concierge</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {messages.length > 0 && (
+
+            {/* Right: Window Controls & AI 24/7 Badge */}
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#B89222] text-[#1E090C] font-extrabold text-[10px] uppercase tracking-wider shadow-sm mr-0.5">
+                AI 24/7
+              </span>
+
+              {/* Expand / Compact Width Toggle */}
+              {!isMinimized && (
                 <button
-                  onClick={clearChat}
-                  className="text-white/80 hover:text-white transition-colors p-1"
-                  title="Clear Chat"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="p-1.5 text-gray-300 hover:text-[#D4AF37] hover:bg-white/10 rounded-lg transition-all hidden sm:flex"
+                  title={isExpanded ? "Standard Compact Width" : "Expand Studio Width"}
                 >
-                  <FileText className="w-4 h-4" />
+                  {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </button>
               )}
+
+              {/* Reset Chat */}
+              {!isMinimized && messages.length > 0 && (
+                <button
+                  onClick={clearChat}
+                  className="p-1.5 text-gray-300 hover:text-[#D4AF37] hover:bg-white/10 rounded-lg transition-all"
+                  title="Reset Conversation"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* Minimize / Expand Height */}
               <button
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="text-white/80 hover:text-white transition-colors p-1"
-                title={isMinimized ? "Expand" : "Minimize"}
+                className="p-1.5 text-gray-300 hover:text-[#D4AF37] hover:bg-white/10 rounded-lg transition-all"
+                title={isMinimized ? "Expand Window" : "Minimize Window"}
               >
-                {isMinimized ? <Zap className="w-5 h-5" /> : <Zap className="w-5 h-5 rotate-180" />}
+                {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
               </button>
+
+              {/* Close Window */}
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-white/80 hover:text-white transition-colors p-1"
-                title="Close"
+                className="p-1.5 text-gray-300 hover:text-white hover:bg-red-900/60 rounded-lg transition-all"
+                title="Close Concierge"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
+
             </div>
           </div>
 
+          {/* ================= EXPANDED MESSAGES BODY ================= */}
           {!isMinimized && (
             <>
-              {/* Messages Container */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white">
-                {messages.map((message, index) => (
-                  <div key={message.id} className={`space-y-3 animate-fadeIn ${message.isNew ? 'animate-slideUp' : ''}`}>
+              {/* Messages Scroll Area */}
+              <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-3.5 bg-[#FAF7F2]">
+                {messages.map((message) => (
+                  <div key={message.id} className="space-y-2.5">
+                    
+                    {/* Message Bubble Row */}
                     <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`flex items-start gap-3 max-w-[85%] ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                        {/* Enhanced Avatar */}
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md ${message.type === 'user'
-                          ? 'bg-gradient-to-br from-blue-500 to-blue-600'
-                          : 'bg-gradient-to-br from-yellow-400 to-red-600'
-                          }`}>
+                      <div className={`flex items-start gap-2.5 max-w-[88%] sm:max-w-[84%] ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        
+                        {/* Avatar */}
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
+                          message.type === 'user'
+                            ? 'bg-[#1E090C] text-[#D4AF37] border border-[#D4AF37]/30'
+                            : 'bg-gradient-to-br from-[#2A0E13] to-[#140407] border border-[#D4AF37]/60 p-0.5'
+                        }`}>
                           {message.type === 'user' ? (
-                            <User className="w-4 h-4 text-white" />
+                            <User className="w-3.5 h-3.5" />
                           ) : (
-                            <Bot className="w-4 h-4 text-white" />
+                            <img src={cherryEmblem} alt="Cherry Gold AI" className="w-full h-full object-contain" />
                           )}
                         </div>
 
-                        {/* Enhanced Message Bubble */}
-                        <div className={`rounded-2xl p-4 shadow-sm border ${message.type === 'user'
-                          ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white border-blue-200'
-                          : 'bg-white text-gray-800 border-gray-200'
-                          }`}>
-                          <div className="text-sm leading-relaxed whitespace-pre-line">
+                        {/* Bubble Content */}
+                        <div className={`p-3.5 rounded-2xl shadow-sm border transition-all ${
+                          message.type === 'user'
+                            ? 'bg-gradient-to-r from-[#A71124] to-[#8C0D1B] text-white border-[#C0142B] rounded-tr-sm'
+                            : 'bg-white text-[#2C1810] border-[#EBDCCF] rounded-tl-sm'
+                        }`}>
+                          <div className="text-xs sm:text-[13px] leading-relaxed whitespace-pre-line font-normal">
                             {message.content}
                           </div>
-
-                          {/* Timestamp */}
-                          <div className={`text-xs mt-2 ${message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
-                            }`}>
+                          
+                          <div className={`text-[10px] mt-1.5 ${
+                            message.type === 'user' ? 'text-rose-200 text-right' : 'text-gray-400'
+                          }`}>
                             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>
+
                       </div>
                     </div>
 
-                    {/* Enhanced Quick Action Buttons */}
+                    {/* Quick Action Suggestion Options */}
                     {message.options && (
-                      <div className="flex flex-wrap gap-2 ml-11 mt-3">
-                        {message.options.map((option, optionIndex) => (
+                      <div className="flex flex-wrap gap-1.5 ml-9 sm:ml-10">
+                        {message.options.map((option, optIdx) => (
                           <button
-                            key={optionIndex}
+                            key={optIdx}
                             onClick={() => option.action()}
-                            className="text-sm bg-gradient-to-r from-yellow-400 to-red-500 text-white border-0 rounded-full px-4 py-2 hover:from-yellow-500 hover:to-red-600 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2"
+                            className="bg-white hover:bg-[#FFFDF5] text-[#1E090C] hover:text-[#C0142B] border border-[#D4AF37]/50 hover:border-[#C0142B] shadow-sm rounded-full px-3 py-1.5 text-xs font-semibold tracking-wide transition-all transform hover:scale-[1.02] active:scale-95 flex items-center gap-1.5"
                           >
-                            {option.text.includes('Budget') && <Calculator className="w-4 h-4" />}
-                            {option.text.includes('Book') && <Calendar className="w-4 h-4" />}
-                            {option.text.includes('Track') && <Search className="w-4 h-4" />}
-                            {option.text.includes('FAQ') && <Info className="w-4 h-4" />}
                             <span>{option.text}</span>
                           </button>
                         ))}
                       </div>
                     )}
 
-                    {/* Budget Calculator */}
+                    {/* Interactive Budget Calculator Widget */}
                     {message.showBudgetCalculator && (
-                      <div className="ml-11 p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
-                        <h4 className="font-semibold flex items-center gap-2 text-yellow-800">
-                          <Calculator className="w-4 h-4 text-yellow-600" />
-                          Budget Calculator
-                        </h4>
+                      <div className="ml-9 sm:ml-10 p-4 bg-white border border-[#D4AF37]/60 rounded-2xl shadow-md space-y-3">
+                        <div className="flex items-center gap-2 text-xs font-serif font-bold text-[#1E090C]">
+                          <Calculator className="w-4 h-4 text-[#C0142B]" />
+                          <span>Turnkey Budget Estimator</span>
+                        </div>
+
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-xs text-yellow-600">Height (ft)</label>
-                            <input
-                              type="number"
-                              placeholder="e.g. 10"
-                              value={budgetCalc.height}
-                              onChange={(e) => setBudgetCalc(prev => ({ ...prev, height: e.target.value }))}
-                              className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs text-yellow-600">Width (ft)</label>
+                            <label className="text-[10px] text-gray-500 uppercase font-semibold">Length (ft)</label>
                             <input
                               type="number"
                               placeholder="e.g. 12"
+                              value={budgetCalc.height}
+                              onChange={(e) => setBudgetCalc(prev => ({ ...prev, height: e.target.value }))}
+                              className="w-full p-2 bg-[#FCFAF7] border border-[#E5D7C9] focus:border-[#D4AF37] rounded-xl text-xs text-gray-800"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-500 uppercase font-semibold">Width (ft)</label>
+                            <input
+                              type="number"
+                              placeholder="e.g. 10"
                               value={budgetCalc.width}
                               onChange={(e) => setBudgetCalc(prev => ({ ...prev, width: e.target.value }))}
-                              className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                              className="w-full p-2 bg-[#FCFAF7] border border-[#E5D7C9] focus:border-[#D4AF37] rounded-xl text-xs text-gray-800"
                             />
                           </div>
                         </div>
+
                         <div>
-                          <label className="text-xs text-yellow-600">Package</label>
+                          <label className="text-[10px] text-gray-500 uppercase font-semibold">Luxury Tier</label>
                           <select
-                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
                             value={budgetCalc.package}
                             onChange={(e) => setBudgetCalc(prev => ({ ...prev, package: e.target.value }))}
+                            className="w-full p-2 bg-[#FCFAF7] border border-[#E5D7C9] focus:border-[#D4AF37] rounded-xl text-xs text-gray-800"
                           >
-                            <option value="basic">Basic - ₹1,200/sqft</option>
-                            <option value="premium">Premium - ₹1,800/sqft</option>
-                            <option value="luxury">Luxury - ₹2,500/sqft</option>
+                            <option value="basic">Basic Luxury — ₹1,200/sqft</option>
+                            <option value="premium">Premium Royal — ₹1,800/sqft</option>
+                            <option value="luxury">Imperia Ultra-Luxury — ₹2,500/sqft</option>
                           </select>
                         </div>
-                        <button onClick={calculateBudget} className="w-full bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded p-2 hover:from-yellow-500 hover:to-red-700 text-sm">
-                          Calculate Budget
+
+                        <button
+                          onClick={calculateBudget}
+                          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#A71124] to-[#8C0D1B] text-white font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-md"
+                        >
+                          Calculate Turnkey Budget
                         </button>
                       </div>
                     )}
 
-                    {/* Lead Form */}
+                    {/* Interactive Lead Form Widget */}
                     {message.showLeadForm && (
-                      <div className="ml-11 p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
-                        <h4 className="font-semibold flex items-center gap-2 text-yellow-800">
-                          <Calendar className="w-4 h-4 text-yellow-600" />
-                          Book Free Consultation
-                        </h4>
+                      <div className="ml-9 sm:ml-10 p-4 bg-white border border-[#D4AF37]/60 rounded-2xl shadow-md space-y-2.5">
+                        <div className="flex items-center gap-2 text-xs font-serif font-bold text-[#1E090C]">
+                          <Calendar className="w-4 h-4 text-[#C0142B]" />
+                          <span>Book Free Design Consultation</span>
+                        </div>
+
                         <div className="space-y-2">
                           <input
                             placeholder="Full Name *"
                             value={leadData.name}
                             onChange={(e) => setLeadData(prev => ({ ...prev, name: e.target.value }))}
-                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                            className="w-full p-2 bg-[#FCFAF7] border border-[#E5D7C9] focus:border-[#D4AF37] rounded-xl text-xs text-gray-800"
                           />
                           <input
-                            placeholder="Phone Number *"
+                            placeholder="Mobile Number (10 digits) *"
                             value={leadData.phone}
                             onChange={(e) => setLeadData(prev => ({ ...prev, phone: e.target.value }))}
-                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                            className="w-full p-2 bg-[#FCFAF7] border border-[#E5D7C9] focus:border-[#D4AF37] rounded-xl text-xs text-gray-800"
                           />
                           <input
-                            placeholder="Email Address *"
+                            placeholder="Email Address (Optional)"
                             value={leadData.email}
                             onChange={(e) => setLeadData(prev => ({ ...prev, email: e.target.value }))}
-                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
+                            className="w-full p-2 bg-[#FCFAF7] border border-[#E5D7C9] focus:border-[#D4AF37] rounded-xl text-xs text-gray-800"
                           />
-                          <input
-                            placeholder="City"
-                            value={leadData.city}
-                            onChange={(e) => setLeadData(prev => ({ ...prev, city: e.target.value }))}
-                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
-                          />
-                          <select
-                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
-                            value={leadData.roomType}
-                            onChange={(e) => setLeadData(prev => ({ ...prev, roomType: e.target.value }))}
-                          >
-                            <option value="">Select Room Type</option>
-                            <option value="kitchen">Kitchen</option>
-                            <option value="bedroom">Bedroom</option>
-                            <option value="living">Living Room</option>
-                            <option value="bathroom">Bathroom</option>
-                            <option value="complete">Complete Home</option>
-                            <option value="office">Office</option>
-                          </select>
-                          <select
-                            className="w-full p-2 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
-                            value={leadData.budget}
-                            onChange={(e) => setLeadData(prev => ({ ...prev, budget: e.target.value }))}
-                          >
-                            <option value="">Budget Range</option>
-                            <option value="1-2">₹1-2 Lakhs</option>
-                            <option value="2-5">₹2-5 Lakhs</option>
-                            <option value="5-10">₹5-10 Lakhs</option>
-                            <option value="10+">₹10+ Lakhs</option>
-                          </select>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input
+                              placeholder="City (e.g. Kolkata)"
+                              value={leadData.city}
+                              onChange={(e) => setLeadData(prev => ({ ...prev, city: e.target.value }))}
+                              className="w-full p-2 bg-[#FCFAF7] border border-[#E5D7C9] focus:border-[#D4AF37] rounded-xl text-xs text-gray-800"
+                            />
+                            <select
+                              value={leadData.roomType}
+                              onChange={(e) => setLeadData(prev => ({ ...prev, roomType: e.target.value }))}
+                              className="w-full p-2 bg-[#FCFAF7] border border-[#E5D7C9] focus:border-[#D4AF37] rounded-xl text-xs text-gray-800"
+                            >
+                              <option value="">Space Type</option>
+                              <option value="Modular Kitchen">Kitchen</option>
+                              <option value="Complete Home">Full Home</option>
+                              <option value="Master Bedroom">Bedroom</option>
+                              <option value="Living Room">Living</option>
+                            </select>
+                          </div>
                         </div>
-                        <button onClick={submitLeadForm} className="w-full bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded p-2 hover:from-yellow-500 hover:to-red-700 text-sm">
-                          Book Consultation
+
+                        <button
+                          onClick={submitLeadForm}
+                          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#A71124] to-[#8C0D1B] text-white font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-md"
+                        >
+                          Confirm &amp; Request Callback
                         </button>
                       </div>
                     )}
 
-                    {/* Project Tracker */}
+                    {/* Interactive Project Tracker Widget */}
                     {message.showProjectTracker && (
-                      <div className="ml-11 p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
-                        <h4 className="font-semibold flex items-center gap-2 text-yellow-800">
-                          <CheckCircle className="w-4 h-4 text-yellow-600" />
-                          Project Status Tracker
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="relative">
-                            <input
-                              placeholder="Enter your project name or Unique Work Code (UWC)"
-                              value={projectCode}
-                              onChange={(e) => setProjectCode(e.target.value)}
-                              className="w-full p-2 pl-10 border border-yellow-300 rounded text-sm bg-white text-yellow-900"
-                            />
-                            <Search className="absolute left-2 top-2.5 w-5 h-5 text-yellow-400" />
-                          </div>
-                          <div className="text-xs text-yellow-600">
-                            Example: Ishma or CG2024001 (Try this for demo)
-                          </div>
+                      <div className="ml-9 sm:ml-10 p-4 bg-white border border-[#D4AF37]/60 rounded-2xl shadow-md space-y-3">
+                        <div className="flex items-center gap-2 text-xs font-serif font-bold text-[#1E090C]">
+                          <Search className="w-4 h-4 text-[#C0142B]" />
+                          <span>Track Milestone Status</span>
                         </div>
-                        <button onClick={trackProject} className="w-full bg-gradient-to-br from-yellow-400 to-red-600 text-white rounded p-2 hover:from-yellow-500 hover:to-red-700 text-sm">
-                          Track Project
+
+                        <div className="space-y-1.5">
+                          <input
+                            placeholder="Enter Code (e.g. CG-2025-VILLA1)"
+                            value={projectCode}
+                            onChange={(e) => setProjectCode(e.target.value)}
+                            className="w-full p-2 bg-[#FCFAF7] border border-[#E5D7C9] focus:border-[#D4AF37] rounded-xl text-xs font-mono text-gray-800"
+                          />
+                          <p className="text-[10px] text-gray-400">
+                            Demo codes: <strong>CG-2025-VILLA1</strong> or <strong>CG2024001</strong>
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={trackProject}
+                          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#A71124] to-[#8C0D1B] text-white font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-md"
+                        >
+                          Lookup Live Status
                         </button>
                       </div>
                     )}
+
                   </div>
                 ))}
 
-                {/* Enhanced Typing Indicator */}
+                {/* Live Typing Indicator */}
                 {isTyping && (
-                  <div className="flex justify-start animate-fadeIn">
-                    <div className="flex items-start gap-3 max-w-[85%]">
-                      <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-red-600 rounded-full flex items-center justify-center shadow-md">
-                        <Bot className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-                        <div className="flex items-center gap-2">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          </div>
-                          <span className="text-xs text-gray-500">AI is thinking...</span>
-                        </div>
-                      </div>
+                  <div className="flex items-center gap-2 ml-2 py-1 text-xs text-gray-500 font-medium">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#2A0E13] to-[#140407] border border-[#D4AF37]/60 flex items-center justify-center p-0.5 shrink-0">
+                      <img src={cherryEmblem} alt="Cherry Gold AI" className="w-full h-full object-contain animate-pulse" />
                     </div>
+                    <span>Concierge is writing...</span>
                   </div>
                 )}
+
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Enhanced Input Area */}
-              <div className="p-4 border-t border-gray-200 bg-white rounded-b-2xl">
-                <div className="flex gap-3 items-end">
+              {/* ================= INPUT & QUICK ACTION TOOLBAR ================= */}
+              <div className="p-3 bg-white border-t border-[#EFE4D6] shrink-0">
+                
+                {/* Input Textbox & Buttons */}
+                <div className="flex items-center gap-2">
                   <div className="flex-1 relative">
                     <input
-                      placeholder="Type your message... 💬"
+                      placeholder="Ask about design, budget, finishes... 💬"
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                      className="w-full p-3 pr-12 border-2 border-gray-200 rounded-2xl text-sm bg-gray-50 text-gray-900 focus:border-yellow-400 focus:bg-white transition-all duration-200 resize-none"
+                      onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                      className="w-full py-2.5 pl-3.5 pr-10 border border-[#E0D0C0] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] rounded-xl text-xs sm:text-sm bg-[#FCFAF7] focus:bg-white text-gray-800 transition-all outline-none"
                       disabled={isTyping}
                     />
 
-                    {/* Voice Input Button */}
+                    {/* Microphone Toggle Button */}
                     <button
+                      type="button"
                       onClick={toggleVoiceInput}
-                      className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full transition-all duration-200 ${isListening
-                        ? 'bg-red-500 text-white animate-pulse'
-                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                        }`}
-                      title={isListening ? "Stop listening" : "Voice input"}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all ${
+                        isListening
+                          ? 'bg-red-500 text-white animate-pulse'
+                          : 'text-gray-400 hover:text-gray-700'
+                      }`}
+                      title={isListening ? "Stop Voice Input" : "Voice Input"}
                     >
                       {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                     </button>
@@ -1008,139 +973,58 @@ const ChatBot = () => {
                   <button
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim() || isTyping}
-                    className="p-3 bg-gradient-to-r from-yellow-400 to-red-600 text-white rounded-2xl hover:from-yellow-500 hover:to-red-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                    className="p-2.5 rounded-xl bg-gradient-to-r from-[#A71124] to-[#8C0D1B] hover:brightness-110 text-white shadow-md active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Send Message"
                   >
-                    <Send className="w-5 h-5" />
+                    <Send className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+                {/* Bottom Quick Feature Tag Chips */}
+                <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto no-scrollbar pb-0.5">
                   <button
                     onClick={() => handleOptionClick("Get Budget Estimate")}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-full text-xs whitespace-nowrap hover:bg-yellow-200 transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-[#FAF3EA] hover:bg-[#F3E5AB]/40 text-[#8C6D23] border border-[#E8DACB] text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1 shrink-0"
                   >
-                    <Calculator className="w-3 h-3" />
-                    Budget
+                    <Calculator className="w-3 h-3 text-[#C0142B]" />
+                    <span>Budget</span>
                   </button>
                   <button
                     onClick={() => handleOptionClick("Book Consultation")}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs whitespace-nowrap hover:bg-blue-200 transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-[#FAF3EA] hover:bg-[#F3E5AB]/40 text-[#8C6D23] border border-[#E8DACB] text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1 shrink-0"
                   >
-                    <Calendar className="w-3 h-3" />
-                    Book
+                    <Calendar className="w-3 h-3 text-[#C0142B]" />
+                    <span>Book Visit</span>
+                  </button>
+                  <button
+                    onClick={() => handleOptionClick("Kitchen Designer")}
+                    className="px-2.5 py-1 rounded-lg bg-[#FAF3EA] hover:bg-[#F3E5AB]/40 text-[#8C6D23] border border-[#E8DACB] text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1 shrink-0"
+                  >
+                    <Crown className="w-3 h-3 text-[#C0142B]" />
+                    <span>3D Kitchen</span>
                   </button>
                   <button
                     onClick={() => handleOptionClick("Track My Project")}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-xs whitespace-nowrap hover:bg-green-200 transition-colors"
+                    className="px-2.5 py-1 rounded-lg bg-[#FAF3EA] hover:bg-[#F3E5AB]/40 text-[#8C6D23] border border-[#E8DACB] text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1 shrink-0"
                   >
-                    <Search className="w-3 h-3" />
-                    Track
+                    <Search className="w-3 h-3 text-[#C0142B]" />
+                    <span>Track Order</span>
+                  </button>
+                  <button
+                    onClick={() => handleOptionClick("Current Offers")}
+                    className="px-2.5 py-1 rounded-lg bg-[#FAF3EA] hover:bg-[#F3E5AB]/40 text-[#8C6D23] border border-[#E8DACB] text-[11px] font-semibold whitespace-nowrap transition-colors flex items-center gap-1 shrink-0"
+                  >
+                    <Sparkles className="w-3 h-3 text-[#C0142B]" />
+                    <span>Offers</span>
                   </button>
                 </div>
+
               </div>
             </>
           )}
+
         </div>
       )}
-
-      {/* Enhanced CSS Styles */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes slideUp {
-          from { 
-            opacity: 0; 
-            transform: translateY(20px); 
-          }
-          to { 
-            opacity: 1; 
-            transform: translateY(0); 
-          }
-        }
-        
-        @keyframes bounce {
-          0%, 20%, 53%, 80%, 100% {
-            transform: translate3d(0,0,0);
-          }
-          40%, 43% {
-            transform: translate3d(0, -8px, 0);
-          }
-          70% {
-            transform: translate3d(0, -4px, 0);
-          }
-          90% {
-            transform: translate3d(0, -2px, 0);
-          }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        
-        .animate-slideUp {
-          animation: slideUp 0.4s ease-out;
-        }
-        
-        .animate-bounce-gentle {
-          animation: bounce 2s infinite;
-        }
-        
-        /* Custom scrollbar */
-        .overflow-y-auto::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 3px;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #fbbf24, #ef4444);
-          border-radius: 3px;
-        }
-        
-        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #f59e0b, #dc2626);
-        }
-        
-        @media (max-width: 640px) {
-          .fixed.bottom-24.right-4 {
-            bottom: 6rem;
-            right: 0.5rem;
-            width: calc(100vw - 1rem);
-            height: calc(100vh - 120px);
-            max-height: none;
-            border-radius: 1rem;
-          }
-          .fixed.bottom-8.right-4 {
-            bottom: 2rem;
-            right: 1rem;
-          }
-        }
-        
-        /* Pulse animation for new messages */
-        @keyframes pulse-ring {
-          0% {
-            transform: scale(0.33);
-          }
-          40%, 50% {
-            opacity: 0;
-          }
-          100% {
-            opacity: 0;
-            transform: scale(1.2);
-          }
-        }
-        
-        .pulse-ring {
-          animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-      `}</style>
     </>
   );
 };

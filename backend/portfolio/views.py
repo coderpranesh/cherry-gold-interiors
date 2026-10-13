@@ -1,4 +1,5 @@
 from rest_framework import viewsets, generics
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import PortfolioItem, CaseStudy
@@ -37,7 +38,7 @@ class PortfolioItemViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class CategoryListView(generics.GenericAPIView):
+class CategoryListView(APIView):
     """
     Returns list of portfolio categories.
     Useful for frontend dropdowns/filters.
